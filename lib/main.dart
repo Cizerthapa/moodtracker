@@ -1,7 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
 import 'screens/entry_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MoodTrackApp());
 }
 
@@ -21,7 +27,6 @@ class MoodTrackApp extends StatelessWidget {
           primary: Color(0xFF9E77ED),
           secondary: Color(0xFFF97066),
           surface: Color(0xFF161622),
-          background: Color(0xFF0A0A0E),
         ),
         fontFamily: 'Inter', // Default fallback, but will look good
         appBarTheme: const AppBarTheme(

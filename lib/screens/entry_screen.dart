@@ -3,64 +3,80 @@ import 'memories_screen.dart';
 import 'water_intake_screen.dart';
 import 'notes_screen.dart';
 
+// ─── Palette (Cream & Rose) ────────────────────────────────────────────────
+const _cream = Color(0xFFFDF6EE);
+const _roseDust = Color(0xFFE8A598);
+const _roseDeep = Color(0xFFC4635A);
+const _warmBrown = Color(0xFF5C3D2E);
+const _softBrown = Color(0xFF8C6050);
+const _champagne = Color(0xFFF0DDD0);
+const _ivoryCard = Color(0xFFFAF0E8);
+
 class EntryScreen extends StatelessWidget {
   const EntryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: _cream,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 32.0),
+          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 32.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // ── Header ──────────────────────────────────────────────
               const Text(
-                'Welcome Back',
+                'MoodTrack',
                 style: TextStyle(
-                  fontSize: 32,
+                  fontFamily: 'Georgia',
+                  fontSize: 40,
                   fontWeight: FontWeight.bold,
-                  letterSpacing: -0.5,
-                  color: Colors.white,
+                  color: _warmBrown,
+                  height: 1.1,
                 ),
               ),
               const SizedBox(height: 8),
               Text(
-                'What would you like to track today?',
+                'Treasuring your feelings, one step at a time.',
                 style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.white.withOpacity(0.7),
+                  fontFamily: 'Georgia',
+                  fontStyle: FontStyle.italic,
+                  fontSize: 15,
+                  color: _softBrown,
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 48),
+
+              // ── Feature Cards ───────────────────────────────────────
               Expanded(
                 child: ListView(
                   physics: const BouncingScrollPhysics(),
                   children: [
                     _buildFeatureCard(
                       context,
-                      title: 'Memories Tracker',
-                      subtitle: 'Pin your special moments on the map.',
-                      icon: Icons.map_rounded,
-                      color: const Color(0xFF9E77ED),
+                      title: 'Our Story',
+                      subtitle: 'Pinned memories of every adventure.',
+                      icon: Icons.favorite_rounded,
+                      color: _roseDeep,
                       destination: const MemoriesScreen(),
                     ),
                     const SizedBox(height: 20),
                     _buildFeatureCard(
                       context,
-                      title: 'Water Intake',
-                      subtitle: 'Stay hydrated through the day.',
+                      title: 'Hydration',
+                      subtitle: 'Staying fresh & keeping healthy.',
                       icon: Icons.water_drop_rounded,
-                      color: const Color(0xFF12B76A),
+                      color: const Color(0xFF6DAA7A), // earth green
                       destination: const WaterIntakeScreen(),
                     ),
                     const SizedBox(height: 20),
                     _buildFeatureCard(
                       context,
-                      title: 'Notes & Mood',
-                      subtitle: 'Reflect on your day & track feelings.',
-                      icon: Icons.edit_note_rounded,
-                      color: const Color(0xFFF97066),
+                      title: 'Daily Journal',
+                      subtitle: 'Reflection for a peaceful mind.',
+                      icon: Icons.auto_awesome_rounded,
+                      color: const Color(0xFFD4A832), // warm gold
                       destination: const NotesScreen(),
                     ),
                   ],
@@ -85,22 +101,29 @@ class EntryScreen extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => destination),
+          PageRouteBuilder(
+            pageBuilder: (_, anim, __) => destination,
+            transitionsBuilder: (_, anim, __, child) => FadeTransition(
+              opacity: anim,
+              child: child,
+            ),
+            transitionDuration: const Duration(milliseconds: 300),
+          ),
         );
       },
       child: Container(
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surface,
+          color: _ivoryCard,
           borderRadius: BorderRadius.circular(24),
           boxShadow: [
             BoxShadow(
-              color: color.withOpacity(0.1),
+              color: _warmBrown.withOpacity(0.04),
               blurRadius: 20,
               offset: const Offset(0, 8),
             ),
           ],
           border: Border.all(
-            color: Colors.white.withOpacity(0.05),
+            color: _champagne,
             width: 1,
           ),
         ),
@@ -110,13 +133,13 @@ class EntryScreen extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.2),
-                borderRadius: BorderRadius.circular(16),
+                color: color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(18),
               ),
               child: Icon(
                 icon,
                 color: color,
-                size: 32,
+                size: 28,
               ),
             ),
             const SizedBox(width: 20),
@@ -126,27 +149,30 @@ class EntryScreen extends StatelessWidget {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: Colors.white,
+                      color: _warmBrown,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 6),
                   Text(
                     subtitle,
                     style: TextStyle(
-                      fontSize: 14,
-                      color: Colors.white.withOpacity(0.6),
+                      fontFamily: 'Georgia',
+                      fontStyle: FontStyle.italic,
+                      fontSize: 13,
+                      color: _softBrown.withOpacity(0.8),
                     ),
                   ),
                 ],
               ),
             ),
             Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: Colors.white.withOpacity(0.3),
-              size: 16,
+              Icons.chevron_right_rounded,
+              color: _roseDeep.withOpacity(0.4),
+              size: 22,
             ),
           ],
         ),

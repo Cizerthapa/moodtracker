@@ -1,6 +1,71 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
+
+// ─── Palette (Cream & Rose) ────────────────────────────────────────────────
+const _cream = Color(0xFFFDF6EE);
+const _roseDust = Color(0xFFE8A598);
+const _roseDeep = Color(0xFFC4635A);
+const _warmBrown = Color(0xFF5C3D2E);
+const _softBrown = Color(0xFF8C6050);
+const _champagne = Color(0xFFF0DDD0);
+const _ivoryCard = Color(0xFFFAF0E8);
+
+enum DrinkType {
+  water,
+  coffee,
+  juice,
+  tea;
+
+  String get label => name[0].toUpperCase() + name.substring(1);
+  IconData get icon {
+    switch (this) {
+      case DrinkType.water:
+        return Icons.water_drop_rounded;
+      case DrinkType.coffee:
+        return Icons.coffee_rounded;
+      case DrinkType.juice:
+        return Icons.local_drink_rounded;
+      case DrinkType.tea:
+        return Icons.emoji_food_beverage_rounded;
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case DrinkType.water:
+        return const Color(0xFF6DAA7A); // Using a more earthy green from Notes screen meta
+      case DrinkType.coffee:
+        return _warmBrown;
+      case DrinkType.juice:
+        return const Color(0xFFD4A832); // Using a warm gold
+      case DrinkType.tea:
+        return _roseDeep;
+    }
+  }
+}
+
+class DrinkEntry {
+  final DrinkType type;
+  final int amount;
+  final DateTime timestamp;
+
+  DrinkEntry({required this.type, required this.amount, required this.timestamp});
+
+  Map<String, dynamic> toJson() => {
+        'type': type.name,
+        'amount': amount,
+        'timestamp': timestamp.toIso8601String(),
+      };
+
+  factory DrinkEntry.fromJson(Map<String, dynamic> json) => DrinkEntry(
+        type: DrinkType.values.firstWhere((e) => e.name == json['type']),
+        amount: json['amount'],
+        timestamp: DateTime.parse(json['timestamp']),
+      );
+}
 
 class WaterIntakeScreen extends StatefulWidget {
   const WaterIntakeScreen({super.key});
@@ -9,138 +74,488 @@ class WaterIntakeScreen extends StatefulWidget {
   State<WaterIntakeScreen> createState() => _WaterIntakeScreenState();
 }
 
-class _WaterIntakeScreenState extends State<WaterIntakeScreen> {
+class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTickerProviderStateMixin {
   int _currentIntake = 0;
-  final int _dailyGoal = 2500; // ml
-  final String _todayKey = DateFormat('yyyy-MM-dd').format(DateTime.now());
+  final int _dailyGoal = 2500;
+  List<DrinkEntry> _history = [];
+  DrinkType _selectedType = DrinkType.water;
+  int _viewIndex = 0; // 0: Track, 1: History, 2: Chart
+  late AnimationController _fadeController;
+  late Animation<double> _fadeAnim;
 
   @override
   void initState() {
     super.initState();
-    _loadIntake();
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _loadData();
   }
 
-  Future<void> _loadIntake() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _currentIntake = prefs.getInt('water_$_todayKey') ?? 0;
-    });
+  @override
+  void dispose() {
+    _fadeController.dispose();
+    super.dispose();
   }
 
-  Future<void> _addWater(int amount) async {
+  Future<void> _loadData() async {
     final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getStringList('drink_history') ?? [];
+    
+    final loadedHistory = historyJson.map((e) => DrinkEntry.fromJson(json.decode(e))).toList();
+    
+    final today = DateFormat('yyyy-MM-dd').format(DateTime.now());
+    final todayIntake = loadedHistory
+        .where((e) => DateFormat('yyyy-MM-dd').format(e.timestamp) == today)
+        .fold(0, (sum, e) => sum + e.amount);
+
     setState(() {
-      _currentIntake += amount;
-      if (_currentIntake < 0) _currentIntake = 0;
+      _history = loadedHistory.reversed.toList();
+      _currentIntake = todayIntake;
     });
-    await prefs.setInt('water_$_todayKey', _currentIntake);
+    _fadeController.forward();
+  }
+
+  Future<void> _addDrink(int amount) async {
+    final entry = DrinkEntry(
+      type: _selectedType,
+      amount: amount,
+      timestamp: DateTime.now(),
+    );
+
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getStringList('drink_history') ?? [];
+    historyJson.add(json.encode(entry.toJson()));
+    await prefs.setStringList('drink_history', historyJson);
+
+    await _loadData();
+  }
+
+  Future<void> _deleteDrink(int index) async {
+    final prefs = await SharedPreferences.getInstance();
+    final historyJson = prefs.getStringList('drink_history') ?? [];
+    
+    final originalIndex = historyJson.length - 1 - index;
+    if (originalIndex >= 0 && originalIndex < historyJson.length) {
+      historyJson.removeAt(originalIndex);
+      await prefs.setStringList('drink_history', historyJson);
+      await _loadData();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final progress = (_currentIntake / _dailyGoal).clamp(0.0, 1.0);
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Hydration')),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text(
-                'Today\'s Intake',
-                style: TextStyle(fontSize: 20, color: Colors.white70),
-              ),
-              const SizedBox(height: 40),
-              Stack(
-                alignment: Alignment.center,
+      backgroundColor: _cream,
+      body: SafeArea(
+        child: Column(
+          children: [
+            // ── Header ──────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 24, 24, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  SizedBox(
-                    width: 250,
-                    height: 250,
-                    child: CircularProgressIndicator(
-                      value: progress,
-                      strokeWidth: 20,
-                      backgroundColor: Theme.of(context).colorScheme.surface,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        Color(0xFF12B76A),
-                      ),
-                      strokeCap: StrokeCap.round,
+                  Text(
+                    'Hydration',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 34,
+                      fontWeight: FontWeight.bold,
+                      color: _warmBrown,
                     ),
                   ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
+                  const SizedBox(height: 12),
+                  Row(
                     children: [
-                      Icon(
-                        Icons.water_drop_rounded,
-                        size: 48,
-                        color: const Color(0xFF12B76A).withOpacity(0.8),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        '$_currentIntake',
-                        style: const TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      Text(
-                        '/ $_dailyGoal ml',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.white.withOpacity(0.6),
-                        ),
-                      ),
+                      _buildTabButton(0, Icons.track_changes_rounded, 'Goal'),
+                      const SizedBox(width: 8),
+                      _buildTabButton(1, Icons.history_rounded, 'History'),
+                      const SizedBox(width: 8),
+                      _buildTabButton(2, Icons.bar_chart_rounded, 'Trends'),
                     ],
                   ),
                 ],
               ),
-              const SizedBox(height: 60),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  _buildWaterButton(
-                    context,
-                    -250,
-                    'Remove 250ml',
-                    Icons.remove,
-                  ),
-                  _buildWaterButton(context, 250, 'Add 250ml', Icons.add),
-                ],
+            ),
+
+            // ── Divider ────────────────────────────────────────────
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Divider(color: _roseDust.withOpacity(0.3), thickness: 1),
+            ),
+
+            // ── Body ───────────────────────────────────────────────
+            Expanded(
+              child: FadeTransition(
+                opacity: _fadeAnim,
+                child: _buildBody(),
               ),
-              const SizedBox(height: 20),
-              _buildWaterButton(context, 500, 'Add 500ml', Icons.local_drink),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
 
-  Widget _buildWaterButton(
-    BuildContext context,
-    int amount,
-    String label,
-    IconData icon,
-  ) {
-    return ElevatedButton.icon(
-      style: ElevatedButton.styleFrom(
-        backgroundColor: const Color(
-          0xFF12B76A,
-        ).withOpacity(amount > 0 ? 1 : 0.2),
-        foregroundColor: amount > 0 ? Colors.white : const Color(0xFF12B76A),
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        elevation: amount > 0 ? 8 : 0,
-        shadowColor: const Color(0xFF12B76A).withOpacity(0.5),
+  Widget _buildTabButton(int index, IconData icon, String label) {
+    final isSelected = _viewIndex == index;
+    return GestureDetector(
+      onTap: () => setState(() => _viewIndex = index),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: isSelected ? _roseDeep : Colors.transparent,
+          borderRadius: BorderRadius.circular(50),
+          border: Border.all(
+            color: isSelected ? _roseDeep : _champagne,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: isSelected ? Colors.white : _softBrown),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 12,
+                color: isSelected ? Colors.white : _softBrown,
+                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              ),
+            ),
+          ],
+        ),
       ),
-      onPressed: () => _addWater(amount),
-      icon: Icon(icon),
-      label: Text(
-        amount > 0 ? '+$amount ml' : '$amount ml',
-        style: const TextStyle(fontWeight: FontWeight.bold),
+    );
+  }
+
+  Widget _buildBody() {
+    switch (_viewIndex) {
+      case 0: return _buildTrackView();
+      case 1: return _buildHistoryView();
+      case 2: return _buildChartView();
+      default: return _buildTrackView();
+    }
+  }
+
+  Widget _buildTrackView() {
+    final progress = (_currentIntake / _dailyGoal).clamp(0.0, 1.0);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        children: [
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              SizedBox(
+                width: 200,
+                height: 200,
+                child: CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 12,
+                  backgroundColor: _champagne.withOpacity(0.5),
+                  valueColor: const AlwaysStoppedAnimation<Color>(_roseDeep),
+                  strokeCap: StrokeCap.round,
+                ),
+              ),
+              Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    'Today',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontStyle: FontStyle.italic,
+                      color: _softBrown,
+                    ),
+                  ),
+                  Text(
+                    '$_currentIntake',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      fontSize: 48,
+                      fontWeight: FontWeight.bold,
+                      color: _warmBrown,
+                    ),
+                  ),
+                  Text(
+                    'of $_dailyGoal ml',
+                    style: TextStyle(
+                      fontFamily: 'Georgia',
+                      color: _softBrown.withOpacity(0.6),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          const SizedBox(height: 48),
+          const Align(
+            alignment: Alignment.centerLeft,
+            child: Text(
+              'Select Beverage',
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: _warmBrown,
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: DrinkType.values.map((type) => _buildTypeChip(type)).toList(),
+          ),
+          const SizedBox(height: 48),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _buildAddButton(150),
+              _buildAddButton(250),
+              _buildAddButton(500),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTypeChip(DrinkType type) {
+    final isSelected = _selectedType == type;
+    return GestureDetector(
+      onTap: () => setState(() => _selectedType = type),
+      child: Column(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 200),
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: isSelected ? type.color.withOpacity(0.15) : _ivoryCard,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: isSelected ? type.color : _champagne,
+                width: 1.5,
+              ),
+              boxShadow: isSelected ? [
+                BoxShadow(
+                  color: type.color.withOpacity(0.2),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
+                )
+              ] : null,
+            ),
+            child: Icon(type.icon, color: isSelected ? type.color : _softBrown.withOpacity(0.5), size: 28),
+          ),
+          const SizedBox(height: 10),
+          Text(
+            type.label,
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              color: isSelected ? type.color : _softBrown,
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildAddButton(int amount) {
+    return ElevatedButton(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: _selectedType.color,
+        foregroundColor: Colors.white,
+        elevation: 0,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+      ),
+      onPressed: () => _addDrink(amount),
+      child: Text(
+        '+$amount ml',
+        style: const TextStyle(
+          fontFamily: 'Georgia',
+          fontWeight: FontWeight.bold,
+          fontSize: 15,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHistoryView() {
+    if (_history.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.history_rounded, size: 48, color: _champagne),
+            const SizedBox(height: 16),
+            Text(
+              'No history yet.',
+              style: TextStyle(fontFamily: 'Georgia', color: _softBrown, fontStyle: FontStyle.italic),
+            ),
+          ],
+        ),
+      );
+    }
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      itemCount: _history.length,
+      itemBuilder: (context, index) {
+        final entry = _history[index];
+        return Dismissible(
+          key: Key(entry.timestamp.toIso8601String() + index.toString()),
+          direction: DismissDirection.endToStart,
+          background: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            alignment: Alignment.centerRight,
+            padding: const EdgeInsets.only(right: 24),
+            decoration: BoxDecoration(
+              color: _roseDeep.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Icon(Icons.delete_outline_rounded, color: _roseDeep),
+          ),
+          onDismissed: (_) => _deleteDrink(index),
+          child: Container(
+            margin: const EdgeInsets.only(bottom: 12),
+            padding: const EdgeInsets.all(18),
+            decoration: BoxDecoration(
+              color: _ivoryCard,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(color: _champagne),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: entry.type.color.withOpacity(0.12),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(entry.type.icon, color: entry.type.color, size: 20),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        entry.type.label,
+                        style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, color: _warmBrown),
+                      ),
+                      Text(
+                        DateFormat('MMM d · h:mm a').format(entry.timestamp),
+                        style: TextStyle(fontFamily: 'Georgia', color: _softBrown, fontSize: 11, fontStyle: FontStyle.italic),
+                      ),
+                    ],
+                  ),
+                ),
+                Text(
+                  '${entry.amount} ml',
+                  style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, fontSize: 16, color: _warmBrown),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildChartView() {
+    final now = DateTime.now();
+    final List<double> dailyTotals = List.filled(7, 0.0);
+    final List<String> days = [];
+    double maxIntake = 3000.0;
+
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: 6 - i));
+      days.add(DateFormat('E').format(date));
+      final dateStr = DateFormat('yyyy-MM-dd').format(date);
+      
+      final total = _history
+          .where((e) => DateFormat('yyyy-MM-dd').format(e.timestamp) == dateStr)
+          .fold(0, (sum, e) => sum + e.amount);
+      dailyTotals[i] = total.toDouble();
+      if (dailyTotals[i] > maxIntake) maxIntake = dailyTotals[i] + 500;
+    }
+
+    return Padding(
+      padding: const EdgeInsets.all(28),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Last 7 Days',
+            style: TextStyle(fontFamily: 'Georgia', fontSize: 20, fontWeight: FontWeight.bold, color: _warmBrown),
+          ),
+          const SizedBox(height: 32),
+          Expanded(
+            child: BarChart(
+              BarChartData(
+                alignment: BarChartAlignment.spaceAround,
+                maxY: maxIntake,
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    getTooltipColor: (_) => _warmBrown,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      return BarTooltipItem(
+                        '${rod.toY.toInt()} ml',
+                        const TextStyle(color: Colors.white, fontFamily: 'Georgia', fontWeight: FontWeight.bold),
+                      );
+                    },
+                  ),
+                ),
+                titlesData: FlTitlesData(
+                  show: true,
+                  bottomTitles: AxisTitles(
+                    sideTitles: SideTitles(
+                      showTitles: true,
+                      getTitlesWidget: (value, meta) {
+                        return Padding(
+                          padding: const EdgeInsets.only(top: 8.0),
+                          child: Text(
+                            days[value.toInt()],
+                            style: TextStyle(color: _softBrown, fontSize: 11, fontFamily: 'Georgia'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                ),
+                gridData: const FlGridData(show: false),
+                borderData: FlBorderData(show: false),
+                barGroups: List.generate(7, (i) => BarChartGroupData(
+                  x: i,
+                  barRods: [
+                    BarChartRodData(
+                      toY: dailyTotals[i],
+                      color: _roseDeep,
+                      width: 18,
+                      borderRadius: BorderRadius.circular(6),
+                      backDrawRodData: BackgroundBarChartRodData(
+                        show: true,
+                        toY: maxIntake,
+                        color: _champagne.withOpacity(0.3),
+                      ),
+                    ),
+                  ],
+                )),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+        ],
       ),
     );
   }
