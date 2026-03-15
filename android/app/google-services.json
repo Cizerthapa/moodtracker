@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "928766414266",
+    "project_id": "mood-tracker-cizer-2026",
+    "storage_bucket": "mood-tracker-cizer-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:928766414266:android:dfff9f2995f18679936183",
+        "android_client_info": {
+          "package_name": "com.example.moodtrack"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAutaMRZUmyOtqZFxWnd3gpJD5iUVq19p8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
