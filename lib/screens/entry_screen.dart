@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'memories_screen.dart';
 import 'water_intake_screen.dart';
 import 'notes_screen.dart';
+import 'settings_screen.dart';
 
 // ─── Palette (Cream & Rose) ────────────────────────────────────────────────
 const _cream = Color(0xFFFDF6EE);
@@ -26,25 +27,54 @@ class EntryScreen extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // ── Header ──────────────────────────────────────────────
-              const Text(
-                'MoodTrack',
-                style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: _warmBrown,
-                  height: 1.1,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Treasuring your feelings, one step at a time.',
-                style: TextStyle(
-                  fontFamily: 'Georgia',
-                  fontStyle: FontStyle.italic,
-                  fontSize: 15,
-                  color: _softBrown,
-                ),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'MoodTrack',
+                          style: TextStyle(
+                            fontFamily: 'Georgia',
+                            fontSize: 40,
+                            fontWeight: FontWeight.bold,
+                            color: _warmBrown,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Treasuring your feelings, one step at a time.',
+                          style: TextStyle(
+                            fontFamily: 'Georgia',
+                            fontStyle: FontStyle.italic,
+                            fontSize: 15,
+                            color: _softBrown,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => const SettingsScreen()),
+                      );
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: _ivoryCard,
+                        shape: BoxShape.circle,
+                        border: Border.all(color: _champagne),
+                      ),
+                      child: const Icon(Icons.settings_rounded, color: _warmBrown, size: 24),
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 48),
 
