@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/notification_service.dart';
-
-// ─── Palette (Cream & Rose) ────────────────────────────────────────────────
-const _cream = Color(0xFFFDF6EE);
-const _roseDust = Color(0xFFE8A598);
-const _roseDeep = Color(0xFFC4635A);
-const _warmBrown = Color(0xFF5C3D2E);
-const _softBrown = Color(0xFF8C6050);
-const _champagne = Color(0xFFF0DDD0);
-const _ivoryCard = Color(0xFFFAF0E8);
+import 'package:moodtrack/theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -60,7 +52,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _cream,
+      backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Column(
           children: [
@@ -74,11 +66,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Container(
                       padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: _ivoryCard,
+                        color: AppColors.ivoryCard,
                         shape: BoxShape.circle,
-                        border: Border.all(color: _champagne),
+                        border: Border.all(color: AppColors.champagne),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: _warmBrown),
+                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.warmBrown),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -88,7 +80,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontFamily: 'Georgia',
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                     ),
                   ),
                 ],
@@ -98,7 +90,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ── Divider ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Divider(color: _roseDust.withOpacity(0.3), thickness: 1),
+              child: Divider(color: AppColors.roseDust.withOpacity(0.3), thickness: 1),
             ),
 
             // ── Content ──────────────────────────────────────────────
@@ -111,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Daily morning, night & periodic alerts',
                     trailing: Switch.adaptive(
                       value: _notificationsEnabled,
-                      activeColor: _roseDeep,
+                      activeColor: AppColors.roseDeep,
                       onChanged: _toggleNotifications,
                     ),
                   ),
@@ -119,7 +111,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSettingTile(
                     title: 'Test Notification',
                     subtitle: 'Send an instant notification',
-                    trailing: Icon(Icons.notifications_active_rounded, color: _roseDeep),
+                    trailing: Icon(Icons.notifications_active_rounded, color: AppColors.roseDeep),
                     onTap: () async {
                       await _notificationService.showInstantNotification(
                         'Test Success! 🎉',
@@ -141,7 +133,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
-                      color: _softBrown.withOpacity(0.6),
+                      color: AppColors.softBrown.withOpacity(0.6),
                       fontSize: 14,
                     ),
                   ),
@@ -151,7 +143,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontWeight: FontWeight.bold,
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                       fontSize: 18,
                     ),
                   ),
@@ -175,9 +167,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: _ivoryCard,
+          color: AppColors.ivoryCard,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: _champagne),
+          border: Border.all(color: AppColors.champagne),
         ),
         child: Row(
           children: [
@@ -191,7 +183,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontFamily: 'Georgia',
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -200,7 +192,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 12,
-                      color: _softBrown,
+                      color: AppColors.softBrown,
                     ),
                   ),
                 ],

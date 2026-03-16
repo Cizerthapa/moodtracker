@@ -3,15 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
-
-// ─── Palette (Cream & Rose) ────────────────────────────────────────────────
-const _cream = Color(0xFFFDF6EE);
-const _roseDust = Color(0xFFE8A598);
-const _roseDeep = Color(0xFFC4635A);
-const _warmBrown = Color(0xFF5C3D2E);
-const _softBrown = Color(0xFF8C6050);
-const _champagne = Color(0xFFF0DDD0);
-const _ivoryCard = Color(0xFFFAF0E8);
+import 'package:moodtrack/theme/app_colors.dart';
 
 enum DrinkType {
   water,
@@ -38,11 +30,11 @@ enum DrinkType {
       case DrinkType.water:
         return const Color(0xFF6DAA7A); // Using a more earthy green from Notes screen meta
       case DrinkType.coffee:
-        return _warmBrown;
+        return AppColors.warmBrown;
       case DrinkType.juice:
         return const Color(0xFFD4A832); // Using a warm gold
       case DrinkType.tea:
-        return _roseDeep;
+        return AppColors.roseDeep;
     }
   }
 }
@@ -148,7 +140,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _cream,
+      backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Column(
           children: [
@@ -164,7 +156,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                       fontFamily: 'Georgia',
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -184,7 +176,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             // ── Divider ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Divider(color: _roseDust.withOpacity(0.3), thickness: 1),
+              child: Divider(color: AppColors.roseDust.withOpacity(0.3), thickness: 1),
             ),
 
             // ── Body ───────────────────────────────────────────────
@@ -208,23 +200,23 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? _roseDeep : Colors.transparent,
+          color: isSelected ? AppColors.roseDeep : Colors.transparent,
           borderRadius: BorderRadius.circular(50),
           border: Border.all(
-            color: isSelected ? _roseDeep : _champagne,
+            color: isSelected ? AppColors.roseDeep : AppColors.champagne,
           ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.white : _softBrown),
+            Icon(icon, size: 14, color: isSelected ? Colors.white : AppColors.softBrown),
             const SizedBox(width: 6),
             Text(
               label,
               style: TextStyle(
                 fontFamily: 'Georgia',
                 fontSize: 12,
-                color: isSelected ? Colors.white : _softBrown,
+                color: isSelected ? Colors.white : AppColors.softBrown,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
             ),
@@ -258,8 +250,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 child: CircularProgressIndicator(
                   value: progress,
                   strokeWidth: 12,
-                  backgroundColor: _champagne.withOpacity(0.5),
-                  valueColor: const AlwaysStoppedAnimation<Color>(_roseDeep),
+                  backgroundColor: AppColors.champagne.withOpacity(0.5),
+                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.roseDeep),
                   strokeCap: StrokeCap.round,
                 ),
               ),
@@ -271,7 +263,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
-                      color: _softBrown,
+                      color: AppColors.softBrown,
                     ),
                   ),
                   Text(
@@ -280,14 +272,14 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                       fontFamily: 'Georgia',
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                     ),
                   ),
                   Text(
                     'of $_dailyGoal ml',
                     style: TextStyle(
                       fontFamily: 'Georgia',
-                      color: _softBrown.withOpacity(0.6),
+                      color: AppColors.softBrown.withOpacity(0.6),
                     ),
                   ),
                 ],
@@ -303,7 +295,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 fontFamily: 'Georgia',
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: _warmBrown,
+                color: AppColors.warmBrown,
               ),
             ),
           ),
@@ -336,10 +328,10 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             duration: const Duration(milliseconds: 200),
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: isSelected ? type.color.withOpacity(0.15) : _ivoryCard,
+              color: isSelected ? type.color.withOpacity(0.15) : AppColors.ivoryCard,
               shape: BoxShape.circle,
               border: Border.all(
-                color: isSelected ? type.color : _champagne,
+                color: isSelected ? type.color : AppColors.champagne,
                 width: 1.5,
               ),
               boxShadow: isSelected ? [
@@ -350,14 +342,14 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 )
               ] : null,
             ),
-            child: Icon(type.icon, color: isSelected ? type.color : _softBrown.withOpacity(0.5), size: 28),
+            child: Icon(type.icon, color: isSelected ? type.color : AppColors.softBrown.withOpacity(0.5), size: 28),
           ),
           const SizedBox(height: 10),
           Text(
             type.label,
             style: TextStyle(
               fontFamily: 'Georgia',
-              color: isSelected ? type.color : _softBrown,
+              color: isSelected ? type.color : AppColors.softBrown,
               fontSize: 12,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
@@ -394,11 +386,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.history_rounded, size: 48, color: _champagne),
+            Icon(Icons.history_rounded, size: 48, color: AppColors.champagne),
             const SizedBox(height: 16),
             Text(
               'No history yet.',
-              style: TextStyle(fontFamily: 'Georgia', color: _softBrown, fontStyle: FontStyle.italic),
+              style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontStyle: FontStyle.italic),
             ),
           ],
         ),
@@ -417,19 +409,19 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             alignment: Alignment.centerRight,
             padding: const EdgeInsets.only(right: 24),
             decoration: BoxDecoration(
-              color: _roseDeep.withOpacity(0.1),
+              color: AppColors.roseDeep.withOpacity(0.1),
               borderRadius: BorderRadius.circular(20),
             ),
-            child: const Icon(Icons.delete_outline_rounded, color: _roseDeep),
+            child: const Icon(Icons.delete_outline_rounded, color: AppColors.roseDeep),
           ),
           onDismissed: (_) => _deleteDrink(index),
           child: Container(
             margin: const EdgeInsets.only(bottom: 12),
             padding: const EdgeInsets.all(18),
             decoration: BoxDecoration(
-              color: _ivoryCard,
+              color: AppColors.ivoryCard,
               borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: _champagne),
+              border: Border.all(color: AppColors.champagne),
             ),
             child: Row(
               children: [
@@ -448,18 +440,18 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                     children: [
                       Text(
                         entry.type.label,
-                        style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, color: _warmBrown),
+                        style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, color: AppColors.warmBrown),
                       ),
                       Text(
                         DateFormat('MMM d · h:mm a').format(entry.timestamp),
-                        style: TextStyle(fontFamily: 'Georgia', color: _softBrown, fontSize: 11, fontStyle: FontStyle.italic),
+                        style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontSize: 11, fontStyle: FontStyle.italic),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   '${entry.amount} ml',
-                  style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, fontSize: 16, color: _warmBrown),
+                  style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.warmBrown),
                 ),
               ],
             ),
@@ -494,7 +486,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         children: [
           Text(
             'Last 7 Days',
-            style: TextStyle(fontFamily: 'Georgia', fontSize: 20, fontWeight: FontWeight.bold, color: _warmBrown),
+            style: TextStyle(fontFamily: 'Georgia', fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.warmBrown),
           ),
           const SizedBox(height: 32),
           Expanded(
@@ -504,7 +496,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 maxY: maxIntake,
                 barTouchData: BarTouchData(
                   touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => _warmBrown,
+                    getTooltipColor: (_) => AppColors.warmBrown,
                     getTooltipItem: (group, groupIndex, rod, rodIndex) {
                       return BarTooltipItem(
                         '${rod.toY.toInt()} ml',
@@ -523,7 +515,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             days[value.toInt()],
-                            style: TextStyle(color: _softBrown, fontSize: 11, fontFamily: 'Georgia'),
+                            style: TextStyle(color: AppColors.softBrown, fontSize: 11, fontFamily: 'Georgia'),
                           ),
                         );
                       },
@@ -540,13 +532,13 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                   barRods: [
                     BarChartRodData(
                       toY: dailyTotals[i],
-                      color: _roseDeep,
+                      color: AppColors.roseDeep,
                       width: 18,
                       borderRadius: BorderRadius.circular(6),
                       backDrawRodData: BackgroundBarChartRodData(
                         show: true,
                         toY: maxIntake,
-                        color: _champagne.withOpacity(0.3),
+                        color: AppColors.champagne.withOpacity(0.3),
                       ),
                     ),
                   ],

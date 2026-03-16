@@ -1,15 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'memory_detail_screen.dart';
-
-// ─── Palette (matches MemoryDetailScreen) ──────────────────────────────────
-const _cream = Color(0xFFFDF6EE);
-const _roseDust = Color(0xFFE8A598);
-const _roseDeep = Color(0xFFC4635A);
-const _warmBrown = Color(0xFF5C3D2E);
-const _softBrown = Color(0xFF8C6050);
-const _champagne = Color(0xFFF0DDD0);
-const _ivoryCard = Color(0xFFFAF0E8);
+import 'package:moodtrack/theme/app_colors.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -132,7 +124,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _cream,
+      backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,7 +145,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                             fontFamily: 'Georgia',
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
-                            color: _warmBrown,
+                            color: AppColors.warmBrown,
                             height: 1.1,
                           ),
                         ),
@@ -163,7 +155,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                             Icon(
                               Icons.favorite_rounded,
                               size: 12,
-                              color: _roseDust,
+                              color: AppColors.roseDust,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -172,7 +164,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                                 fontFamily: 'Georgia',
                                 fontStyle: FontStyle.italic,
                                 fontSize: 13,
-                                color: _softBrown,
+                                color: AppColors.softBrown,
                               ),
                             ),
                           ],
@@ -187,11 +179,11 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: _roseDeep,
+                        color: AppColors.roseDeep,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _roseDeep.withOpacity(0.3),
+                            color: AppColors.roseDeep.withOpacity(0.3),
                             blurRadius: 14,
                             offset: const Offset(0, 4),
                           ),
@@ -215,7 +207,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                 children: [
                   Expanded(
                     child: Divider(
-                      color: _roseDust.withOpacity(0.4),
+                      color: AppColors.roseDust.withOpacity(0.4),
                       thickness: 1,
                     ),
                   ),
@@ -224,12 +216,12 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                     child: Icon(
                       Icons.favorite,
                       size: 10,
-                      color: _roseDust.withOpacity(0.7),
+                      color: AppColors.roseDust.withOpacity(0.7),
                     ),
                   ),
                   Expanded(
                     child: Divider(
-                      color: _roseDust.withOpacity(0.4),
+                      color: AppColors.roseDust.withOpacity(0.4),
                       thickness: 1,
                     ),
                   ),
@@ -242,7 +234,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
               child: _isLoading
                   ? Center(
                       child: CircularProgressIndicator(
-                        color: _roseDust,
+                        color: AppColors.roseDust,
                         strokeWidth: 2,
                       ),
                     )
@@ -257,7 +249,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                           if (!snapshot.hasData) {
                             return Center(
                               child: CircularProgressIndicator(
-                                color: _roseDust,
+                                color: AppColors.roseDust,
                                 strokeWidth: 2,
                               ),
                             );
@@ -368,17 +360,17 @@ class _MemoryCardState extends State<_MemoryCard>
         child: Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: isUnique ? const Color(0xFFFFF0EC) : _ivoryCard,
+            color: isUnique ? const Color(0xFFFFF0EC) : AppColors.ivoryCard,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isUnique ? _roseDeep.withOpacity(0.35) : _champagne,
+              color: isUnique ? AppColors.roseDeep.withOpacity(0.35) : AppColors.champagne,
               width: isUnique ? 1.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isUnique
-                    ? _roseDeep.withOpacity(0.07)
-                    : _warmBrown.withOpacity(0.05),
+                    ? AppColors.roseDeep.withOpacity(0.07)
+                    : AppColors.warmBrown.withOpacity(0.05),
                 blurRadius: 12,
                 offset: const Offset(0, 3),
               ),
@@ -393,12 +385,12 @@ class _MemoryCardState extends State<_MemoryCard>
                   width: 38,
                   height: 38,
                   decoration: BoxDecoration(
-                    color: isUnique ? _roseDeep.withOpacity(0.12) : _champagne,
+                    color: isUnique ? AppColors.roseDeep.withOpacity(0.12) : AppColors.champagne,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     isUnique ? Icons.star_rounded : Icons.favorite_rounded,
-                    color: isUnique ? _roseDeep : _roseDust,
+                    color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
                     size: 18,
                   ),
                 ),
@@ -415,7 +407,7 @@ class _MemoryCardState extends State<_MemoryCard>
                           fontFamily: 'Georgia',
                           fontStyle: FontStyle.italic,
                           fontSize: 11,
-                          color: isUnique ? _roseDeep : _softBrown,
+                          color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -426,7 +418,7 @@ class _MemoryCardState extends State<_MemoryCard>
                           fontFamily: 'Georgia',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: _warmBrown,
+                          color: AppColors.warmBrown,
                         ),
                       ),
                     ],
@@ -436,7 +428,7 @@ class _MemoryCardState extends State<_MemoryCard>
                 // Arrow
                 Icon(
                   Icons.chevron_right_rounded,
-                  color: isUnique ? _roseDeep : _roseDust,
+                  color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
                   size: 20,
                 ),
               ],
@@ -465,7 +457,7 @@ class _EmptyState extends StatelessWidget {
             Icon(
               Icons.favorite_border_rounded,
               size: 52,
-              color: _roseDust.withOpacity(0.5),
+              color: AppColors.roseDust.withOpacity(0.5),
             ),
             const SizedBox(height: 18),
             const Text(
@@ -474,7 +466,7 @@ class _EmptyState extends StatelessWidget {
                 fontFamily: 'Georgia',
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: _warmBrown,
+                color: AppColors.warmBrown,
               ),
             ),
             const SizedBox(height: 10),
@@ -485,7 +477,7 @@ class _EmptyState extends StatelessWidget {
                 fontFamily: 'Georgia',
                 fontStyle: FontStyle.italic,
                 fontSize: 14,
-                color: _softBrown,
+                color: AppColors.softBrown,
                 height: 1.6,
               ),
             ),
@@ -498,11 +490,11 @@ class _EmptyState extends StatelessWidget {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  color: _roseDeep,
+                  color: AppColors.roseDeep,
                   borderRadius: BorderRadius.circular(50),
                   boxShadow: [
                     BoxShadow(
-                      color: _roseDeep.withOpacity(0.3),
+                      color: AppColors.roseDeep.withOpacity(0.3),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),
