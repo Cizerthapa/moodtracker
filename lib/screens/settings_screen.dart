@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:moodtrack/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../services/notification_service.dart';
-import 'package:moodtrack/theme/app_colors.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -39,7 +39,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _notificationService.startPeriodicNotifications();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Notifications turned on! (30s interval for 15m)')),
+          const SnackBar(
+            content: Text('Notifications turned on! (30s interval for 15m)'),
+          ),
         );
       }
     } else {
@@ -74,7 +76,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         shape: BoxShape.circle,
                         border: Border.all(color: AppColors.champagne),
                       ),
-                      child: const Icon(Icons.arrow_back_ios_new_rounded, size: 18, color: AppColors.warmBrown),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new_rounded,
+                        size: 18,
+                        color: AppColors.warmBrown,
+                      ),
                     ),
                   ),
                   const SizedBox(width: 20),
@@ -94,7 +100,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ── Divider ────────────────────────────────────────────
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 28),
-              child: Divider(color: AppColors.roseDust.withOpacity(0.3), thickness: 1),
+              child: Divider(
+                color: AppColors.roseDust.withOpacity(0.3),
+                thickness: 1,
+              ),
             ),
 
             // ── Content ──────────────────────────────────────────────
@@ -115,7 +124,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   _buildSettingTile(
                     title: 'Test Notification',
                     subtitle: 'Send an instant notification',
-                    trailing: Icon(Icons.notifications_active_rounded, color: AppColors.roseDeep),
+                    trailing: Icon(
+                      Icons.notifications_active_rounded,
+                      color: AppColors.roseDeep,
+                    ),
                     onTap: () async {
                       await _notificationService.showInstantNotification(
                         'Test Success! 🎉',
