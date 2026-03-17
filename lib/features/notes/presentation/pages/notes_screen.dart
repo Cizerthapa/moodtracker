@@ -4,6 +4,7 @@ import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
+import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
 final _moods = [
@@ -26,6 +27,7 @@ class _NotesScreenState extends State<NotesScreen>
     with SingleTickerProviderStateMixin {
   final NotesRepository _repository = NotesRepository();
   List<Map<String, dynamic>> _notes = [];
+  bool _isLoading = true;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
 
@@ -47,11 +49,15 @@ class _NotesScreenState extends State<NotesScreen>
   }
 
   Future<void> _loadNotes() async {
+    setState(() => _isLoading = true);
     final notes = await _repository.getNotes();
-    setState(() {
-      _notes = notes;
-    });
-    _fadeController.forward();
+    if (mounted) {
+      setState(() {
+        _notes = notes;
+        _isLoading = false;
+      });
+      _fadeController.forward();
+    }
   }
 
   Future<void> _saveNote(String text, String emoji) async {
@@ -386,23 +392,38 @@ class _NotesScreenState extends State<NotesScreen>
 
             // ── Notes list ────────────────────────────────────────────
             Expanded(
-              child: _notes.isEmpty
-                  ? _EmptyState(onAdd: _showAddNoteSheet)
-                  : FadeTransition(
-                      opacity: _fadeAnim,
-                      child: ListView.builder(
-                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                        itemCount: _notes.length,
-                        itemBuilder: (context, index) {
-                          final note = _notes[index];
-                          return _NoteCard(
-                            note: note,
-                            moodMeta: _moodMeta(note['mood'] ?? '😐'),
-                            onDelete: () => _deleteNote(note['id']),
-                          );
-                        },
+              child: _isLoading
+                  ? ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                      itemCount: 4,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.only(bottom: 12),
+                        child: ShimmerLoading(
+                          isLoading: true,
+                          child: ShimmerSkeleton(
+                            height: 120,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
                       ),
-                    ),
+                    )
+                  : _notes.isEmpty
+                      ? _EmptyState(onAdd: _showAddNoteSheet)
+                      : FadeTransition(
+                          opacity: _fadeAnim,
+                          child: ListView.builder(
+                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                            itemCount: _notes.length,
+                            itemBuilder: (context, index) {
+                              final note = _notes[index];
+                              return _NoteCard(
+                                note: note,
+                                moodMeta: _moodMeta(note['mood'] ?? '😐'),
+                                onDelete: () => _deleteNote(note['id']),
+                              );
+                            },
+                          ),
+                        ),
             ),
           ],
         ),

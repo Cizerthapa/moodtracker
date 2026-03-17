@@ -5,6 +5,7 @@ import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -120,10 +121,18 @@ class _MemoriesScreenState extends State<MemoriesScreen>
             const _HeartDivider(),
             Expanded(
               child: _isLoading
-                  ? const Center(
-                      child: CircularProgressIndicator(
-                        color: AppColors.roseDust,
-                        strokeWidth: 2,
+                  ? ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                      itemCount: 5,
+                      itemBuilder: (context, index) => Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ShimmerLoading(
+                          isLoading: true,
+                          child: ShimmerSkeleton(
+                            height: 100,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
                       ),
                     )
                   : FadeTransition(
@@ -132,10 +141,18 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                         stream: _repository.getMemoriesStream(),
                         builder: (context, snapshot) {
                           if (!snapshot.hasData && _memories.isEmpty) {
-                            return const Center(
-                              child: CircularProgressIndicator(
-                                color: AppColors.roseDust,
-                                strokeWidth: 2,
+                            return ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                              itemCount: 5,
+                              itemBuilder: (context, index) => Padding(
+                                padding: const EdgeInsets.only(bottom: 12),
+                                child: ShimmerLoading(
+                                  isLoading: true,
+                                  child: ShimmerSkeleton(
+                                    height: 100,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                ),
                               ),
                             );
                           }

@@ -6,6 +6,7 @@ import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
+import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 
 enum DrinkType {
   water,
@@ -74,6 +75,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
   final int _dailyGoal = AppConstants.defaultDailyWaterGoal;
   List<DrinkEntry> _history = [];
   DrinkType _selectedType = DrinkType.water;
+  bool _isLoading = true;
   int _viewIndex = 0; // 0: Track, 1: History, 2: Chart
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
@@ -96,6 +98,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
   }
 
   Future<void> _loadData() async {
+    setState(() => _isLoading = true);
     final historyJson = await _repository.getDrinkHistoryStrings();
     
     final loadedHistory = historyJson.map((e) => DrinkEntry.fromJson(json.decode(e))).toList();
@@ -105,11 +108,14 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         .where((e) => DateFormat('yyyy-MM-dd').format(e.timestamp) == today)
         .fold(0, (sum, e) => sum + e.amount);
 
-    setState(() {
-      _history = loadedHistory.reversed.toList();
-      _currentIntake = todayIntake;
-    });
-    _fadeController.forward();
+    if (mounted) {
+      setState(() {
+        _history = loadedHistory.reversed.toList();
+        _currentIntake = todayIntake;
+        _isLoading = false;
+      });
+      _fadeController.forward();
+    }
   }
 
   Future<void> _addDrink(int amount) async {
@@ -175,10 +181,35 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
 
             // ── Body ───────────────────────────────────────────────
             Expanded(
-              child: FadeTransition(
-                opacity: _fadeAnim,
-                child: _buildBody(),
-              ),
+              child: _isLoading
+                  ? Padding(
+                      padding: const EdgeInsets.all(28.0),
+                      child: Column(
+                        children: [
+                          ShimmerLoading(
+                            isLoading: true,
+                            child: const ShimmerSkeleton(height: 200, width: 200),
+                          ),
+                          const SizedBox(height: 48),
+                          ShimmerLoading(
+                            isLoading: true,
+                            child: const ShimmerSkeleton(height: 100),
+                          ),
+                          const SizedBox(height: 48),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: List.generate(3, (i) => ShimmerLoading(
+                              isLoading: true,
+                              child: const ShimmerSkeleton(height: 50, width: 80),
+                            )),
+                          )
+                        ],
+                      ),
+                    )
+                  : FadeTransition(
+                      opacity: _fadeAnim,
+                      child: _buildBody(),
+                    ),
             ),
           ],
         ),
