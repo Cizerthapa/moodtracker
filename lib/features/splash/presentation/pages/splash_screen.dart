@@ -1,6 +1,9 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/entry/presentation/pages/entry_screen.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
@@ -13,34 +16,12 @@ class SplashScreen extends StatefulWidget {
   State<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-
+class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     super.initState();
+    HapticFeedback.mediumImpact();
 
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 1500),
-    );
-
-    _scaleAnimation = Tween<double>(
-      begin: 0.8,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutBack));
-
-    _opacityAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeIn));
-
-    _controller.forward();
-
-    // Navigate to EntryScreen after a delay
     Timer(const Duration(seconds: AppConstants.splashDelaySeconds), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
@@ -49,9 +30,10 @@ class _SplashScreenState extends State<SplashScreen>
                 const EntryScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-                  return FadeTransition(opacity: animation, child: child);
-                },
-            transitionDuration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
+              return FadeTransition(opacity: animation, child: child);
+            },
+            transitionDuration: const Duration(
+                milliseconds: AppConstants.fadeTransitionDurationMs),
           ),
         );
       }
@@ -59,75 +41,97 @@ class _SplashScreenState extends State<SplashScreen>
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.cream,
       body: Center(
-        child: AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return FadeTransition(
-              opacity: _opacityAnimation,
-              child: ScaleTransition(
-                scale: _scaleAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Cute Icon or Heart
-                    Container(
-                      padding: EdgeInsets.all(20.r),
-                      decoration: BoxDecoration(
-                        color: AppColors.roseDust.withValues(alpha: 0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        Icons.favorite_rounded,
-                        color: AppColors.roseDeep,
-                        size: 60.r,
-                      ),
-                    ),
-                    SizedBox(height: 24.h),
-                    // Welcome Message
-                    Text(
-                      AppStrings.welcomeBack,
-                      style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontStyle: FontStyle.italic,
-                        fontSize: 22.sp,
-                        color: AppColors.softBrown,
-                      ),
-                    ),
-                    SizedBox(height: 8.h),
-                    Text(
-                      AppStrings.userName,
-                      style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontSize: 36.sp,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.warmBrown,
-                      ),
-                    ),
-                    SizedBox(height: 16.h),
-                    Text(
-                      AppStrings.trackMoodToday,
-                      style: TextStyle(
-                        fontFamily: 'Georgia',
-                        fontStyle: FontStyle.italic,
-                        fontSize: 14.sp,
-                        color: AppColors.softBrown.withValues(alpha: 0.8),
-                      ),
-                    ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // ── Animated Icon ──────────────────────────────────────
+            Container(
+              padding: EdgeInsets.all(24.r),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppColors.roseDeep.withValues(alpha: 0.15),
+                    AppColors.roseDust.withValues(alpha: 0.08),
                   ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
                 ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.roseDeep.withValues(alpha: 0.15),
+                    blurRadius: 40.r,
+                    spreadRadius: 5.r,
+                  ),
+                ],
               ),
-            );
-          },
+              child: Icon(
+                Icons.favorite_rounded,
+                color: AppColors.roseDeep,
+                size: 64.r,
+              ),
+            )
+                .animate()
+                .scale(
+                  begin: const Offset(0.5, 0.5),
+                  end: const Offset(1.0, 1.0),
+                  duration: 800.ms,
+                  curve: Curves.elasticOut,
+                )
+                .fadeIn(duration: 600.ms),
+
+            SizedBox(height: 32.h),
+
+            // ── Welcome Text ────────────────────────────────────────
+            Text(
+              AppStrings.welcomeBack,
+              style: GoogleFonts.outfit(
+                fontStyle: FontStyle.italic,
+                fontSize: 20.sp,
+                color: AppColors.softBrown,
+                fontWeight: FontWeight.w400,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 300.ms, duration: 600.ms)
+                .slideY(begin: 0.3, end: 0, delay: 300.ms, duration: 600.ms),
+
+            SizedBox(height: 8.h),
+
+            // ── Name ──────────────────────────────────────────────
+            Text(
+              AppStrings.userName,
+              style: GoogleFonts.outfit(
+                fontSize: 38.sp,
+                fontWeight: FontWeight.w800,
+                color: AppColors.warmBrown,
+                letterSpacing: -0.5,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 500.ms, duration: 600.ms)
+                .slideY(begin: 0.3, end: 0, delay: 500.ms, duration: 600.ms),
+
+            SizedBox(height: 20.h),
+
+            // ── Subtitle ────────────────────────────────────────────
+            Text(
+              AppStrings.trackMoodToday,
+              style: GoogleFonts.outfit(
+                fontStyle: FontStyle.italic,
+                fontSize: 14.sp,
+                color: AppColors.softBrown.withValues(alpha: 0.7),
+                fontWeight: FontWeight.w300,
+              ),
+            )
+                .animate()
+                .fadeIn(delay: 700.ms, duration: 600.ms)
+                .slideY(begin: 0.3, end: 0, delay: 700.ms, duration: 600.ms),
+          ],
         ),
       ),
     );

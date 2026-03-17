@@ -52,6 +52,8 @@ dependencies:
   firebase_storage: any
   flutter_screenutil: ^5.9.3
   provider: ^6.1.5+1
+  flutter_animate: ^4.5.2
+  google_fonts: ^8.0.2
 
 dev_dependencies:
   flutter_test:

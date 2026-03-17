@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
@@ -145,41 +148,26 @@ class _MemoriesScreenState extends State<MemoriesScreen>
             _Header(onAdd: _showAddMemorySheet),
             // Search Bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 8, 28, 12),
+              padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 12.h),
               child: TextField(
                 controller: _searchController,
                 onChanged: (val) => setState(() => _searchQuery = val),
+                style: GoogleFonts.outfit(fontSize: 14.sp, color: AppColors.warmBrown),
                 decoration: InputDecoration(
                   hintText: "Search memories...",
-                  hintStyle: TextStyle(
-                    fontFamily: 'Georgia',
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.softBrown.withValues(alpha: 0.5),
-                  ),
-                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust, size: 20.r),
                   suffixIcon: _searchQuery.isNotEmpty 
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        icon: Icon(Icons.clear_rounded, size: 18.r),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = "");
                         },
                       )
                     : null,
-                  filled: true,
-                  fillColor: AppColors.ivoryCard,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.champagne),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.champagne),
-                  ),
                 ),
               ),
-            ),
+            ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
             const _HeartDivider(),
             Expanded(
               child: _isLoading
@@ -292,7 +280,7 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(28, 24, 24, 8),
+      padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 8.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
@@ -302,15 +290,15 @@ class _Header extends StatelessWidget {
               children: [
                 Text(
                   AppStrings.ourStoryHeader,
-                  style: TextStyle(
-                    fontFamily: 'Georgia',
+                  style: GoogleFonts.outfit(
                     fontSize: 34.sp,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.warmBrown,
                     height: 1.1,
+                    letterSpacing: -0.8,
                   ),
                 ),
-                const SizedBox(height: 4),
+                SizedBox(height: 6.h),
                 Row(
                   children: [
                     Icon(
@@ -321,11 +309,11 @@ class _Header extends StatelessWidget {
                     SizedBox(width: 6.w),
                     Text(
                       AppStrings.ourStorySlogan,
-                      style: TextStyle(
-                        fontFamily: 'Georgia',
+                      style: GoogleFonts.outfit(
                         fontStyle: FontStyle.italic,
                         fontSize: 13.sp,
                         color: AppColors.softBrown,
+                        fontWeight: FontWeight.w300,
                       ),
                     ),
                   ],
@@ -334,18 +322,25 @@ class _Header extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: onAdd,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onAdd();
+            },
             child: Container(
-              width: 46.r,
-              height: 46.r,
+              width: 48.r,
+              height: 48.r,
               decoration: BoxDecoration(
-                color: AppColors.roseDeep,
+                gradient: LinearGradient(
+                  colors: [AppColors.roseDeep, AppColors.roseDust],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.roseDeep.withValues(alpha: 0.3),
-                    blurRadius: 14.r,
-                    offset: Offset(0, 4.h),
+                    color: AppColors.roseDeep.withValues(alpha: 0.35),
+                    blurRadius: 16.r,
+                    offset: Offset(0, 6.h),
                   ),
                 ],
               ),
@@ -358,7 +353,7 @@ class _Header extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.15, end: 0, duration: 500.ms);
   }
 }
 
@@ -448,27 +443,34 @@ class _MemoryCardState extends State<_MemoryCard>
       onTapDown: (_) => _pressController.forward(),
       onTapUp: (_) {
         _pressController.reverse();
+        HapticFeedback.lightImpact();
         widget.onTap();
       },
       onTapCancel: () => _pressController.reverse(),
       child: ScaleTransition(
         scale: _scaleAnim,
         child: Container(
-          margin: EdgeInsets.only(bottom: 12.h),
+          margin: EdgeInsets.only(bottom: 14.h),
           decoration: BoxDecoration(
-            color: isUnique ? const Color(0xFFFFF0EC) : AppColors.ivoryCard,
+            gradient: LinearGradient(
+              colors: isUnique
+                  ? [const Color(0xFFFFF0EC), AppColors.roseDeep.withValues(alpha: 0.04)]
+                  : [AppColors.ivoryCard, AppColors.ivoryCard],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.35) : AppColors.champagne,
+              color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.3) : AppColors.champagne,
               width: isUnique ? 1.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isUnique
-                    ? AppColors.roseDeep.withValues(alpha: 0.07)
-                    : AppColors.warmBrown.withValues(alpha: 0.05),
-                blurRadius: 12.r,
-                offset: Offset(0, 3.h),
+                    ? AppColors.roseDeep.withValues(alpha: 0.1)
+                    : AppColors.warmBrown.withValues(alpha: 0.06),
+                blurRadius: 16.r,
+                offset: Offset(0, 4.h),
               ),
             ],
           ),
@@ -478,10 +480,16 @@ class _MemoryCardState extends State<_MemoryCard>
               children: [
                 // Icon dot
                 Container(
-                  width: 38.r,
-                  height: 38.r,
+                  width: 40.r,
+                  height: 40.r,
                   decoration: BoxDecoration(
-                    color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.12) : AppColors.champagne,
+                    gradient: LinearGradient(
+                      colors: isUnique
+                          ? [AppColors.roseDeep.withValues(alpha: 0.15), AppColors.roseDeep.withValues(alpha: 0.06)]
+                          : [AppColors.champagne, AppColors.champagne.withValues(alpha: 0.6)],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -497,23 +505,21 @@ class _MemoryCardState extends State<_MemoryCard>
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                        Text(
-                          description,
-                          style: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontStyle: FontStyle.italic,
-                            fontSize: 11.sp,
-                            color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Text(
+                        description,
+                        style: GoogleFonts.outfit(
+                          fontStyle: FontStyle.italic,
+                          fontSize: 11.sp,
+                          color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
+                          fontWeight: FontWeight.w500,
                         ),
-                        SizedBox(height: 3.h),
+                      ),
+                      SizedBox(height: 4.h),
                       Text(
                         title,
-                        style: TextStyle(
-                          fontFamily: 'Georgia',
+                        style: GoogleFonts.outfit(
                           fontSize: 16.sp,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w700,
                           color: AppColors.warmBrown,
                         ),
                       ),
@@ -522,17 +528,36 @@ class _MemoryCardState extends State<_MemoryCard>
                 ),
 
                 // Arrow
-                Icon(
-                  Icons.chevron_right_rounded,
-                  color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
-                  size: 20.r,
+                Container(
+                  padding: EdgeInsets.all(6.r),
+                  decoration: BoxDecoration(
+                    color: (isUnique ? AppColors.roseDeep : AppColors.roseDust).withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(10.r),
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_rounded,
+                    color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
+                    size: 16.r,
+                  ),
                 ),
               ],
             ),
           ),
         ),
       ),
-    );
+    )
+        .animate()
+        .fadeIn(
+          delay: Duration(milliseconds: 100 + (widget.index * 80)),
+          duration: 400.ms,
+        )
+        .slideX(
+          begin: 0.08,
+          end: 0,
+          delay: Duration(milliseconds: 100 + (widget.index * 80)),
+          duration: 400.ms,
+          curve: Curves.easeOutCubic,
+        );
   }
 }
 
@@ -558,10 +583,9 @@ class _EmptyState extends StatelessWidget {
             SizedBox(height: 18.h),
             Text(
               AppStrings.noMemories,
-              style: TextStyle(
-                fontFamily: 'Georgia',
+              style: GoogleFonts.outfit(
                 fontSize: 22.sp,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
                 color: AppColors.warmBrown,
               ),
             ),
@@ -569,39 +593,45 @@ class _EmptyState extends StatelessWidget {
             Text(
               AppStrings.noMemoriesSubtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-                fontFamily: 'Georgia',
+              style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
                 fontSize: 14.sp,
                 color: AppColors.softBrown,
                 height: 1.6,
+                fontWeight: FontWeight.w300,
               ),
             ),
             SizedBox(height: 28.h),
             GestureDetector(
-              onTap: onAdd,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onAdd();
+              },
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 14,
+                padding: EdgeInsets.symmetric(
+                  horizontal: 28.w,
+                  vertical: 14.h,
                 ),
                 decoration: BoxDecoration(
-                  color: AppColors.roseDeep,
+                  gradient: LinearGradient(
+                    colors: [AppColors.roseDeep, AppColors.roseDust],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
                   borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.roseDeep.withValues(alpha: 0.3),
+                      color: AppColors.roseDeep.withValues(alpha: 0.35),
                       blurRadius: 16.r,
-                      offset: Offset(0, 4.h),
+                      offset: Offset(0, 6.h),
                     ),
                   ],
                 ),
                 child: Text(
                   AppStrings.addMemory,
-                  style: TextStyle(
-                    fontFamily: 'Georgia',
+                  style: GoogleFonts.outfit(
                     color: Colors.white,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     fontSize: 15.sp,
                   ),
                 ),
@@ -664,11 +694,11 @@ class _AddMemorySheetState extends State<_AddMemorySheet> {
             SizedBox(height: 24.h),
             Text(
               "New Memory",
-              style: TextStyle(
-                fontFamily: 'Georgia',
+              style: GoogleFonts.outfit(
                 fontSize: 24.sp,
-                fontWeight: FontWeight.bold,
+                fontWeight: FontWeight.w700,
                 color: AppColors.warmBrown,
+                letterSpacing: -0.5,
               ),
             ),
             SizedBox(height: 20.h),
@@ -696,10 +726,10 @@ class _AddMemorySheetState extends State<_AddMemorySheet> {
                           SizedBox(height: 8.h),
                           Text(
                             "Add a Photo",
-                            style: TextStyle(
+                            style: GoogleFonts.outfit(
                               color: AppColors.softBrown,
-                              fontFamily: 'Georgia',
                               fontSize: 14.sp,
+                              fontWeight: FontWeight.w400,
                             ),
                           ),
                         ],
