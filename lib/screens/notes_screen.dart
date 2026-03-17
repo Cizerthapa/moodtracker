@@ -2,15 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-
-// ─── Palette (matches app theme) ───────────────────────────────────────────
-const _cream = Color(0xFFFDF6EE);
-const _roseDust = Color(0xFFE8A598);
-const _roseDeep = Color(0xFFC4635A);
-const _warmBrown = Color(0xFF5C3D2E);
-const _softBrown = Color(0xFF8C6050);
-const _champagne = Color(0xFFF0DDD0);
-const _ivoryCard = Color(0xFFFAF0E8);
+import 'package:moodtrack/theme/app_colors.dart';
 
 // Mood metadata: emoji, label, card tint, icon color
 const _moods = [
@@ -131,13 +123,13 @@ class _NotesScreenState extends State<NotesScreen>
             return AnimatedContainer(
               duration: const Duration(milliseconds: 250),
               decoration: BoxDecoration(
-                color: _cream,
+                color: AppColors.cream,
                 borderRadius: const BorderRadius.vertical(
                   top: Radius.circular(32),
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: _warmBrown.withOpacity(0.12),
+                    color: AppColors.warmBrown.withOpacity(0.12),
                     blurRadius: 30,
                     offset: const Offset(0, -4),
                   ),
@@ -159,7 +151,7 @@ class _NotesScreenState extends State<NotesScreen>
                       width: 40,
                       height: 4,
                       decoration: BoxDecoration(
-                        color: _champagne,
+                        color: AppColors.champagne,
                         borderRadius: BorderRadius.circular(4),
                       ),
                     ),
@@ -172,7 +164,7 @@ class _NotesScreenState extends State<NotesScreen>
                       fontFamily: 'Georgia',
                       fontSize: 22,
                       fontWeight: FontWeight.bold,
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                     ),
                   ),
                   const SizedBox(height: 6),
@@ -182,7 +174,7 @@ class _NotesScreenState extends State<NotesScreen>
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
                       fontSize: 13,
-                      color: _softBrown,
+                      color: AppColors.softBrown,
                     ),
                   ),
                   const SizedBox(height: 22),
@@ -212,7 +204,7 @@ class _NotesScreenState extends State<NotesScreen>
                             border: Border.all(
                               color: isSelected
                                   ? accent.withOpacity(0.5)
-                                  : _champagne,
+                                  : AppColors.champagne,
                               width: 1.5,
                             ),
                           ),
@@ -230,7 +222,7 @@ class _NotesScreenState extends State<NotesScreen>
                                 style: TextStyle(
                                   fontFamily: 'Georgia',
                                   fontSize: 9,
-                                  color: isSelected ? accent : _softBrown,
+                                  color: isSelected ? accent : AppColors.softBrown,
                                   fontWeight: isSelected
                                       ? FontWeight.bold
                                       : FontWeight.normal,
@@ -250,31 +242,31 @@ class _NotesScreenState extends State<NotesScreen>
                     maxLines: 4,
                     style: const TextStyle(
                       fontFamily: 'Georgia',
-                      color: _warmBrown,
+                      color: AppColors.warmBrown,
                       fontSize: 15,
                       height: 1.5,
                     ),
-                    cursorColor: _roseDeep,
+                    cursorColor: AppColors.roseDeep,
                     decoration: InputDecoration(
                       hintText: 'Write your thoughts...',
                       hintStyle: TextStyle(
-                        color: _softBrown.withOpacity(0.5),
+                        color: AppColors.softBrown.withOpacity(0.5),
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,
                       ),
                       filled: true,
-                      fillColor: _ivoryCard,
+                      fillColor: AppColors.ivoryCard,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(18),
-                        borderSide: BorderSide(color: _champagne, width: 1.5),
+                        borderSide: BorderSide(color: AppColors.champagne, width: 1.5),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(18),
-                        borderSide: BorderSide(color: _champagne, width: 1.5),
+                        borderSide: BorderSide(color: AppColors.champagne, width: 1.5),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(18),
-                        borderSide: BorderSide(color: _roseDust, width: 1.5),
+                        borderSide: BorderSide(color: AppColors.roseDust, width: 1.5),
                       ),
                       contentPadding: const EdgeInsets.all(16),
                     ),
@@ -287,7 +279,7 @@ class _NotesScreenState extends State<NotesScreen>
                     height: 52,
                     child: ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: _roseDeep,
+                        backgroundColor: AppColors.roseDeep,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
@@ -323,7 +315,7 @@ class _NotesScreenState extends State<NotesScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: _cream,
+      backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -344,7 +336,7 @@ class _NotesScreenState extends State<NotesScreen>
                             fontFamily: 'Georgia',
                             fontSize: 34,
                             fontWeight: FontWeight.bold,
-                            color: _warmBrown,
+                            color: AppColors.warmBrown,
                             height: 1.1,
                           ),
                         ),
@@ -354,7 +346,7 @@ class _NotesScreenState extends State<NotesScreen>
                             Icon(
                               Icons.auto_awesome_rounded,
                               size: 12,
-                              color: _roseDust,
+                              color: AppColors.roseDust,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -363,7 +355,7 @@ class _NotesScreenState extends State<NotesScreen>
                                 fontFamily: 'Georgia',
                                 fontStyle: FontStyle.italic,
                                 fontSize: 13,
-                                color: _softBrown,
+                                color: AppColors.softBrown,
                               ),
                             ),
                           ],
@@ -377,11 +369,11 @@ class _NotesScreenState extends State<NotesScreen>
                       width: 46,
                       height: 46,
                       decoration: BoxDecoration(
-                        color: _roseDeep,
+                        color: AppColors.roseDeep,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: _roseDeep.withOpacity(0.3),
+                            color: AppColors.roseDeep.withOpacity(0.3),
                             blurRadius: 14,
                             offset: const Offset(0, 4),
                           ),
@@ -405,7 +397,7 @@ class _NotesScreenState extends State<NotesScreen>
                 children: [
                   Expanded(
                     child: Divider(
-                      color: _roseDust.withOpacity(0.4),
+                      color: AppColors.roseDust.withOpacity(0.4),
                       thickness: 1,
                     ),
                   ),
@@ -414,12 +406,12 @@ class _NotesScreenState extends State<NotesScreen>
                     child: Icon(
                       Icons.favorite,
                       size: 10,
-                      color: _roseDust.withOpacity(0.7),
+                      color: AppColors.roseDust.withOpacity(0.7),
                     ),
                   ),
                   Expanded(
                     child: Divider(
-                      color: _roseDust.withOpacity(0.4),
+                      color: AppColors.roseDust.withOpacity(0.4),
                       thickness: 1,
                     ),
                   ),
@@ -484,12 +476,12 @@ class _NoteCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         decoration: BoxDecoration(
-          color: _roseDeep.withOpacity(0.1),
+          color: AppColors.roseDeep.withOpacity(0.1),
           borderRadius: BorderRadius.circular(20),
         ),
         child: const Icon(
           Icons.delete_outline_rounded,
-          color: _roseDeep,
+          color: AppColors.roseDeep,
           size: 24,
         ),
       ),
@@ -523,7 +515,7 @@ class _NoteCard extends StatelessWidget {
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
                       fontSize: 11,
-                      color: _softBrown,
+                      color: AppColors.softBrown,
                     ),
                   ),
                   Container(
@@ -566,7 +558,7 @@ class _NoteCard extends StatelessWidget {
                 style: const TextStyle(
                   fontFamily: 'Georgia',
                   fontSize: 15,
-                  color: _warmBrown,
+                  color: AppColors.warmBrown,
                   height: 1.55,
                 ),
               ),
@@ -600,7 +592,7 @@ class _EmptyState extends StatelessWidget {
                 fontFamily: 'Georgia',
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
-                color: _warmBrown,
+                color: AppColors.warmBrown,
               ),
             ),
             const SizedBox(height: 10),
@@ -611,7 +603,7 @@ class _EmptyState extends StatelessWidget {
                 fontFamily: 'Georgia',
                 fontStyle: FontStyle.italic,
                 fontSize: 14,
-                color: _softBrown,
+                color: AppColors.softBrown,
                 height: 1.6,
               ),
             ),
@@ -624,11 +616,11 @@ class _EmptyState extends StatelessWidget {
                   vertical: 14,
                 ),
                 decoration: BoxDecoration(
-                  color: _roseDeep,
+                  color: AppColors.roseDeep,
                   borderRadius: BorderRadius.circular(50),
                   boxShadow: [
                     BoxShadow(
-                      color: _roseDeep.withOpacity(0.3),
+                      color: AppColors.roseDeep.withOpacity(0.3),
                       blurRadius: 16,
                       offset: const Offset(0, 4),
                     ),

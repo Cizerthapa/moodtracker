@@ -2,15 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
-
-// ─── Palette ───────────────────────────────────────────────────────────────
-const _cream = Color(0xFFFDF6EE);
-const _roseDust = Color(0xFFE8A598);
-const _roseDeep = Color(0xFFC4635A);
-const _warmBrown = Color(0xFF5C3D2E);
-const _softBrown = Color(0xFF8C6050);
-const _champagne = Color(0xFFF0DDD0);
-const _ivoryCard = Color(0xFFFAF0E8);
+import 'package:moodtrack/theme/app_colors.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
   final DocumentSnapshot doc;
@@ -70,7 +62,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         await showDialog(
           context: context,
           builder: (context) => AlertDialog(
-            backgroundColor: _ivoryCard,
+            backgroundColor: AppColors.ivoryCard,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
@@ -78,20 +70,20 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
               'Forget this memory?',
               style: TextStyle(
                 fontFamily: 'Georgia',
-                color: _warmBrown,
+                color: AppColors.warmBrown,
                 fontWeight: FontWeight.bold,
               ),
             ),
             content: Text(
               'This moment will be gone forever. Are you sure?',
-              style: TextStyle(color: _softBrown, fontSize: 14),
+              style: TextStyle(color: AppColors.softBrown, fontSize: 14),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
                   'Keep it',
-                  style: TextStyle(color: _softBrown, fontFamily: 'Georgia'),
+                  style: TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
                 ),
               ),
               TextButton(
@@ -99,7 +91,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                 child: const Text(
                   'Let go',
                   style: TextStyle(
-                    color: _roseDeep,
+                    color: AppColors.roseDeep,
                     fontFamily: 'Georgia',
                     fontWeight: FontWeight.bold,
                   ),
@@ -125,14 +117,14 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     final bool isUnique = data['isUnique'] == true;
 
     return Scaffold(
-      backgroundColor: _cream,
+      backgroundColor: AppColors.cream,
       body: CustomScrollView(
         slivers: [
           // ── Collapsible Map Header ──────────────────────────────────────
           SliverAppBar(
             expandedHeight: 300,
             pinned: true,
-            backgroundColor: _cream,
+            backgroundColor: AppColors.cream,
             leading: Padding(
               padding: const EdgeInsets.all(8),
               child: _CircleButton(
@@ -155,7 +147,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                 child: _CircleButton(
                   icon: Icons.delete_outline_rounded,
                   onTap: _deleteMemory,
-                  color: _roseDeep,
+                  color: AppColors.roseDeep,
                 ),
               ),
             ],
@@ -190,7 +182,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                                 isUnique
                                     ? Icons.star_rounded
                                     : Icons.favorite_rounded,
-                                color: _roseDeep,
+                                color: AppColors.roseDeep,
                                 size: 40,
                                 shadows: const [
                                   Shadow(
@@ -217,7 +209,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         gradient: LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
-                          colors: [_cream.withOpacity(0), _cream],
+                          colors: [AppColors.cream.withOpacity(0), AppColors.cream],
                         ),
                       ),
                     ),
@@ -244,7 +236,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                             vertical: 6,
                           ),
                           decoration: BoxDecoration(
-                            color: _champagne,
+                            color: AppColors.champagne,
                             borderRadius: BorderRadius.circular(50),
                           ),
                           child: Row(
@@ -255,14 +247,14 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                                     ? Icons.star_rounded
                                     : Icons.favorite_rounded,
                                 size: 14,
-                                color: _roseDeep,
+                                color: AppColors.roseDeep,
                               ),
                               const SizedBox(width: 6),
                               Text(
                                 data['description'] ?? '',
                                 style: TextStyle(
                                   fontSize: 13,
-                                  color: _softBrown,
+                                  color: AppColors.softBrown,
                                   fontStyle: FontStyle.italic,
                                   fontFamily: 'Georgia',
                                 ),
@@ -281,7 +273,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         fontSize: 32,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Georgia',
-                        color: _warmBrown,
+                        color: AppColors.warmBrown,
                         height: 1.2,
                       ),
                     ),
@@ -320,7 +312,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                       child: ElevatedButton.icon(
                         onPressed: _updateMemory,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: _roseDeep,
+                          backgroundColor: AppColors.roseDeep,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           shape: RoundedRectangleBorder(
@@ -361,7 +353,7 @@ class _CircleButton extends StatelessWidget {
   const _CircleButton({
     required this.icon,
     required this.onTap,
-    this.color = _warmBrown,
+    this.color = AppColors.warmBrown,
   });
 
   @override
@@ -372,11 +364,11 @@ class _CircleButton extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: _cream.withOpacity(0.92),
+          color: AppColors.cream.withOpacity(0.92),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: _warmBrown.withOpacity(0.12),
+              color: AppColors.warmBrown.withOpacity(0.12),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -394,14 +386,14 @@ class _HeartDivider extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Divider(color: _roseDust.withOpacity(0.5), thickness: 1),
+          child: Divider(color: AppColors.roseDust.withOpacity(0.5), thickness: 1),
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Icon(Icons.favorite, size: 14, color: _roseDust),
+          child: Icon(Icons.favorite, size: 14, color: AppColors.roseDust),
         ),
         Expanded(
-          child: Divider(color: _roseDust.withOpacity(0.5), thickness: 1),
+          child: Divider(color: AppColors.roseDust.withOpacity(0.5), thickness: 1),
         ),
       ],
     );
@@ -414,19 +406,19 @@ class _SpecialMemoryCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: _champagne,
+        color: AppColors.champagne,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: _roseDust.withOpacity(0.4)),
+        border: Border.all(color: AppColors.roseDust.withOpacity(0.4)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.star_rounded, color: _roseDeep, size: 22),
+          const Icon(Icons.star_rounded, color: AppColors.roseDeep, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               'A truly special moment — marked as unforgettable.',
               style: TextStyle(
-                color: _softBrown,
+                color: AppColors.softBrown,
                 fontSize: 13,
                 fontFamily: 'Georgia',
                 fontStyle: FontStyle.italic,
@@ -446,12 +438,12 @@ class _LoveNoteFooter extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
       decoration: BoxDecoration(
-        color: _ivoryCard,
+        color: AppColors.ivoryCard,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: _champagne),
+        border: Border.all(color: AppColors.champagne),
         boxShadow: [
           BoxShadow(
-            color: _roseDust.withOpacity(0.08),
+            color: AppColors.roseDust.withOpacity(0.08),
             blurRadius: 20,
             offset: const Offset(0, 4),
           ),
@@ -461,7 +453,7 @@ class _LoveNoteFooter extends StatelessWidget {
         children: [
           Icon(
             Icons.favorite_rounded,
-            color: _roseDust.withOpacity(0.7),
+            color: AppColors.roseDust.withOpacity(0.7),
             size: 28,
           ),
           const SizedBox(height: 10),
@@ -472,7 +464,7 @@ class _LoveNoteFooter extends StatelessWidget {
               fontFamily: 'Georgia',
               fontStyle: FontStyle.italic,
               fontSize: 15,
-              color: _softBrown,
+              color: AppColors.softBrown,
               height: 1.6,
             ),
           ),
@@ -503,23 +495,23 @@ class _EditField extends StatelessWidget {
       style: TextStyle(
         fontSize: fontSize,
         fontFamily: 'Georgia',
-        color: _warmBrown,
+        color: AppColors.warmBrown,
         fontWeight: maxLines == 1 ? FontWeight.bold : FontWeight.normal,
       ),
-      cursorColor: _roseDeep,
+      cursorColor: AppColors.roseDeep,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: _softBrown, fontFamily: 'Georgia'),
+        labelStyle: const TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: BorderSide(color: _champagne, width: 1.5),
+          borderSide: BorderSide(color: AppColors.champagne, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: _roseDust, width: 1.5),
+          borderSide: const BorderSide(color: AppColors.roseDust, width: 1.5),
         ),
         filled: true,
-        fillColor: _ivoryCard,
+        fillColor: AppColors.ivoryCard,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 14,
