@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'memory_detail_screen.dart';
-import 'package:moodtrack/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/app_colors.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});

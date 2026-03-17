@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
-import 'package:moodtrack/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/app_colors.dart';
 
 // Mood metadata: emoji, label, card tint, icon color
 const _moods = [

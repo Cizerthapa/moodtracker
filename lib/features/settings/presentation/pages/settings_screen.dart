@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:moodtrack/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import '../services/notification_service.dart';
+import 'package:moodtrack/core/services/notification_service.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});

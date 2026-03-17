@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'package:moodtrack/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/app_colors.dart';
 
 enum DrinkType {
   water,

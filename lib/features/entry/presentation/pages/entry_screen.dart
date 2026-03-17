@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'memories_screen.dart';
-import 'water_intake_screen.dart';
-import 'notes_screen.dart';
-import 'settings_screen.dart';
-import 'package:moodtrack/theme/app_colors.dart';
+import 'package:moodtrack/features/memories/presentation/pages/memories_screen.dart';
+import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_screen.dart';
+import 'package:moodtrack/features/notes/presentation/pages/notes_screen.dart';
+import 'package:moodtrack/features/settings/presentation/pages/settings_screen.dart';
+import 'package:moodtrack/core/theme/app_colors.dart';
 
 class EntryScreen extends StatelessWidget {
   const EntryScreen({super.key});
