@@ -21,10 +21,16 @@ class NotesRepository {
     await prefs.setStringList(AppConstants.moodNotesPrefsKey, notesJson);
   }
 
-  Future<void> deleteNote(int index) async {
+  Future<void> deleteNote(String id) async {
     final prefs = await SharedPreferences.getInstance();
     final List<String> notesJson = prefs.getStringList(AppConstants.moodNotesPrefsKey) ?? [];
-    if (index >= 0 && index < notesJson.length) {
+    
+    final index = notesJson.indexWhere((n) {
+      final note = jsonDecode(n);
+      return note['id'] == id || note['date'] == id; // Fallback to date if id missing
+    });
+
+    if (index != -1) {
       notesJson.removeAt(index);
       await prefs.setStringList(AppConstants.moodNotesPrefsKey, notesJson);
     }

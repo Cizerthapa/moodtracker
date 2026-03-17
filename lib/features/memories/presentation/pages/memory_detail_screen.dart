@@ -5,6 +5,7 @@ import 'package:latlong2/latlong.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
   final DocumentSnapshot doc;
@@ -223,6 +224,35 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Memory Image
+                  if (data['imageUrl'] != null) ...[
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(24),
+                      child: Image.network(
+                        data['imageUrl'],
+                        height: 250,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return ShimmerLoading(
+                            isLoading: true,
+                            child: const ShimmerSkeleton(height: 250),
+                          );
+                        },
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          height: 200,
+                          width: double.infinity,
+                          decoration: BoxDecoration(
+                            color: AppColors.champagne,
+                            borderRadius: BorderRadius.circular(24),
+                          ),
+                          child: const Icon(Icons.broken_image_outlined, color: AppColors.softBrown),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                  ],
                   // Date badge / description chip
                   if (!_isEditing) ...[
                     Row(

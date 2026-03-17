@@ -55,6 +55,7 @@ class MemoriesRepository {
     required String description,
     required double lat,
     required double lng,
+    String? imageUrl,
     bool isUnique = false,
   }) async {
     await _memoriesCollection.add({
@@ -62,6 +63,7 @@ class MemoriesRepository {
       'description': description,
       'lat': lat,
       'lng': lng,
+      'imageUrl': imageUrl,
       'isUnique': isUnique,
       'timestamp': FieldValue.serverTimestamp(),
     });

@@ -6,6 +6,9 @@ import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:moodtrack/core/services/storage_service.dart';
+import 'dart:io';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -17,8 +20,11 @@ class MemoriesScreen extends StatefulWidget {
 class _MemoriesScreenState extends State<MemoriesScreen>
     with SingleTickerProviderStateMixin {
   final MemoriesRepository _repository = MemoriesRepository();
+  final StorageService _storageService = StorageService();
   bool _isLoading = true;
   List<Map<String, dynamic>> _memories = [];
+  String _searchQuery = "";
+  late TextEditingController _searchController;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
 
@@ -30,12 +36,14 @@ class _MemoriesScreenState extends State<MemoriesScreen>
       duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _searchController = TextEditingController();
     _initData();
   }
 
   @override
   void dispose() {
     _fadeController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -99,13 +107,29 @@ class _MemoriesScreenState extends State<MemoriesScreen>
     // Let's stick with StreamBuilder for real-time benefits but add RefreshIndicator.
   }
 
-  Future<void> _addMemoryAtCurrentLocation() async {
-    await _repository.addMemory(
-      title: AppStrings.newMemoryTitle,
-      description: AppStrings.newMemoryDescription,
-      lat: 27.7172,
-      lng: 85.3240,
-      isUnique: false,
+  void _showAddMemorySheet() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => _AddMemorySheet(
+        onSave: (title, desc, image) async {
+          String? imageUrl;
+          if (image != null) {
+            final path = 'memories/${DateTime.now().millisecondsSinceEpoch}.jpg';
+            imageUrl = await _storageService.uploadFile(file: image, path: path);
+          }
+          
+          await _repository.addMemory(
+            title: title,
+            description: desc,
+            lat: 27.7172, // Use current location in production
+            lng: 85.3240,
+            imageUrl: imageUrl,
+            isUnique: false,
+          );
+        },
+      ),
     );
   }
 
@@ -117,7 +141,44 @@ class _MemoriesScreenState extends State<MemoriesScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _Header(onAdd: _addMemoryAtCurrentLocation),
+            _Header(onAdd: _showAddMemorySheet),
+            // Search Bar
+            Padding(
+              padding: const EdgeInsets.fromLTRB(28, 8, 28, 12),
+              child: TextField(
+                controller: _searchController,
+                onChanged: (val) => setState(() => _searchQuery = val),
+                decoration: InputDecoration(
+                  hintText: "Search memories...",
+                  hintStyle: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontStyle: FontStyle.italic,
+                    color: AppColors.softBrown.withValues(alpha: 0.5),
+                  ),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust),
+                  suffixIcon: _searchQuery.isNotEmpty 
+                    ? IconButton(
+                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() => _searchQuery = "");
+                        },
+                      )
+                    : null,
+                  filled: true,
+                  fillColor: AppColors.ivoryCard,
+                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColors.champagne),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    borderSide: BorderSide(color: AppColors.champagne),
+                  ),
+                ),
+              ),
+            ),
             const _HeartDivider(),
             Expanded(
               child: _isLoading
@@ -158,12 +219,21 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                           }
 
                           final docs = snapshot.hasData ? snapshot.data!.docs : [];
-                          final listToDisplay = docs.isNotEmpty 
+                          var listToDisplay = docs.isNotEmpty 
                             ? docs.map((d) => d.data() as Map<String, dynamic>).toList()
                             : _memories;
 
+                          if (_searchQuery.isNotEmpty) {
+                            listToDisplay = listToDisplay.where((m) {
+                              final title = (m['title'] ?? "").toString().toLowerCase();
+                              final desc = (m['description'] ?? "").toString().toLowerCase();
+                              return title.contains(_searchQuery.toLowerCase()) || 
+                                     desc.contains(_searchQuery.toLowerCase());
+                            }).toList();
+                          }
+
                           if (listToDisplay.isEmpty) {
-                            return _EmptyState(onAdd: _addMemoryAtCurrentLocation);
+                            return _EmptyState(onAdd: _showAddMemorySheet);
                           }
 
                           return RefreshIndicator(
@@ -534,6 +604,156 @@ class _EmptyState extends StatelessWidget {
                     fontSize: 15,
                   ),
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+class _AddMemorySheet extends StatefulWidget {
+  final Function(String, String, File?) onSave;
+  const _AddMemorySheet({required this.onSave});
+
+  @override
+  State<_AddMemorySheet> createState() => _AddMemorySheetState();
+}
+
+class _AddMemorySheetState extends State<_AddMemorySheet> {
+  final _titleController = TextEditingController();
+  final _descController = TextEditingController();
+  File? _selectedImage;
+  bool _isUploading = false;
+
+  Future<void> _pickImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    if (pickedFile != null) {
+      setState(() => _selectedImage = File(pickedFile.path));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom,
+      ),
+      decoration: const BoxDecoration(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+      ),
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.fromLTRB(28, 20, 28, 28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.champagne,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            const Text(
+              "New Memory",
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.warmBrown,
+              ),
+            ),
+            const SizedBox(height: 20),
+            
+            // Image Picker UI
+            GestureDetector(
+              onTap: _pickImage,
+              child: Container(
+                height: 180,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppColors.ivoryCard,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.champagne),
+                ),
+                child: _selectedImage != null
+                    ? ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
+                      )
+                    : Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 40),
+                          const SizedBox(height: 8),
+                          Text(
+                            "Add a Photo",
+                            style: TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
+                          ),
+                        ],
+                      ),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            TextField(
+              controller: _titleController,
+              decoration: InputDecoration(
+                labelText: "Title",
+                labelStyle: TextStyle(color: AppColors.softBrown),
+                filled: true,
+                fillColor: AppColors.ivoryCard,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: AppColors.champagne),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _descController,
+              decoration: InputDecoration(
+                labelText: "Date or Note",
+                labelStyle: TextStyle(color: AppColors.softBrown),
+                filled: true,
+                fillColor: AppColors.ivoryCard,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: AppColors.champagne),
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _isUploading ? null : () async {
+                  if (_titleController.text.isEmpty) return;
+                  setState(() => _isUploading = true);
+                  await widget.onSave(
+                    _titleController.text,
+                    _descController.text,
+                    _selectedImage,
+                  );
+                  if (mounted) Navigator.pop(context);
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.roseDeep,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                ),
+                child: _isUploading 
+                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                  : const Text("Save Memory", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],
