@@ -1,7 +1,9 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
@@ -153,11 +155,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 children: [
                   Text(
                     AppStrings.waterIntakeHeader,
-                    style: TextStyle(
-                      fontFamily: 'Georgia',
+                    style: GoogleFonts.outfit(
                       fontSize: 34.sp,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.warmBrown,
+                      letterSpacing: -0.8,
                     ),
                   ),
                   SizedBox(height: 12.h),
@@ -239,11 +241,10 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             SizedBox(width: 6.w),
             Text(
               label,
-              style: TextStyle(
-                fontFamily: 'Georgia',
+              style: GoogleFonts.outfit(
                 fontSize: 12.sp,
                 color: isSelected ? Colors.white : AppColors.softBrown,
-                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
               ),
             ),
           ],
@@ -288,26 +289,25 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 children: [
                   Text(
                     AppStrings.today,
-                    style: TextStyle(
-                      fontFamily: 'Georgia',
+                    style: GoogleFonts.outfit(
                       fontStyle: FontStyle.italic,
                       color: AppColors.softBrown,
+                      fontWeight: FontWeight.w300,
                     ),
                   ),
                   Text(
                     '$_currentIntake',
-                    style: TextStyle(
-                      fontFamily: 'Georgia',
+                    style: GoogleFonts.outfit(
                       fontSize: 48.sp,
-                      fontWeight: FontWeight.bold,
+                      fontWeight: FontWeight.w800,
                       color: AppColors.warmBrown,
                     ),
                   ),
                   Text(
                     AppStrings.drinkGoalMilli.replaceFirst('%s', '$_dailyGoal'),
-                    style: TextStyle(
-                      fontFamily: 'Georgia',
+                    style: GoogleFonts.outfit(
                       color: AppColors.softBrown.withValues(alpha: 0.6),
+                      fontWeight: FontWeight.w300,
                     ),
                   ),
                 ],
@@ -319,10 +319,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             alignment: Alignment.centerLeft,
             child: Text(
               AppStrings.selectBeverage,
-              style: TextStyle(
-                fontFamily: 'Georgia',
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+              style: GoogleFonts.outfit(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w700,
                 color: AppColors.warmBrown,
               ),
             ),
@@ -375,11 +374,10 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
           const SizedBox(height: 10),
           Text(
             type.label,
-            style: TextStyle(
-              fontFamily: 'Georgia',
+            style: GoogleFonts.outfit(
               color: isSelected ? type.color : AppColors.softBrown,
               fontSize: 12.sp,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w400,
             ),
           ),
         ],
@@ -399,9 +397,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
       onPressed: () => _addDrink(amount),
       child: Text(
         '+$amount ml',
-        style: TextStyle(
-          fontFamily: 'Georgia',
-          fontWeight: FontWeight.bold,
+        style: GoogleFonts.outfit(
+          fontWeight: FontWeight.w700,
           fontSize: 15.sp,
         ),
       ),
@@ -418,11 +415,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             SizedBox(height: 16.h),
             Text(
               AppStrings.noHistory,
-              style: TextStyle(
-                fontFamily: 'Georgia',
+              style: GoogleFonts.outfit(
                 color: AppColors.softBrown,
                 fontStyle: FontStyle.italic,
                 fontSize: 14.sp,
+                fontWeight: FontWeight.w300,
               ),
             ),
           ],
@@ -477,20 +474,19 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                     children: [
                       Text(
                         entry.type.label,
-                        style: TextStyle(
-                          fontFamily: 'Georgia',
-                          fontWeight: FontWeight.bold,
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.w700,
                           color: AppColors.warmBrown,
                           fontSize: 14.sp,
                         ),
                       ),
                       Text(
                         DateFormat('MMM d · h:mm a').format(entry.timestamp),
-                        style: TextStyle(
-                          fontFamily: 'Georgia',
+                        style: GoogleFonts.outfit(
                           color: AppColors.softBrown,
                           fontSize: 11.sp,
                           fontStyle: FontStyle.italic,
+                          fontWeight: FontWeight.w300,
                         ),
                       ),
                     ],
@@ -498,9 +494,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 ),
                 Text(
                   '${entry.amount} ml',
-                  style: TextStyle(
-                    fontFamily: 'Georgia',
-                    fontWeight: FontWeight.bold,
+                  style: GoogleFonts.outfit(
+                    fontWeight: FontWeight.w700,
                     fontSize: 16.sp,
                     color: AppColors.warmBrown,
                   ),
@@ -538,10 +533,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         children: [
           Text(
             AppStrings.last7Days,
-            style: TextStyle(
-              fontFamily: 'Georgia',
+            style: GoogleFonts.outfit(
               fontSize: 20.sp,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
               color: AppColors.warmBrown,
             ),
           ),
@@ -558,7 +552,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         return BarTooltipItem(
                           '${rod.toY.toInt()} ml',
-                          const TextStyle(color: Colors.white, fontFamily: 'Georgia', fontWeight: FontWeight.bold),
+                          GoogleFonts.outfit(color: Colors.white, fontWeight: FontWeight.w700),
                         );
                       },
                     ),
@@ -573,10 +567,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
                               days[value.toInt()],
-                              style: TextStyle(
+                              style: GoogleFonts.outfit(
                                 color: AppColors.softBrown,
                                 fontSize: 11.sp,
-                                fontFamily: 'Georgia',
                               ),
                             ),
                           );

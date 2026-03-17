@@ -70,7 +70,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
             title: Text(
               AppStrings.deleteMemoryTitle,
               style: TextStyle(
-                fontFamily: 'Georgia',
+
                 color: AppColors.warmBrown,
                 fontWeight: FontWeight.bold,
               ),
@@ -80,7 +80,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
               style: TextStyle(
                 color: AppColors.softBrown,
                 fontSize: 14.sp,
-                fontFamily: 'Georgia',
+
               ),
             ),
             actions: [
@@ -88,7 +88,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
                   AppStrings.keepIt,
-                  style: TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
+                  style: TextStyle(color: AppColors.softBrown),
                 ),
               ),
               TextButton(
@@ -97,7 +97,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                   AppStrings.letGo,
                   style: TextStyle(
                     color: AppColors.roseDeep,
-                    fontFamily: 'Georgia',
+    
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -332,7 +332,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                                   fontSize: 13.sp,
                                   color: AppColors.softBrown,
                                   fontStyle: FontStyle.italic,
-                                  fontFamily: 'Georgia',
+                  
                                 ),
                               ),
                             ],
@@ -348,7 +348,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                       style: TextStyle(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
-                        fontFamily: 'Georgia',
+        
                         color: AppColors.warmBrown,
                         height: 1.2,
                       ),
@@ -400,7 +400,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         label: const Text(
                           AppStrings.saveMemory,
                           style: TextStyle(
-                            fontFamily: 'Georgia',
+            
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -499,7 +499,7 @@ class _SpecialMemoryCard extends StatelessWidget {
               style: TextStyle(
                 color: AppColors.softBrown,
                 fontSize: 13.sp,
-                fontFamily: 'Georgia',
+
                 fontStyle: FontStyle.italic,
               ),
             ),
@@ -540,7 +540,6 @@ class _LoveNoteFooter extends StatelessWidget {
             AppStrings.loveNoteText,
             textAlign: TextAlign.center,
             style: TextStyle(
-              fontFamily: 'Georgia',
               fontStyle: FontStyle.italic,
               fontSize: 15.sp,
               color: AppColors.softBrown,

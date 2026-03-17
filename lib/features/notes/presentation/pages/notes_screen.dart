@@ -132,7 +132,7 @@ class _NotesScreenState extends State<NotesScreen>
                         Text(
                           AppStrings.journalHeader,
                           style: TextStyle(
-                            fontFamily: 'Georgia',
+            
                             fontSize: 34.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.warmBrown,
@@ -151,7 +151,7 @@ class _NotesScreenState extends State<NotesScreen>
                             Text(
                               AppStrings.journalSubHeader,
                               style: TextStyle(
-                                fontFamily: 'Georgia',
+                
                                 fontStyle: FontStyle.italic,
                                 fontSize: 13.sp,
                                 color: AppColors.softBrown,
@@ -198,7 +198,7 @@ class _NotesScreenState extends State<NotesScreen>
                 decoration: InputDecoration(
                   hintText: "Search your journal...",
                   hintStyle: TextStyle(
-                    fontFamily: 'Georgia',
+    
                     fontStyle: FontStyle.italic,
                     color: AppColors.softBrown.withValues(alpha: 0.5),
                     fontSize: 14.sp,
@@ -293,7 +293,7 @@ class _NotesScreenState extends State<NotesScreen>
                                     child: Text(
                                       "No notes match your search",
                                       style: TextStyle(
-                                        fontFamily: 'Georgia',
+                        
                                         color: AppColors.softBrown,
                                         fontSize: 14.sp,
                                       ),
@@ -391,7 +391,7 @@ class _NoteCard extends StatelessWidget {
                   Text(
                     formattedDate,
                     style: TextStyle(
-                      fontFamily: 'Georgia',
+      
                       fontStyle: FontStyle.italic,
                       fontSize: 11.sp,
                       color: AppColors.softBrown,
@@ -418,7 +418,7 @@ class _NoteCard extends StatelessWidget {
                         Text(
                           label,
                           style: TextStyle(
-                            fontFamily: 'Georgia',
+            
                             fontSize: 11.sp,
                             color: accent,
                             fontWeight: FontWeight.bold,
@@ -435,7 +435,7 @@ class _NoteCard extends StatelessWidget {
               Text(
                 note['text'] ?? '',
                 style: TextStyle(
-                  fontFamily: 'Georgia',
+  
                   fontSize: 15.sp,
                   color: AppColors.warmBrown,
                   height: 1.55,
@@ -498,7 +498,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               AppStrings.journalEmptyTitle,
               style: TextStyle(
-                fontFamily: 'Georgia',
+
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.warmBrown,
@@ -509,7 +509,7 @@ class _EmptyState extends StatelessWidget {
               AppStrings.journalEmptySubtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
-                fontFamily: 'Georgia',
+
                 fontStyle: FontStyle.italic,
                 fontSize: 14.sp,
                 color: AppColors.softBrown,
@@ -538,7 +538,7 @@ class _EmptyState extends StatelessWidget {
                 child: Text(
                   AppStrings.writeANoteButton,
                   style: TextStyle(
-                    fontFamily: 'Georgia',
+    
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 15.sp,
@@ -607,7 +607,6 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
           Text(
             AppStrings.howAreYouFeeling,
             style: TextStyle(
-              fontFamily: 'Georgia',
               fontSize: 22.sp,
               fontWeight: FontWeight.bold,
               color: AppColors.warmBrown,
@@ -641,7 +640,7 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
                       children: [
                         Text(emoji, style: TextStyle(fontSize: isSelected ? 28.sp : 24.sp)),
                         SizedBox(height: 4.h),
-                        Text(label, style: TextStyle(fontFamily: 'Georgia', fontSize: 10.sp, color: isSelected ? accent : AppColors.softBrown)),
+                        Text(label, style: TextStyle(fontSize: 10.sp, color: isSelected ? accent : AppColors.softBrown)),
                       ],
                     ),
                   ),
@@ -672,7 +671,7 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
                       children: [
                         Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 24.r),
                         SizedBox(width: 12.w),
-                        Text("Add a photo", style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontSize: 14.sp)),
+                        Text("Add a photo", style: TextStyle(color: AppColors.softBrown, fontSize: 14.sp)),
                       ],
                     ),
             ),
