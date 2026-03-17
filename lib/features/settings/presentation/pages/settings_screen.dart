@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/services/notification_service.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
@@ -66,31 +67,31 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             // ── Header ──────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 24, 24, 12),
+              padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 12.h),
               child: Row(
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.pop(context),
                     child: Container(
-                      padding: const EdgeInsets.all(8),
+                      padding: EdgeInsets.all(8.r),
                       decoration: BoxDecoration(
                         color: AppColors.ivoryCard,
                         shape: BoxShape.circle,
                         border: Border.all(color: AppColors.champagne),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.arrow_back_ios_new_rounded,
-                        size: 18,
+                        size: 18.sp,
                         color: AppColors.warmBrown,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 20),
-                  const Text(
+                  SizedBox(width: 20.w),
+                  Text(
                     AppStrings.settingsTitle,
                     style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 34,
+                      fontSize: 34.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.warmBrown,
                     ),
@@ -111,7 +112,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             // ── Content ──────────────────────────────────────────────
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.all(28),
+                padding: EdgeInsets.all(28.r),
                 children: [
                   _buildSettingTile(
                     title: AppStrings.enableNotifications,
@@ -122,7 +123,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       onChanged: _toggleNotifications,
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   _buildSettingTile(
                     title: AppStrings.testNotification,
                     subtitle: AppStrings.testNotificationSubtitle,
@@ -137,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       );
                     },
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20.h),
                   _buildSettingTile(
                     title: 'Logout',
                     subtitle: 'Sign out of your account',
@@ -151,7 +152,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(content: Text('Logged out successfully')),
                         );
-                        // Navigation is handled by AuthWrapper
                       }
                     },
                   ),
@@ -161,7 +161,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ── Footer ──────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.only(bottom: 32.0),
+              padding: EdgeInsets.only(bottom: 32.0.h),
               child: Column(
                 children: [
                   Text(
@@ -170,17 +170,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
                       color: AppColors.softBrown.withOpacity(0.6),
-                      fontSize: 14,
+                      fontSize: 14.sp,
                     ),
                   ),
-                  const SizedBox(height: 4),
-                  const Text(
+                  SizedBox(height: 4.h),
+                  Text(
                     AppStrings.authorName,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontWeight: FontWeight.bold,
                       color: AppColors.warmBrown,
-                      fontSize: 18,
+                      fontSize: 18.sp,
                     ),
                   ),
                 ],
@@ -201,10 +201,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: EdgeInsets.all(20.r),
         decoration: BoxDecoration(
           color: AppColors.ivoryCard,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(color: AppColors.champagne),
         ),
         child: Row(
@@ -215,19 +215,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.warmBrown,
                     ),
                   ),
-                  const SizedBox(height: 4),
+                  SizedBox(height: 4.h),
                   Text(
                     subtitle,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 12,
+                      fontSize: 12.sp,
                       color: AppColors.softBrown,
                     ),
                   ),

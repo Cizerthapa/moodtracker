@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/entry/presentation/pages/entry_screen.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
@@ -80,45 +81,45 @@ class _SplashScreenState extends State<SplashScreen>
                   children: [
                     // Cute Icon or Heart
                     Container(
-                      padding: const EdgeInsets.all(20),
+                      padding: EdgeInsets.all(20.r),
                       decoration: BoxDecoration(
                         color: AppColors.roseDust.withOpacity(0.2),
                         shape: BoxShape.circle,
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.favorite_rounded,
                         color: AppColors.roseDeep,
-                        size: 60,
+                        size: 60.r,
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                     // Welcome Message
-                    const Text(
+                    Text(
                       AppStrings.welcomeBack,
                       style: TextStyle(
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,
-                        fontSize: 22,
+                        fontSize: 22.sp,
                         color: AppColors.softBrown,
                       ),
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8.h),
+                    Text(
                       AppStrings.userName,
                       style: TextStyle(
                         fontFamily: 'Georgia',
-                        fontSize: 36,
+                        fontSize: 36.sp,
                         fontWeight: FontWeight.bold,
                         color: AppColors.warmBrown,
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
                     Text(
                       AppStrings.trackMoodToday,
                       style: TextStyle(
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,
-                        fontSize: 14,
+                        fontSize: 14.sp,
                         color: AppColors.softBrown.withOpacity(0.8),
                       ),
                     ),

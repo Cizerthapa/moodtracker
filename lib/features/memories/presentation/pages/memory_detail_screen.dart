@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
@@ -65,7 +66,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.ivoryCard,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(24.r),
             ),
             title: const Text(
               AppStrings.deleteMemoryTitle,
@@ -75,9 +76,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                 fontWeight: FontWeight.bold,
               ),
             ),
-            content: const Text(
+            content: Text(
               AppStrings.deleteMemoryContent,
-              style: TextStyle(color: AppColors.softBrown, fontSize: 14),
+              style: TextStyle(color: AppColors.softBrown, fontSize: 14.sp),
             ),
             actions: [
               TextButton(
@@ -120,11 +121,11 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         slivers: [
           // ── Collapsible Map Header ──────────────────────────────────────
           SliverAppBar(
-            expandedHeight: 300,
+            expandedHeight: 300.h,
             pinned: true,
             backgroundColor: AppColors.cream,
             leading: Padding(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(8.r),
               child: _CircleButton(
                 icon: Icons.arrow_back_ios_new_rounded,
                 onTap: () => Navigator.pop(context),
@@ -132,7 +133,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
             ),
             actions: [
               Padding(
-                padding: const EdgeInsets.only(right: 6),
+                padding: EdgeInsets.only(right: 6.w),
                 child: _CircleButton(
                   icon: _isEditing ? Icons.check_rounded : Icons.edit_rounded,
                   onTap: () => _isEditing
@@ -141,7 +142,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.only(right: 12),
+                padding: EdgeInsets.only(right: 12.w),
                 child: _CircleButton(
                   icon: Icons.delete_outline_rounded,
                   onTap: _deleteMemory,
@@ -172,8 +173,8 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         markers: [
                           Marker(
                             point: _location,
-                            width: 64,
-                            height: 64,
+                            width: 64.r,
+                            height: 64.r,
                             child: ScaleTransition(
                               scale: _heartAnim,
                               child: Icon(
@@ -181,12 +182,12 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                                     ? Icons.star_rounded
                                     : Icons.favorite_rounded,
                                 color: AppColors.roseDeep,
-                                size: 40,
-                                shadows: const [
+                                size: 40.sp,
+                                shadows: [
                                   Shadow(
                                     color: Colors.white,
-                                    blurRadius: 12,
-                                    offset: Offset(0, 0),
+                                    blurRadius: 12.r,
+                                    offset: const Offset(0, 0),
                                   ),
                                 ],
                               ),
@@ -201,7 +202,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    height: 80,
+                    height: 80.h,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
@@ -220,51 +221,51 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
           // ── Content ────────────────────────────────────────────────────
           SliverToBoxAdapter(
             child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 8),
+              padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 8.h),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Memory Image
                   if (data['imageUrl'] != null) ...[
                     ClipRRect(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(24.r),
                       child: Image.network(
                         data['imageUrl'],
-                        height: 250,
+                        height: 250.h,
                         width: double.infinity,
                         fit: BoxFit.cover,
                         loadingBuilder: (context, child, loadingProgress) {
                           if (loadingProgress == null) return child;
                           return ShimmerLoading(
                             isLoading: true,
-                            child: const ShimmerSkeleton(height: 250),
+                            child: ShimmerSkeleton(height: 250.h),
                           );
                         },
                         errorBuilder: (context, error, stackTrace) => Container(
-                          height: 200,
+                          height: 200.h,
                           width: double.infinity,
                           decoration: BoxDecoration(
                             color: AppColors.champagne,
-                            borderRadius: BorderRadius.circular(24),
+                            borderRadius: BorderRadius.circular(24.r),
                           ),
                           child: const Icon(Icons.broken_image_outlined, color: AppColors.softBrown),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24.h),
                   ],
                   // Date badge / description chip
                   if (!_isEditing) ...[
                     Row(
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 14.w,
+                            vertical: 6.h,
                           ),
                           decoration: BoxDecoration(
                             color: AppColors.champagne,
-                            borderRadius: BorderRadius.circular(50),
+                            borderRadius: BorderRadius.circular(50.r),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -273,14 +274,14 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                                 isUnique
                                     ? Icons.star_rounded
                                     : Icons.favorite_rounded,
-                                size: 14,
+                                size: 14.sp,
                                 color: AppColors.roseDeep,
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6.w),
                               Text(
                                 data['description'] ?? '',
                                 style: TextStyle(
-                                  fontSize: 13,
+                                  fontSize: 13.sp,
                                   color: AppColors.softBrown,
                                   fontStyle: FontStyle.italic,
                                   fontFamily: 'Georgia',
@@ -291,34 +292,34 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16.h),
 
                     // Title
                     Text(
                       data['title'] ?? '',
-                      style: const TextStyle(
-                        fontSize: 32,
+                      style: TextStyle(
+                        fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
                         fontFamily: 'Georgia',
                         color: AppColors.warmBrown,
                         height: 1.2,
                       ),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // Divider with heart
                     _HeartDivider(),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
 
                     // Unique memory callout
                     if (isUnique) ...[
                       _SpecialMemoryCard(),
-                      const SizedBox(height: 20),
+                      SizedBox(height: 20.h),
                     ],
 
                     // Bottom love note
                     _LoveNoteFooter(),
-                    const SizedBox(height: 40),
+                    SizedBox(height: 40.h),
                   ] else ...[
                     // ── Edit mode ─────────────────────────────────────
                     _EditField(
@@ -327,13 +328,13 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                       fontSize: 22,
                       maxLines: 1,
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     _EditField(
                       controller: _descController,
                       label: AppStrings.memoryDateLabel,
                       maxLines: 4,
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: 32.h),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton.icon(
@@ -341,9 +342,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.roseDeep,
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          padding: EdgeInsets.symmetric(vertical: 16.h),
                           shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(16.r),
                           ),
                           elevation: 0,
                         ),
@@ -358,7 +359,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         ),
                       ),
                     ),
-                    const SizedBox(height: 40),
+                    SizedBox(height: 40.h),
                   ],
                 ],
               ),
@@ -388,20 +389,20 @@ class _CircleButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 40,
-        height: 40,
+        width: 40.r,
+        height: 40.r,
         decoration: BoxDecoration(
           color: AppColors.cream.withOpacity(0.92),
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
               color: AppColors.warmBrown.withOpacity(0.12),
-              blurRadius: 10,
-              offset: const Offset(0, 2),
+              blurRadius: 10.r,
+              offset: Offset(0, 2.h),
             ),
           ],
         ),
-        child: Icon(icon, size: 18, color: color),
+        child: Icon(icon, size: 18.sp, color: color),
       ),
     );
   }
@@ -416,8 +417,8 @@ class _HeartDivider extends StatelessWidget {
           child: Divider(color: AppColors.roseDust.withOpacity(0.5), thickness: 1),
         ),
         Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 10),
-          child: Icon(Icons.favorite, size: 14, color: AppColors.roseDust),
+          padding: EdgeInsets.symmetric(horizontal: 10.w),
+          child: Icon(Icons.favorite, size: 14.sp, color: AppColors.roseDust),
         ),
         Expanded(
           child: Divider(color: AppColors.roseDust.withOpacity(0.5), thickness: 1),
@@ -431,22 +432,22 @@ class _SpecialMemoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(18),
+      padding: EdgeInsets.all(18.r),
       decoration: BoxDecoration(
         color: AppColors.champagne,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: AppColors.roseDust.withOpacity(0.4)),
       ),
       child: Row(
         children: [
-          const Icon(Icons.star_rounded, color: AppColors.roseDeep, size: 22),
-          const SizedBox(width: 12),
+          Icon(Icons.star_rounded, color: AppColors.roseDeep, size: 22.sp),
+          SizedBox(width: 12.w),
           Expanded(
             child: Text(
               AppStrings.specialMemoryCallout,
               style: TextStyle(
                 color: AppColors.softBrown,
-                fontSize: 13,
+                fontSize: 13.sp,
                 fontFamily: 'Georgia',
                 fontStyle: FontStyle.italic,
               ),
@@ -463,16 +464,16 @@ class _LoveNoteFooter extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(vertical: 22, horizontal: 20),
+      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 20.w),
       decoration: BoxDecoration(
         color: AppColors.ivoryCard,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(24.r),
         border: Border.all(color: AppColors.champagne),
         boxShadow: [
           BoxShadow(
             color: AppColors.roseDust.withOpacity(0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
+            blurRadius: 20.r,
+            offset: Offset(0, 4.h),
           ),
         ],
       ),
@@ -481,16 +482,16 @@ class _LoveNoteFooter extends StatelessWidget {
           Icon(
             Icons.favorite_rounded,
             color: AppColors.roseDust.withOpacity(0.7),
-            size: 28,
+            size: 28.sp,
           ),
-          const SizedBox(height: 10),
+          SizedBox(height: 10.h),
           Text(
             AppStrings.loveNoteText,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Georgia',
               fontStyle: FontStyle.italic,
-              fontSize: 15,
+              fontSize: 15.sp,
               color: AppColors.softBrown,
               height: 1.6,
             ),
@@ -520,7 +521,7 @@ class _EditField extends StatelessWidget {
       controller: controller,
       maxLines: maxLines,
       style: TextStyle(
-        fontSize: fontSize,
+        fontSize: fontSize.sp,
         fontFamily: 'Georgia',
         color: AppColors.warmBrown,
         fontWeight: maxLines == 1 ? FontWeight.bold : FontWeight.normal,
@@ -528,20 +529,20 @@ class _EditField extends StatelessWidget {
       cursorColor: AppColors.roseDeep,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: const TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
+        labelStyle: TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia', fontSize: 14.sp),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           borderSide: BorderSide(color: AppColors.champagne, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(16.r),
           borderSide: const BorderSide(color: AppColors.roseDust, width: 1.5),
         ),
         filled: true,
         fillColor: AppColors.ivoryCard,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
+        contentPadding: EdgeInsets.symmetric(
+          horizontal: 16.w,
+          vertical: 14.h,
         ),
       ),
     );

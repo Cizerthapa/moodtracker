@@ -8,6 +8,7 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
 import 'dart:io';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
 final _moods = [
@@ -128,31 +129,31 @@ class _NotesScreenState extends State<NotesScreen>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           AppStrings.journalHeader,
                           style: TextStyle(
                             fontFamily: 'Georgia',
-                            fontSize: 34,
+                            fontSize: 34.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.warmBrown,
                             height: 1.1,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4.h),
                         Row(
                           children: [
                             Icon(
                               Icons.auto_awesome_rounded,
-                              size: 12,
+                              size: 12.r,
                               color: AppColors.roseDust,
                             ),
-                            const SizedBox(width: 6),
-                            const Text(
+                            SizedBox(width: 6.w),
+                            Text(
                               AppStrings.journalSubHeader,
                               style: TextStyle(
                                 fontFamily: 'Georgia',
                                 fontStyle: FontStyle.italic,
-                                fontSize: 13,
+                                fontSize: 13.sp,
                                 color: AppColors.softBrown,
                               ),
                             ),
@@ -164,23 +165,23 @@ class _NotesScreenState extends State<NotesScreen>
                   GestureDetector(
                     onTap: _showAddNoteSheet,
                     child: Container(
-                      width: 46,
-                      height: 46,
+                      width: 46.r,
+                      height: 46.r,
                       decoration: BoxDecoration(
                         color: AppColors.roseDeep,
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
                             color: AppColors.roseDeep.withOpacity(0.3),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
+                            blurRadius: 14.r,
+                            offset: Offset(0, 4.h),
                           ),
                         ],
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.edit_rounded,
                         color: Colors.white,
-                        size: 20,
+                        size: 20.r,
                       ),
                     ),
                   ),
@@ -190,7 +191,7 @@ class _NotesScreenState extends State<NotesScreen>
 
             // Search Bar
             Padding(
-              padding: const EdgeInsets.fromLTRB(28, 8, 28, 12),
+              padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 12.h),
               child: TextField(
                 controller: _searchController,
                 onChanged: (val) => setState(() => _searchQuery = val),
@@ -200,11 +201,12 @@ class _NotesScreenState extends State<NotesScreen>
                     fontFamily: 'Georgia',
                     fontStyle: FontStyle.italic,
                     color: AppColors.softBrown.withValues(alpha: 0.5),
+                    fontSize: 14.sp,
                   ),
-                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust),
+                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust, size: 20.r),
                   suffixIcon: _searchQuery.isNotEmpty 
                     ? IconButton(
-                        icon: const Icon(Icons.clear_rounded, size: 18),
+                        icon: Icon(Icons.clear_rounded, size: 18.r),
                         onPressed: () {
                           _searchController.clear();
                           setState(() => _searchQuery = "");
@@ -213,13 +215,13 @@ class _NotesScreenState extends State<NotesScreen>
                     : null,
                   filled: true,
                   fillColor: AppColors.ivoryCard,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                  contentPadding: EdgeInsets.symmetric(vertical: 0),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     borderSide: BorderSide(color: AppColors.champagne),
                   ),
                   enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                     borderSide: BorderSide(color: AppColors.champagne),
                   ),
                 ),
@@ -228,7 +230,7 @@ class _NotesScreenState extends State<NotesScreen>
 
             // ── Divider ───────────────────────────────────────────────
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+              padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
               child: Row(
                 children: [
                   Expanded(
@@ -238,10 +240,10 @@ class _NotesScreenState extends State<NotesScreen>
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w),
                     child: Icon(
                       Icons.favorite,
-                      size: 10,
+                      size: 10.r,
                       color: AppColors.roseDust.withOpacity(0.7),
                     ),
                   ),
@@ -286,17 +288,21 @@ class _NotesScreenState extends State<NotesScreen>
                                       (n['mood'] ?? "").toString().toLowerCase().contains(_searchQuery.toLowerCase())
                                     ).toList();
                                 
-                                if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
+                                 if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
                                   return Center(
                                     child: Text(
                                       "No notes match your search",
-                                      style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown),
+                                      style: TextStyle(
+                                        fontFamily: 'Georgia',
+                                        color: AppColors.softBrown,
+                                        fontSize: 14.sp,
+                                      ),
                                     ),
                                   );
                                 }
 
                                 return ListView.builder(
-                                  padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                                  padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
                                   itemCount: filteredNotes.length,
                                   itemBuilder: (context, index) {
                                     final note = filteredNotes[index];
@@ -345,36 +351,36 @@ class _NoteCard extends StatelessWidget {
       key: Key(note['id'] ?? note['date']),
       direction: DismissDirection.endToStart,
       background: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: EdgeInsets.only(bottom: 12.h),
         alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 24),
+        padding: EdgeInsets.only(right: 24.w),
         decoration: BoxDecoration(
           color: AppColors.roseDeep.withOpacity(0.1),
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
         ),
-        child: const Icon(
+        child: Icon(
           Icons.delete_outline_rounded,
           color: AppColors.roseDeep,
-          size: 24,
+          size: 24.r,
         ),
       ),
       onDismissed: (_) => onDelete(),
       child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
+        margin: EdgeInsets.only(bottom: 12.h),
         decoration: BoxDecoration(
           color: tint,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(20.r),
           border: Border.all(color: accent.withOpacity(0.2), width: 1),
           boxShadow: [
             BoxShadow(
               color: accent.withOpacity(0.06),
-              blurRadius: 12,
-              offset: const Offset(0, 3),
+              blurRadius: 12.r,
+              offset: Offset(0, 3.h),
             ),
           ],
         ),
         child: Padding(
-          padding: const EdgeInsets.all(18),
+          padding: EdgeInsets.all(18.r),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -387,18 +393,18 @@ class _NoteCard extends StatelessWidget {
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
-                      fontSize: 11,
+                      fontSize: 11.sp,
                       color: AppColors.softBrown,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: 10.w,
+                      vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
                       color: accent.withOpacity(0.12),
-                      borderRadius: BorderRadius.circular(50),
+                      borderRadius: BorderRadius.circular(50.r),
                       border: Border.all(
                         color: accent.withOpacity(0.25),
                         width: 1,
@@ -407,13 +413,13 @@ class _NoteCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Text(emoji, style: const TextStyle(fontSize: 14)),
-                        const SizedBox(width: 5),
+                        Text(emoji, style: TextStyle(fontSize: 14.sp)),
+                        SizedBox(width: 5.w),
                         Text(
                           label,
                           style: TextStyle(
                             fontFamily: 'Georgia',
-                            fontSize: 11,
+                            fontSize: 11.sp,
                             color: accent,
                             fontWeight: FontWeight.bold,
                           ),
@@ -423,14 +429,14 @@ class _NoteCard extends StatelessWidget {
                   ),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12.h),
 
               // Note text
               Text(
                 note['text'] ?? '',
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Georgia',
-                  fontSize: 15,
+                  fontSize: 15.sp,
                   color: AppColors.warmBrown,
                   height: 1.55,
                 ),
@@ -438,27 +444,27 @@ class _NoteCard extends StatelessWidget {
 
               // Note Image
               if (note['imageUrl'] != null) ...[
-                const SizedBox(height: 16),
+                SizedBox(height: 16.h),
                 ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(16.r),
                   child: Image.network(
                     note['imageUrl'],
-                    height: 180,
+                    height: 180.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
                     loadingBuilder: (context, child, loadingProgress) {
                       if (loadingProgress == null) return child;
                       return ShimmerLoading(
                         isLoading: true,
-                        child: const ShimmerSkeleton(height: 180),
+                        child: ShimmerSkeleton(height: 180.h),
                       );
                     },
                     errorBuilder: (context, error, stackTrace) => Container(
-                      height: 150,
+                      height: 150.h,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         color: Colors.white24,
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(16.r),
                       ),
                       child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
                     ),
@@ -483,17 +489,17 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: EdgeInsets.all(40.r),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Text('📖', style: TextStyle(fontSize: 48)),
-            const SizedBox(height: 18),
-            const Text(
+            Text('📖', style: TextStyle(fontSize: 48.sp)),
+            SizedBox(height: 18.h),
+            Text(
               AppStrings.journalEmptyTitle,
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: 22,
+                fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.warmBrown,
               ),
@@ -505,12 +511,12 @@ class _EmptyState extends StatelessWidget {
               style: TextStyle(
                 fontFamily: 'Georgia',
                 fontStyle: FontStyle.italic,
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: AppColors.softBrown,
                 height: 1.6,
               ),
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: 28.h),
             GestureDetector(
               onTap: onAdd,
               child: Container(
@@ -520,22 +526,22 @@ class _EmptyState extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.roseDeep,
-                  borderRadius: BorderRadius.circular(50),
+                  borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.roseDeep.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      blurRadius: 16.r,
+                      offset: Offset(0, 4.h),
                     ),
                   ],
                 ),
-                child: const Text(
+                child: Text(
                   AppStrings.writeANoteButton,
                   style: TextStyle(
                     fontFamily: 'Georgia',
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                   ),
                 ),
               ),
@@ -573,15 +579,15 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
   Widget build(BuildContext context) {
     return AnimatedContainer(
       duration: const Duration(milliseconds: 250),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.cream,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
       ),
       padding: EdgeInsets.only(
-        left: 28,
-        right: 28,
-        top: 12,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
+        left: 28.w,
+        right: 28.w,
+        top: 12.h,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 28.h,
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -589,25 +595,25 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
         children: [
           Center(
             child: Container(
-              width: 40,
-              height: 4,
+              width: 40.w,
+              height: 4.h,
               decoration: BoxDecoration(
                 color: AppColors.champagne,
-                borderRadius: BorderRadius.circular(4),
+                borderRadius: BorderRadius.circular(4.r),
               ),
             ),
           ),
-          const SizedBox(height: 22),
-          const Text(
+          SizedBox(height: 22.h),
+          Text(
             AppStrings.howAreYouFeeling,
             style: TextStyle(
               fontFamily: 'Georgia',
-              fontSize: 22,
+              fontSize: 22.sp,
               fontWeight: FontWeight.bold,
               color: AppColors.warmBrown,
             ),
           ),
-          const SizedBox(height: 22),
+          SizedBox(height: 22.h),
 
           // Mood selector
           SingleChildScrollView(
@@ -622,20 +628,20 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
                 return GestureDetector(
                   onTap: () => setState(() => _selectedEmoji = emoji),
                   child: Container(
-                    margin: const EdgeInsets.only(right: 12),
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    margin: EdgeInsets.only(right: 12.w),
+                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
                     decoration: BoxDecoration(
                       color: isSelected ? accent.withValues(alpha: 0.1) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(14.r),
                       border: Border.all(
                         color: isSelected ? accent.withValues(alpha: 0.4) : AppColors.champagne,
                       ),
                     ),
                     child: Column(
                       children: [
-                        Text(emoji, style: TextStyle(fontSize: isSelected ? 28 : 24)),
-                        const SizedBox(height: 4),
-                        Text(label, style: TextStyle(fontFamily: 'Georgia', fontSize: 10, color: isSelected ? accent : AppColors.softBrown)),
+                        Text(emoji, style: TextStyle(fontSize: isSelected ? 28.sp : 24.sp)),
+                        SizedBox(height: 4.h),
+                        Text(label, style: TextStyle(fontFamily: 'Georgia', fontSize: 10.sp, color: isSelected ? accent : AppColors.softBrown)),
                       ],
                     ),
                   ),
@@ -649,24 +655,24 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
           GestureDetector(
             onTap: _pickImage,
             child: Container(
-              height: 120,
+              height: 120.h,
               width: double.infinity,
               decoration: BoxDecoration(
                 color: AppColors.ivoryCard,
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(18.r),
                 border: Border.all(color: AppColors.champagne),
               ),
               child: _selectedImage != null
                   ? ClipRRect(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(18.r),
                       child: Image.file(_selectedImage!, fit: BoxFit.cover),
                     )
                   : Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 24),
-                        const SizedBox(width: 12),
-                        const Text("Add a photo", style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown)),
+                        Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 24.r),
+                        SizedBox(width: 12.w),
+                        Text("Add a photo", style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontSize: 14.sp)),
                       ],
                     ),
             ),
@@ -678,10 +684,11 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
             maxLines: 3,
             decoration: InputDecoration(
               hintText: AppStrings.writeThoughtsHint,
+              hintStyle: TextStyle(fontSize: 14.sp),
               filled: true,
               fillColor: AppColors.ivoryCard,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(18), borderSide: BorderSide.none),
-              contentPadding: const EdgeInsets.all(16),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.r), borderSide: BorderSide.none),
+              contentPadding: EdgeInsets.all(16.r),
             ),
           ),
           const SizedBox(height: 22),
@@ -693,7 +700,7 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.roseDeep,
                 foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
               ),
               onPressed: _isSaving ? null : () async {
                 if (_textController.text.trim().isNotEmpty) {

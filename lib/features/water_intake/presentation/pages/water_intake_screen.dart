@@ -7,6 +7,7 @@ import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 enum DrinkType {
   water,
@@ -152,20 +153,20 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 children: [
                   Text(
                     AppStrings.waterIntakeHeader,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 34,
+                      fontSize: 34.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.warmBrown,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12.h),
                   Row(
                     children: [
                       _buildTabButton(0, Icons.track_changes_rounded, 'Goal'),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       _buildTabButton(1, Icons.history_rounded, 'History'),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8.w),
                       _buildTabButton(2, Icons.bar_chart_rounded, 'Trends'),
                     ],
                   ),
@@ -183,24 +184,24 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             Expanded(
               child: _isLoading
                   ? Padding(
-                      padding: const EdgeInsets.all(28.0),
+                      padding: EdgeInsets.all(28.0.r),
                       child: Column(
                         children: [
                           ShimmerLoading(
                             isLoading: true,
-                            child: const ShimmerSkeleton(height: 200, width: 200),
+                            child: ShimmerSkeleton(height: 200.r, width: 200.r),
                           ),
-                          const SizedBox(height: 48),
+                          SizedBox(height: 48.h),
                           ShimmerLoading(
                             isLoading: true,
-                            child: const ShimmerSkeleton(height: 100),
+                            child: ShimmerSkeleton(height: 100.h),
                           ),
-                          const SizedBox(height: 48),
+                          SizedBox(height: 48.h),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: List.generate(3, (i) => const ShimmerLoading(
+                            children: List.generate(3, (i) => ShimmerLoading(
                               isLoading: true,
-                              child: ShimmerSkeleton(height: 50, width: 80),
+                              child: ShimmerSkeleton(height: 50.h, width: 80.w),
                             )),
                           )
                         ],
@@ -223,10 +224,10 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
       onTap: () => setState(() => _viewIndex = index),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: isSelected ? AppColors.roseDeep : Colors.transparent,
-          borderRadius: BorderRadius.circular(50),
+          borderRadius: BorderRadius.circular(50.r),
           border: Border.all(
             color: isSelected ? AppColors.roseDeep : AppColors.champagne,
           ),
@@ -234,13 +235,13 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 14, color: isSelected ? Colors.white : AppColors.softBrown),
-            const SizedBox(width: 6),
+            Icon(icon, size: 14.sp, color: isSelected ? Colors.white : AppColors.softBrown),
+            SizedBox(width: 6.w),
             Text(
               label,
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: 12,
+                fontSize: 12.sp,
                 color: isSelected ? Colors.white : AppColors.softBrown,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
               ),
@@ -263,7 +264,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
   Widget _buildTrackView() {
     final progress = (_currentIntake / _dailyGoal).clamp(0.0, 1.0);
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(28.r),
       child: Column(
         children: [
           Stack(
@@ -271,11 +272,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             children: [
               RepaintBoundary(
                 child: SizedBox(
-                  width: 200,
-                  height: 200,
+                  width: 200.r,
+                  height: 200.r,
                   child: CircularProgressIndicator(
                     value: progress,
-                    strokeWidth: 12,
+                    strokeWidth: 12.r,
                     backgroundColor: AppColors.champagne.withOpacity(0.5),
                     valueColor: const AlwaysStoppedAnimation<Color>(AppColors.roseDeep),
                     strokeCap: StrokeCap.round,
@@ -295,9 +296,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                   ),
                   Text(
                     '$_currentIntake',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 48,
+                      fontSize: 48.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.warmBrown,
                     ),
@@ -313,7 +314,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
               ),
             ],
           ),
-          const SizedBox(height: 48),
+          SizedBox(height: 48.h),
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -331,7 +332,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: DrinkType.values.map((type) => _buildTypeChip(type)).toList(),
           ),
-          const SizedBox(height: 48),
+          SizedBox(height: 48.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
@@ -353,7 +354,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         children: [
           AnimatedContainer(
             duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.all(16),
+            padding: EdgeInsets.all(16.r),
             decoration: BoxDecoration(
               color: isSelected ? type.color.withOpacity(0.15) : AppColors.ivoryCard,
               shape: BoxShape.circle,
@@ -364,12 +365,12 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
               boxShadow: isSelected ? [
                 BoxShadow(
                   color: type.color.withOpacity(0.2),
-                  blurRadius: 10,
-                  offset: const Offset(0, 4),
+                  blurRadius: 10.r,
+                  offset: Offset(0, 4.h),
                 )
               ] : null,
             ),
-            child: Icon(type.icon, color: isSelected ? type.color : AppColors.softBrown.withOpacity(0.5), size: 28),
+            child: Icon(type.icon, color: isSelected ? type.color : AppColors.softBrown.withOpacity(0.5), size: 28.r),
           ),
           const SizedBox(height: 10),
           Text(
@@ -377,7 +378,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
             style: TextStyle(
               fontFamily: 'Georgia',
               color: isSelected ? type.color : AppColors.softBrown,
-              fontSize: 12,
+              fontSize: 12.sp,
               fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
             ),
           ),
@@ -392,16 +393,16 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
         backgroundColor: _selectedType.color,
         foregroundColor: Colors.white,
         elevation: 0,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 16),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18.r)),
+        padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 16.h),
       ),
       onPressed: () => _addDrink(amount),
       child: Text(
         '+$amount ml',
-        style: const TextStyle(
+        style: TextStyle(
           fontFamily: 'Georgia',
           fontWeight: FontWeight.bold,
-          fontSize: 15,
+          fontSize: 15.sp,
         ),
       ),
     );
@@ -409,22 +410,27 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
 
   Widget _buildHistoryView() {
     if (_history.isEmpty) {
-      return const Center(
-        child: Column(
+      return Center(
+      child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.history_rounded, size: 48, color: AppColors.champagne),
-            const SizedBox(height: 16),
+            Icon(Icons.history_rounded, size: 48.r, color: AppColors.champagne),
+            SizedBox(height: 16.h),
             Text(
               AppStrings.noHistory,
-              style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontStyle: FontStyle.italic),
+              style: TextStyle(
+                fontFamily: 'Georgia',
+                color: AppColors.softBrown,
+                fontStyle: FontStyle.italic,
+                fontSize: 14.sp,
+              ),
             ),
           ],
         ),
       );
     }
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(20, 16, 20, 100),
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 100.h),
       itemCount: _history.length,
       itemBuilder: (context, index) {
         final entry = _history[index];
@@ -432,53 +438,72 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
           key: Key(entry.timestamp.toIso8601String() + index.toString()),
           direction: DismissDirection.endToStart,
           background: Container(
-            margin: const EdgeInsets.only(bottom: 12),
+            margin: EdgeInsets.only(bottom: 12.h),
             alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 24),
+            padding: EdgeInsets.only(right: 24.w),
             decoration: BoxDecoration(
               color: AppColors.roseDeep.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
             ),
-            child: const Icon(Icons.delete_outline_rounded, color: AppColors.roseDeep),
+            child: Icon(
+              Icons.delete_outline_rounded,
+              color: AppColors.roseDeep,
+              size: 24.r,
+            ),
           ),
           onDismissed: (_) => _deleteDrink(index),
           child: Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(18),
+            margin: EdgeInsets.only(bottom: 12.h),
+            padding: EdgeInsets.all(18.r),
             decoration: BoxDecoration(
               color: AppColors.ivoryCard,
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(20.r),
               border: Border.all(color: AppColors.champagne),
             ),
             child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(12),
+                  padding: EdgeInsets.all(12.r),
                   decoration: BoxDecoration(
                     color: entry.type.color.withOpacity(0.12),
                     shape: BoxShape.circle,
                   ),
-                  child: Icon(entry.type.icon, color: entry.type.color, size: 20),
+                  child: Icon(entry.type.icon, color: entry.type.color, size: 20.r),
                 ),
-                const SizedBox(width: 16),
+                SizedBox(width: 16.w),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
                         entry.type.label,
-                        style: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, color: AppColors.warmBrown),
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.warmBrown,
+                          fontSize: 14.sp,
+                        ),
                       ),
                       Text(
                         DateFormat('MMM d · h:mm a').format(entry.timestamp),
-                        style: const TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontSize: 11, fontStyle: FontStyle.italic),
+                        style: TextStyle(
+                          fontFamily: 'Georgia',
+                          color: AppColors.softBrown,
+                          fontSize: 11.sp,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   '${entry.amount} ml',
-                  style: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.warmBrown),
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.sp,
+                    color: AppColors.warmBrown,
+                  ),
                 ),
               ],
             ),
@@ -507,13 +532,18 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
     }
 
     return Padding(
-      padding: const EdgeInsets.all(28),
+      padding: EdgeInsets.all(28.r),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             AppStrings.last7Days,
-            style: TextStyle(fontFamily: 'Georgia', fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.warmBrown),
+            style: TextStyle(
+              fontFamily: 'Georgia',
+              fontSize: 20.sp,
+              fontWeight: FontWeight.bold,
+              color: AppColors.warmBrown,
+            ),
           ),
           const SizedBox(height: 32),
           Expanded(
@@ -543,7 +573,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                             padding: const EdgeInsets.only(top: 8.0),
                             child: Text(
                               days[value.toInt()],
-                              style: const TextStyle(color: AppColors.softBrown, fontSize: 11, fontFamily: 'Georgia'),
+                              style: TextStyle(
+                                color: AppColors.softBrown,
+                                fontSize: 11.sp,
+                                fontFamily: 'Georgia',
+                              ),
                             ),
                           );
                         },
@@ -561,8 +595,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                       BarChartRodData(
                         toY: dailyTotals[i],
                         color: AppColors.roseDeep,
-                        width: 18,
-                        borderRadius: BorderRadius.circular(6),
+                        width: 18.w,
+                        borderRadius: BorderRadius.circular(6.r),
                         backDrawRodData: BackgroundBarChartRodData(
                           show: true,
                           toY: maxIntake,

@@ -9,6 +9,7 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
 import 'dart:io';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -186,12 +187,12 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
                       itemCount: 5,
                       itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.all(8.0),
+                        padding: EdgeInsets.all(8.0.r),
                         child: ShimmerLoading(
                           isLoading: true,
                           child: ShimmerSkeleton(
-                            height: 100,
-                            borderRadius: BorderRadius.circular(20),
+                            height: 100.h,
+                            borderRadius: BorderRadius.circular(20.r),
                           ),
                         ),
                       ),
@@ -206,12 +207,12 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                               padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
                               itemCount: 5,
                               itemBuilder: (context, index) => Padding(
-                                padding: const EdgeInsets.only(bottom: 12),
+                                padding: EdgeInsets.only(bottom: 12.h),
                                 child: ShimmerLoading(
                                   isLoading: true,
                                   child: ShimmerSkeleton(
-                                    height: 100,
-                                    borderRadius: BorderRadius.circular(20),
+                                    height: 100.h,
+                                    borderRadius: BorderRadius.circular(20.r),
                                   ),
                                 ),
                               ),
@@ -242,7 +243,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                             backgroundColor: Colors.white,
                             child: RepaintBoundary(
                               child: ListView.builder(
-                                padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
                                 itemCount: listToDisplay.length,
                                 itemBuilder: (context, index) {
                                   final data = listToDisplay[index];
@@ -299,11 +300,11 @@ class _Header extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   AppStrings.ourStoryHeader,
                   style: TextStyle(
                     fontFamily: 'Georgia',
-                    fontSize: 34,
+                    fontSize: 34.sp,
                     fontWeight: FontWeight.bold,
                     color: AppColors.warmBrown,
                     height: 1.1,
@@ -312,18 +313,18 @@ class _Header extends StatelessWidget {
                 const SizedBox(height: 4),
                 Row(
                   children: [
-                    const Icon(
+                    Icon(
                       Icons.favorite_rounded,
-                      size: 12,
+                      size: 12.r,
                       color: AppColors.roseDust,
                     ),
-                    const SizedBox(width: 6),
-                    const Text(
+                    SizedBox(width: 6.w),
+                    Text(
                       AppStrings.ourStorySlogan,
                       style: TextStyle(
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,
-                        fontSize: 13,
+                        fontSize: 13.sp,
                         color: AppColors.softBrown,
                       ),
                     ),
@@ -335,23 +336,23 @@ class _Header extends StatelessWidget {
           GestureDetector(
             onTap: onAdd,
             child: Container(
-              width: 46,
-              height: 46,
+              width: 46.r,
+              height: 46.r,
               decoration: BoxDecoration(
                 color: AppColors.roseDeep,
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
                     color: AppColors.roseDeep.withOpacity(0.3),
-                    blurRadius: 14,
-                    offset: const Offset(0, 4),
+                    blurRadius: 14.r,
+                    offset: Offset(0, 4.h),
                   ),
                 ],
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.add_rounded,
                 color: Colors.white,
-                size: 24,
+                size: 24.r,
               ),
             ),
           ),
@@ -367,7 +368,7 @@ class _HeartDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
       child: Row(
         children: [
           Expanded(
@@ -377,10 +378,10 @@ class _HeartDivider extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 8),
+            padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Icon(
               Icons.favorite,
-              size: 10,
+              size: 10.r,
               color: AppColors.roseDust.withOpacity(0.7),
             ),
           ),
@@ -453,10 +454,10 @@ class _MemoryCardState extends State<_MemoryCard>
       child: ScaleTransition(
         scale: _scaleAnim,
         child: Container(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: EdgeInsets.only(bottom: 12.h),
           decoration: BoxDecoration(
             color: isUnique ? const Color(0xFFFFF0EC) : AppColors.ivoryCard,
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
               color: isUnique ? AppColors.roseDeep.withOpacity(0.35) : AppColors.champagne,
               width: isUnique ? 1.5 : 1,
@@ -466,19 +467,19 @@ class _MemoryCardState extends State<_MemoryCard>
                 color: isUnique
                     ? AppColors.roseDeep.withValues(alpha: 0.07)
                     : AppColors.warmBrown.withOpacity(0.05),
-                blurRadius: 12,
-                offset: const Offset(0, 3),
+                blurRadius: 12.r,
+                offset: Offset(0, 3.h),
               ),
             ],
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
             child: Row(
               children: [
                 // Icon dot
                 Container(
-                  width: 38,
-                  height: 38,
+                  width: 38.r,
+                  height: 38.r,
                   decoration: BoxDecoration(
                     color: isUnique ? AppColors.roseDeep.withOpacity(0.12) : AppColors.champagne,
                     shape: BoxShape.circle,
@@ -486,32 +487,32 @@ class _MemoryCardState extends State<_MemoryCard>
                   child: Icon(
                     isUnique ? Icons.star_rounded : Icons.favorite_rounded,
                     color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
-                    size: 18,
+                    size: 18.r,
                   ),
                 ),
-                const SizedBox(width: 14),
+                SizedBox(width: 14.w),
 
                 // Text
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        description,
-                        style: TextStyle(
-                          fontFamily: 'Georgia',
-                          fontStyle: FontStyle.italic,
-                          fontSize: 11,
-                          color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
-                          fontWeight: FontWeight.w600,
+                        Text(
+                          description,
+                          style: TextStyle(
+                            fontFamily: 'Georgia',
+                            fontStyle: FontStyle.italic,
+                            fontSize: 11.sp,
+                            color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      const SizedBox(height: 3),
+                        SizedBox(height: 3.h),
                       Text(
                         title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontFamily: 'Georgia',
-                          fontSize: 16,
+                          fontSize: 16.sp,
                           fontWeight: FontWeight.bold,
                           color: AppColors.warmBrown,
                         ),
@@ -524,7 +525,7 @@ class _MemoryCardState extends State<_MemoryCard>
                 Icon(
                   Icons.chevron_right_rounded,
                   color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
-                  size: 20,
+                  size: 20.r,
                 ),
               ],
             ),
@@ -545,38 +546,38 @@ class _EmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: Padding(
-        padding: const EdgeInsets.all(40),
+        padding: EdgeInsets.all(40.r),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               Icons.favorite_border_rounded,
-              size: 52,
+              size: 52.r,
               color: AppColors.roseDust.withOpacity(0.5),
             ),
-            const SizedBox(height: 18),
-            const Text(
+            SizedBox(height: 18.h),
+            Text(
               AppStrings.noMemories,
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: 22,
+                fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.warmBrown,
               ),
             ),
-            const SizedBox(height: 10),
-            const Text(
+            SizedBox(height: 10.h),
+            Text(
               AppStrings.noMemoriesSubtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Georgia',
                 fontStyle: FontStyle.italic,
-                fontSize: 14,
+                fontSize: 14.sp,
                 color: AppColors.softBrown,
                 height: 1.6,
               ),
             ),
-            const SizedBox(height: 28),
+            SizedBox(height: 28.h),
             GestureDetector(
               onTap: onAdd,
               child: Container(
@@ -586,22 +587,22 @@ class _EmptyState extends StatelessWidget {
                 ),
                 decoration: BoxDecoration(
                   color: AppColors.roseDeep,
-                  borderRadius: BorderRadius.circular(50),
+                  borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
                       color: AppColors.roseDeep.withOpacity(0.3),
-                      blurRadius: 16,
-                      offset: const Offset(0, 4),
+                      blurRadius: 16.r,
+                      offset: Offset(0, 4.h),
                     ),
                   ],
                 ),
-                child: const Text(
+                child: Text(
                   AppStrings.addMemory,
                   style: TextStyle(
                     fontFamily: 'Georgia',
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
-                    fontSize: 15,
+                    fontSize: 15.sp,
                   ),
                 ),
               ),
@@ -640,62 +641,66 @@ class _AddMemorySheetState extends State<_AddMemorySheet> {
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
       ),
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         color: AppColors.cream,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
       ),
       child: SingleChildScrollView(
-        padding: const EdgeInsets.fromLTRB(28, 20, 28, 28),
+        padding: EdgeInsets.fromLTRB(28.w, 20.h, 28.w, 28.h),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Center(
               child: Container(
-                width: 40,
-                height: 4,
+                width: 40.w,
+                height: 4.h,
                 decoration: BoxDecoration(
                   color: AppColors.champagne,
-                  borderRadius: BorderRadius.circular(2),
+                  borderRadius: BorderRadius.circular(2.r),
                 ),
               ),
             ),
-            const SizedBox(height: 24),
-            const Text(
+            SizedBox(height: 24.h),
+            Text(
               "New Memory",
               style: TextStyle(
                 fontFamily: 'Georgia',
-                fontSize: 24,
+                fontSize: 24.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.warmBrown,
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: 20.h),
             
             // Image Picker UI
             GestureDetector(
               onTap: _pickImage,
               child: Container(
-                height: 180,
+                height: 180.h,
                 width: double.infinity,
                 decoration: BoxDecoration(
                   color: AppColors.ivoryCard,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(20.r),
                   border: Border.all(color: AppColors.champagne),
                 ),
                 child: _selectedImage != null
                     ? ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(20.r),
                         child: Image.file(_selectedImage!, fit: BoxFit.cover),
                       )
                     : Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 40),
-                          const SizedBox(height: 8),
+                          Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 40.r),
+                          SizedBox(height: 8.h),
                           Text(
                             "Add a Photo",
-                            style: TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
+                            style: TextStyle(
+                              color: AppColors.softBrown,
+                              fontFamily: 'Georgia',
+                              fontSize: 14.sp,
+                            ),
                           ),
                         ],
                       ),
@@ -716,7 +721,7 @@ class _AddMemorySheetState extends State<_AddMemorySheet> {
                 ),
               ),
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: 12.h),
             TextField(
               controller: _descController,
               decoration: InputDecoration(
@@ -748,8 +753,8 @@ class _AddMemorySheetState extends State<_AddMemorySheet> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.roseDeep,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
                 ),
                 child: _isUploading 
                   ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))

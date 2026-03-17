@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -56,42 +57,42 @@ class _LoginScreenState extends State<LoginScreen> {
       backgroundColor: AppColors.cream,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32.0),
+          padding: EdgeInsets.all(32.0.r),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              const SizedBox(height: 60),
-              const Icon(
+              SizedBox(height: 60.h),
+              Icon(
                 Icons.favorite_rounded,
-                size: 80,
+                size: 80.r,
                 color: AppColors.roseDust,
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24.h),
               Text(
                 _isLogin ? 'Welcome Back' : 'Create Account',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Georgia',
-                  fontSize: 32,
+                  fontSize: 32.sp,
                   fontWeight: FontWeight.bold,
                   color: AppColors.warmBrown,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8.h),
               Text(
                 _isLogin
                     ? 'Login to track your moods'
                     : 'Join us to start your journey',
                 textAlign: TextAlign.center,
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: 'Georgia',
                   fontStyle: FontStyle.italic,
-                  fontSize: 16,
+                  fontSize: 16.sp,
                   color: AppColors.softBrown,
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: 48.h),
               TextField(
                 controller: _emailController,
                 decoration: InputDecoration(
@@ -105,7 +106,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 keyboardType: TextInputType.emailAddress,
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16.h),
               TextField(
                 controller: _passwordController,
                 decoration: InputDecoration(
@@ -119,15 +120,15 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 obscureText: true,
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: 32.h),
               ElevatedButton(
                 onPressed: _isLoading ? null : _submit,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.roseDeep,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  padding: EdgeInsets.symmetric(vertical: 16.h),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(16.r),
                   ),
                   elevation: 0,
                 ),
@@ -135,8 +136,8 @@ class _LoginScreenState extends State<LoginScreen> {
                     ? const CircularProgressIndicator(color: Colors.white)
                     : Text(
                         _isLogin ? 'Login' : 'Sign Up',
-                        style: const TextStyle(
-                          fontSize: 18,
+                        style: TextStyle(
+                          fontSize: 18.sp,
                           fontWeight: FontWeight.bold,
                         ),
                       ),

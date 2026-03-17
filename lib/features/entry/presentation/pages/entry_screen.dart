@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moodtrack/features/memories/presentation/pages/memories_screen.dart';
 import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_screen.dart';
 import 'package:moodtrack/features/notes/presentation/pages/notes_screen.dart';
@@ -16,7 +17,7 @@ class EntryScreen extends StatelessWidget {
       backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 28.0, vertical: 32.0),
+          padding: EdgeInsets.symmetric(horizontal: 28.0.w, vertical: 32.0.h),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -28,23 +29,23 @@ class EntryScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
+                        Text(
                           AppStrings.appName,
                           style: TextStyle(
                             fontFamily: 'Georgia',
-                            fontSize: 40,
+                            fontSize: 40.sp,
                             fontWeight: FontWeight.bold,
                             color: AppColors.warmBrown,
                             height: 1.1,
                           ),
                         ),
-                        const SizedBox(height: 8),
+                        SizedBox(height: 8.h),
                         Text(
                           AppStrings.appSlogan,
                           style: TextStyle(
                             fontFamily: 'Georgia',
                             fontStyle: FontStyle.italic,
-                            fontSize: 15,
+                            fontSize: 15.sp,
                             color: AppColors.softBrown,
                           ),
                         ),
@@ -61,22 +62,22 @@ class EntryScreen extends StatelessWidget {
                       );
                     },
                     child: Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: EdgeInsets.all(12.r),
                       decoration: BoxDecoration(
                         color: AppColors.ivoryCard,
                         shape: BoxShape.circle,
                         border: Border.all(color: AppColors.champagne),
                       ),
-                      child: const Icon(
+                      child: Icon(
                         Icons.settings_rounded,
                         color: AppColors.warmBrown,
-                        size: 24,
+                        size: 24.r,
                       ),
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: 48.h),
 
               // ── Feature Cards ───────────────────────────────────────
               Expanded(
@@ -91,7 +92,7 @@ class EntryScreen extends StatelessWidget {
                       color: AppColors.roseDeep,
                       destination: const MemoriesScreen(),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     _buildFeatureCard(
                       context,
                       title: AppStrings.hydrationTitle,
@@ -100,7 +101,7 @@ class EntryScreen extends StatelessWidget {
                       color: const Color(0xFF6DAA7A), // earth green
                       destination: const WaterIntakeScreen(),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20.h),
                     _buildFeatureCard(
                       context,
                       title: AppStrings.journalTitle,
@@ -142,28 +143,28 @@ class EntryScreen extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppColors.ivoryCard,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
               color: AppColors.warmBrown.withOpacity(0.04),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
+              blurRadius: 20.r,
+              offset: Offset(0, 8.h),
             ),
           ],
           border: Border.all(color: AppColors.champagne, width: 1),
         ),
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(24.r),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.12),
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(18.r),
               ),
-              child: Icon(icon, color: color, size: 28),
+              child: Icon(icon, color: color, size: 28.r),
             ),
-            const SizedBox(width: 20),
+            SizedBox(width: 20.w),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,18 +173,18 @@ class EntryScreen extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontFamily: 'Georgia',
-                      fontSize: 18,
+                      fontSize: 18.sp,
                       fontWeight: FontWeight.bold,
                       color: AppColors.warmBrown,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6.h),
                   Text(
                     subtitle,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
-                      fontSize: 13,
+                      fontSize: 13.sp,
                       color: AppColors.softBrown.withOpacity(0.8),
                     ),
                   ),
@@ -193,7 +194,7 @@ class EntryScreen extends StatelessWidget {
             Icon(
               Icons.chevron_right_rounded,
               color: AppColors.roseDeep.withOpacity(0.4),
-              size: 22,
+              size: 22.r,
             ),
           ],
         ),

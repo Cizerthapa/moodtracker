@@ -50,6 +50,7 @@ dependencies:
   shimmer: ^3.0.0
   image_picker: any
   firebase_storage: any
+  flutter_screenutil: ^5.9.3
 
 dev_dependencies:
   flutter_test:
