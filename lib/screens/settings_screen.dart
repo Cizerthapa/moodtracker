@@ -44,16 +44,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (value) {
       await _notificationService.scheduleDailyNotifications();
-      _notificationService.startPeriodicNotifications();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Notifications turned on! (30s interval for 15m)')),
-      );
+      await _notificationService.startPeriodicNotifications();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notifications turned on! (30s interval for 15m)')),
+        );
+      }
     } else {
       await _notificationService.cancelAll();
-      _notificationService.stopPeriodicNotifications();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Notifications turned off.')),
-      );
+      await _notificationService.stopPeriodicNotifications();
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Notifications turned off.')),
+        );
+      }
     }
   }
 

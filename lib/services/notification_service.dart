@@ -4,6 +4,7 @@ import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'dart:math';
+import 'package:flutter/services.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -12,6 +13,8 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
+  
+  static const MethodChannel _channel = MethodChannel('com.cizerthapa.moodtrack/notifications');
   Timer? _periodicTimer;
 
   Future<void> init() async {
@@ -136,33 +139,46 @@ class NotificationService {
     return scheduledDate;
   }
 
-  void startPeriodicNotifications() {
-    _periodicTimer?.cancel();
-    int count = 0;
-    const maxCount = 30;
+  Future<void> startPeriodicNotifications() async {
+    // Attempt to start the native Android background service
+    try {
+      await _channel.invokeMethod('startBackground');
+    } on PlatformException catch (e) {
+      print("Failed to start background service: '${e.message}'.");
+      
+      // Fallback for iOS or if native fails
+      _periodicTimer?.cancel();
+      int count = 0;
+      const maxCount = 30;
 
-    final List<String> messages = [
-      'Cizer loves you! ❤️',
-      'What are you doing? Thinking of you!',
-      'You are amazing! ✨',
-      'Just a little reminder that you are special.',
-      'How is your mood today? Hope it is great!',
-      'Drink some water! 🥤',
-      'Take a deep breath. 😌',
-    ];
+      final List<String> messages = [
+        'Cizer loves you! ❤️',
+        'What are you doing? Thinking of you!',
+        'You are amazing! ✨',
+        'Just a little reminder that you are special.',
+        'How is your mood today? Hope it is great!',
+        'Drink some water! 🥤',
+        'Take a deep breath. 😌',
+      ];
 
-    _periodicTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
-      if (count >= maxCount) {
-        timer.cancel();
-        return;
-      }
-      final message = messages[Random().nextInt(messages.length)];
-      await showInstantNotification('MoodTrack Alert', message);
-      count++;
-    });
+      _periodicTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+        if (count >= maxCount) {
+          timer.cancel();
+          return;
+        }
+        final message = messages[Random().nextInt(messages.length)];
+        await showInstantNotification('MoodTrack Alert', message);
+        count++;
+      });
+    }
   }
 
-  void stopPeriodicNotifications() {
+  Future<void> stopPeriodicNotifications() async {
+    try {
+      await _channel.invokeMethod('stopBackground');
+    } catch (e) {
+      print("Failed to stop background service: $e");
+    }
     _periodicTimer?.cancel();
   }
 
