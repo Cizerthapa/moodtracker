@@ -5,6 +5,8 @@ import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'dart:math';
 import 'package:flutter/services.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -14,7 +16,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
   
-  static const MethodChannel _channel = MethodChannel('com.cizerthapa.moodtrack/notifications');
+  static const MethodChannel _channel = MethodChannel(AppConstants.notificationMethodChannel);
   Timer? _periodicTimer;
 
   Future<void> init() async {
@@ -57,8 +59,8 @@ class NotificationService {
   Future<void> showInstantNotification(String title, String body) async {
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
-          'instant_channel',
-          'Instant Notifications',
+          AppConstants.instantChannelId,
+          AppConstants.instantChannelName,
           importance: Importance.max,
           priority: Priority.high,
         );
@@ -80,17 +82,16 @@ class NotificationService {
   Future<void> scheduleDailyNotifications() async {
     await _scheduleDaily(
       id: 100,
-      title: 'Good Morning! ☀️',
-      body:
-          'Today is a beautiful day to track your progress. Have an amazing morning!',
+      title: AppStrings.morningTitle,
+      body: AppStrings.morningBody,
       hour: 6,
       minute: 0,
     );
 
     await _scheduleDaily(
       id: 101,
-      title: 'Sweet Dreams 🌙',
-      body: 'You did great today. Rest well and see you tomorrow!',
+      title: AppStrings.nightTitle,
+      body: AppStrings.nightBody,
       hour: 23,
       minute: 59,
     );
@@ -111,8 +112,8 @@ class NotificationService {
       scheduledDate: _nextInstanceOfTime(hour, minute),
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
-          'daily_channel',
-          'Daily Messages',
+          AppConstants.dailyChannelId,
+          AppConstants.dailyChannelName,
           importance: Importance.max,
           priority: Priority.high,
         ),
@@ -151,15 +152,7 @@ class NotificationService {
       int count = 0;
       const maxCount = 30;
 
-      final List<String> messages = [
-        'Cizer loves you! ❤️',
-        'What are you doing? Thinking of you!',
-        'You are amazing! ✨',
-        'Just a little reminder that you are special.',
-        'How is your mood today? Hope it is great!',
-        'Drink some water! 🥤',
-        'Take a deep breath. 😌',
-      ];
+      final List<String> messages = AppStrings.periodicMessages;
 
       _periodicTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
         if (count >= maxCount) {
@@ -167,7 +160,7 @@ class NotificationService {
           return;
         }
         final message = messages[Random().nextInt(messages.length)];
-        await showInstantNotification('MoodTrack Alert', message);
+        await showInstantNotification(AppStrings.periodicHeader, message);
         count++;
       });
     }

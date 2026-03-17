@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/entry/presentation/pages/entry_screen.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -38,7 +40,7 @@ class _SplashScreenState extends State<SplashScreen>
     _controller.forward();
 
     // Navigate to EntryScreen after a delay
-    Timer(const Duration(seconds: 3), () {
+    Timer(const Duration(seconds: AppConstants.splashDelaySeconds), () {
       if (mounted) {
         Navigator.of(context).pushReplacement(
           PageRouteBuilder(
@@ -48,7 +50,7 @@ class _SplashScreenState extends State<SplashScreen>
                 (context, animation, secondaryAnimation, child) {
                   return FadeTransition(opacity: animation, child: child);
                 },
-            transitionDuration: const Duration(milliseconds: 600),
+            transitionDuration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
           ),
         );
       }
@@ -92,7 +94,7 @@ class _SplashScreenState extends State<SplashScreen>
                     const SizedBox(height: 24),
                     // Welcome Message
                     const Text(
-                      'Welcome Back,',
+                      AppStrings.welcomeBack,
                       style: TextStyle(
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,
@@ -102,7 +104,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 8),
                     const Text(
-                      'Sangya 💕',
+                      AppStrings.userName,
                       style: TextStyle(
                         fontFamily: 'Georgia',
                         fontSize: 36,
@@ -112,7 +114,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Let\'s track your mood today ✨',
+                      AppStrings.trackMoodToday,
                       style: TextStyle(
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,

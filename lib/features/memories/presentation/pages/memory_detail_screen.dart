@@ -3,6 +3,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
   final DocumentSnapshot doc;
@@ -20,6 +22,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   bool _isEditing = false;
   late AnimationController _heartController;
   late Animation<double> _heartAnim;
+  final MemoriesRepository _repository = MemoriesRepository();
 
   @override
   void initState() {
@@ -47,13 +50,10 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   }
 
   Future<void> _updateMemory() async {
-    await FirebaseFirestore.instance
-        .collection('memories')
-        .doc(widget.doc.id)
-        .update({
-          'title': _titleController.text.trim(),
-          'description': _descController.text.trim(),
-        });
+    await _repository.updateMemory(widget.doc.id, {
+      'title': _titleController.text.trim(),
+      'description': _descController.text.trim(),
+    });
     setState(() => _isEditing = false);
   }
 
@@ -67,29 +67,29 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
               borderRadius: BorderRadius.circular(24),
             ),
             title: const Text(
-              'Forget this memory?',
+              AppStrings.deleteMemoryTitle,
               style: TextStyle(
                 fontFamily: 'Georgia',
                 color: AppColors.warmBrown,
                 fontWeight: FontWeight.bold,
               ),
             ),
-            content: Text(
-              'This moment will be gone forever. Are you sure?',
+            content: const Text(
+              AppStrings.deleteMemoryContent,
               style: TextStyle(color: AppColors.softBrown, fontSize: 14),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  'Keep it',
+                child: const Text(
+                  AppStrings.keepIt,
                   style: TextStyle(color: AppColors.softBrown, fontFamily: 'Georgia'),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: const Text(
-                  'Let go',
+                  AppStrings.letGo,
                   style: TextStyle(
                     color: AppColors.roseDeep,
                     fontFamily: 'Georgia',
@@ -103,10 +103,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         false;
 
     if (confirm) {
-      await FirebaseFirestore.instance
-          .collection('memories')
-          .doc(widget.doc.id)
-          .delete();
+      await _repository.deleteMemory(widget.doc.id);
       if (mounted) Navigator.pop(context);
     }
   }
@@ -296,14 +293,14 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                     // ── Edit mode ─────────────────────────────────────
                     _EditField(
                       controller: _titleController,
-                      label: 'Memory Title',
+                      label: AppStrings.memoryTitleLabel,
                       fontSize: 22,
                       maxLines: 1,
                     ),
                     const SizedBox(height: 20),
                     _EditField(
                       controller: _descController,
-                      label: 'Date / Description',
+                      label: AppStrings.memoryDateLabel,
                       maxLines: 4,
                     ),
                     const SizedBox(height: 32),
@@ -322,7 +319,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                         ),
                         icon: const Icon(Icons.check_rounded),
                         label: const Text(
-                          'Save Memory',
+                          AppStrings.saveMemory,
                           style: TextStyle(
                             fontFamily: 'Georgia',
                             fontSize: 16,
@@ -416,7 +413,7 @@ class _SpecialMemoryCard extends StatelessWidget {
           const SizedBox(width: 12),
           Expanded(
             child: Text(
-              'A truly special moment — marked as unforgettable.',
+              AppStrings.specialMemoryCallout,
               style: TextStyle(
                 color: AppColors.softBrown,
                 fontSize: 13,
@@ -458,7 +455,7 @@ class _LoveNoteFooter extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           Text(
-            '"Every moment with you\nis a memory worth keeping."',
+            AppStrings.loveNoteText,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontFamily: 'Georgia',

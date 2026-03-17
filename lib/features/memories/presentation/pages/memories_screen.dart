@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'memory_detail_screen.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
+import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -12,7 +15,9 @@ class MemoriesScreen extends StatefulWidget {
 
 class _MemoriesScreenState extends State<MemoriesScreen>
     with SingleTickerProviderStateMixin {
+  final MemoriesRepository _repository = MemoriesRepository();
   bool _isLoading = true;
+  List<Map<String, dynamic>> _memories = [];
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
 
@@ -21,7 +26,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _initData();
@@ -34,91 +39,73 @@ class _MemoriesScreenState extends State<MemoriesScreen>
   }
 
   Future<void> _initData() async {
+    // 1. Try to load from cache first
+    final cached = await _repository.getCachedMemories();
+    if (cached.isNotEmpty && mounted) {
+      setState(() {
+        _memories = cached;
+        _isLoading = false;
+      });
+      _fadeController.forward();
+    }
+
+    // 2. Then seed if empty or just wait for real-time stream
     await _seedMemoriesIfEmpty();
-    if (mounted) {
+    
+    // 3. Keep loading indicator if nothing in cache
+    if (_memories.isEmpty && mounted) {
       setState(() => _isLoading = false);
       _fadeController.forward();
     }
   }
 
   Future<void> _seedMemoriesIfEmpty() async {
-    final snapshot = await FirebaseFirestore.instance
-        .collection('memories')
-        .limit(1)
-        .get();
+    // Check Firestore directly for seeding
+    final snapshot = await _repository.getMemoriesStream().first;
     if (snapshot.docs.isNotEmpty) return;
 
-    final seeds = [
-      "20th Dec : Windy hill",
-      "27th Dec : Cafe Window pane - came to give flowers diuso",
-      "31st Dec : Baker's treat",
-      "3rd January : The dragon's farm - td",
-      "10th January : Lele - td",
-      "11th January : Butwal ko fulki - td",
-      "15th January : kyampa",
-      "18th January : chocolate dina ako thyo",
-      "19th January : HaoPin Hotpot - chicken station",
-      "20th January : organic - Baker's treat",
-      "22rd January : dalle - barbecue chulo",
-      "23rd January : buddhanilkantha",
-      "30th January : Mike's",
-      "31st January : Workshop eatery",
-      "7th February : House of sushi",
-      "8th February : Cafe Jireh - td",
-      "14th February : Marathon - his home",
-      "20th February : shrey courtyard - norvic - Car accident",
-      "21th February : Mahadevsthan - Baker's treat",
-      "25th February : KGF restro",
-      "2nd March : holi plus Baker's treat",
-      "13th March : Butwal ko fulki plus chaya center (crime 101)",
-      "15th March : Baker's treat 2nd month ann",
+    final List<Map<String, dynamic>> seeds = [
+      {
+        'title': 'Dinner at the Cliffside',
+        'description': 'October 14, 2025',
+        'lat': 40.7128,
+        'lng': -74.0060,
+        'isUnique': false,
+      },
+      {
+        'title': 'The First Sunset Together',
+        'description': 'September 12, 2025',
+        'lat': 34.0522,
+        'lng': -118.2437,
+        'isUnique': true,
+      },
+      {
+        'title': 'Stroll through Central Park',
+        'description': 'August 28, 2025',
+        'lat': 40.7829,
+        'lng': -73.9654,
+        'isUnique': false,
+      },
     ];
 
-    final batch = FirebaseFirestore.instance.batch();
-    const double baseLat = 27.7172;
-    const double baseLng = 85.3240;
+    await _repository.seedMemories(seeds);
+  }
 
-    for (int i = 0; i < seeds.length; i++) {
-      final docRef = FirebaseFirestore.instance.collection('memories').doc();
-      final text = seeds[i];
-      final parts = text.split(" : ");
-      final dateStr = parts[0].trim();
-      final title = parts.length > 1 ? parts[1].trim() : text;
-      final isUnique = (i == 17);
-
-      batch.set(docRef, {
-        'title': title,
-        'description': dateStr,
-        'date': DateTime.now()
-            .subtract(Duration(days: seeds.length - i))
-            .toIso8601String(),
-        'lat': baseLat + (i * 0.005),
-        'lng': baseLng + (i * 0.005),
-        'isUnique': isUnique,
-      });
-    }
-    await batch.commit();
+  Future<void> _onRefresh() async {
+    await _repository.fetchAndCacheMemories();
+    // The StreamBuilder will handle the state update if we still use it, 
+    // or we can manually reload if we switch to manual state.
+    // Let's stick with StreamBuilder for real-time benefits but add RefreshIndicator.
   }
 
   Future<void> _addMemoryAtCurrentLocation() async {
-    final docRef = await FirebaseFirestore.instance.collection('memories').add({
-      'title': 'New Memory',
-      'description': 'Description here',
-      'date': DateTime.now().toIso8601String(),
-      'lat': 27.7172,
-      'lng': 85.3240,
-      'isUnique': false,
-    });
-
-    if (mounted) {
-      final snapshot = await docRef.get();
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => MemoryDetailScreen(doc: snapshot),
-        ),
-      );
-    }
+    await _repository.addMemory(
+      title: AppStrings.newMemoryTitle,
+      description: AppStrings.newMemoryDescription,
+      lat: 27.7172,
+      lng: 85.3240,
+      isUnique: false,
+    );
   }
 
   @override
@@ -129,110 +116,11 @@ class _MemoriesScreenState extends State<MemoriesScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ── Header ──────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 24, 24, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Our Story',
-                          style: TextStyle(
-                            fontFamily: 'Georgia',
-                            fontSize: 34,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.warmBrown,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 4),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.favorite_rounded,
-                              size: 12,
-                              color: AppColors.roseDust,
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              'every moment, treasured',
-                              style: TextStyle(
-                                fontFamily: 'Georgia',
-                                fontStyle: FontStyle.italic,
-                                fontSize: 13,
-                                color: AppColors.softBrown,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  // Add button
-                  GestureDetector(
-                    onTap: _addMemoryAtCurrentLocation,
-                    child: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: AppColors.roseDeep,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.roseDeep.withOpacity(0.3),
-                            blurRadius: 14,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: Colors.white,
-                        size: 24,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Thin divider with hearts ─────────────────────────────
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Divider(
-                      color: AppColors.roseDust.withOpacity(0.4),
-                      thickness: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8),
-                    child: Icon(
-                      Icons.favorite,
-                      size: 10,
-                      color: AppColors.roseDust.withOpacity(0.7),
-                    ),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      color: AppColors.roseDust.withOpacity(0.4),
-                      thickness: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── List ────────────────────────────────────────────────────
+            _Header(onAdd: _addMemoryAtCurrentLocation),
+            const _HeartDivider(),
             Expanded(
               child: _isLoading
-                  ? Center(
+                  ? const Center(
                       child: CircularProgressIndicator(
                         color: AppColors.roseDust,
                         strokeWidth: 2,
@@ -241,13 +129,10 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                   : FadeTransition(
                       opacity: _fadeAnim,
                       child: StreamBuilder<QuerySnapshot>(
-                        stream: FirebaseFirestore.instance
-                            .collection('memories')
-                            .orderBy('date', descending: true)
-                            .snapshots(),
+                        stream: _repository.getMemoriesStream(),
                         builder: (context, snapshot) {
-                          if (!snapshot.hasData) {
-                            return Center(
+                          if (!snapshot.hasData && _memories.isEmpty) {
+                            return const Center(
                               child: CircularProgressIndicator(
                                 color: AppColors.roseDust,
                                 strokeWidth: 2,
@@ -255,40 +140,49 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                             );
                           }
 
-                          final docs = snapshot.data!.docs;
+                          final docs = snapshot.hasData ? snapshot.data!.docs : [];
+                          final listToDisplay = docs.isNotEmpty 
+                            ? docs.map((d) => d.data() as Map<String, dynamic>).toList()
+                            : _memories;
 
-                          if (docs.isEmpty) {
-                            return _EmptyState(
-                              onAdd: _addMemoryAtCurrentLocation,
-                            );
+                          if (listToDisplay.isEmpty) {
+                            return _EmptyState(onAdd: _addMemoryAtCurrentLocation);
                           }
 
-                          return ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                            itemCount: docs.length,
-                            itemBuilder: (context, index) {
-                              final doc = docs[index];
-                              final data = doc.data() as Map<String, dynamic>;
-                              return _MemoryCard(
-                                data: data,
-                                index: index,
-                                onTap: () => Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (_, anim, __) =>
-                                        MemoryDetailScreen(doc: doc),
-                                    transitionsBuilder: (_, anim, __, child) =>
-                                        FadeTransition(
-                                          opacity: anim,
-                                          child: child,
+                          return RefreshIndicator(
+                            onRefresh: _onRefresh,
+                            color: AppColors.roseDeep,
+                            backgroundColor: Colors.white,
+                            child: ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                              itemCount: listToDisplay.length,
+                              itemBuilder: (context, index) {
+                                final data = listToDisplay[index];
+                                return _MemoryCard(
+                                  data: data,
+                                  index: index,
+                                  onTap: () {
+                                    if (docs.isNotEmpty) {
+                                      Navigator.push(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder: (_, anim, __) =>
+                                              MemoryDetailScreen(doc: docs[index]),
+                                          transitionsBuilder: (_, anim, __, child) =>
+                                              FadeTransition(
+                                                opacity: anim,
+                                                child: child,
+                                              ),
+                                          transitionDuration: const Duration(
+                                            milliseconds: AppConstants.defaultTransitionDurationMs,
+                                          ),
                                         ),
-                                    transitionDuration: const Duration(
-                                      milliseconds: 300,
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
+                                      );
+                                    }
+                                  },
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
@@ -296,6 +190,118 @@ class _MemoriesScreenState extends State<MemoriesScreen>
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _Header extends StatelessWidget {
+  final VoidCallback onAdd;
+  const _Header({required this.onAdd});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(28, 24, 24, 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  AppStrings.ourStoryHeader,
+                  style: TextStyle(
+                    fontFamily: 'Georgia',
+                    fontSize: 34,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.warmBrown,
+                    height: 1.1,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Row(
+                  children: [
+                    const Icon(
+                      Icons.favorite_rounded,
+                      size: 12,
+                      color: AppColors.roseDust,
+                    ),
+                    const SizedBox(width: 6),
+                    const Text(
+                      AppStrings.ourStorySlogan,
+                      style: TextStyle(
+                        fontFamily: 'Georgia',
+                        fontStyle: FontStyle.italic,
+                        fontSize: 13,
+                        color: AppColors.softBrown,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: onAdd,
+            child: Container(
+              width: 46,
+              height: 46,
+              decoration: BoxDecoration(
+                color: AppColors.roseDeep,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.roseDeep.withOpacity(0.3),
+                    blurRadius: 14,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: const Icon(
+                Icons.add_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HeartDivider extends StatelessWidget {
+  const _HeartDivider();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 12),
+      child: Row(
+        children: [
+          Expanded(
+            child: Divider(
+              color: AppColors.roseDust.withOpacity(0.4),
+              thickness: 1,
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8),
+            child: Icon(
+              Icons.favorite,
+              size: 10,
+              color: AppColors.roseDust.withOpacity(0.7),
+            ),
+          ),
+          Expanded(
+            child: Divider(
+              color: AppColors.roseDust.withOpacity(0.4),
+              thickness: 1,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -414,7 +420,7 @@ class _MemoryCardState extends State<_MemoryCard>
                       const SizedBox(height: 3),
                       Text(
                         title,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontFamily: 'Georgia',
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -461,7 +467,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 18),
             const Text(
-              'No memories yet',
+              AppStrings.noMemories,
               style: TextStyle(
                 fontFamily: 'Georgia',
                 fontSize: 22,
@@ -470,8 +476,8 @@ class _EmptyState extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 10),
-            Text(
-              'Every adventure starts with a first step.\nAdd your first memory together.',
+            const Text(
+              AppStrings.noMemoriesSubtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Georgia',
@@ -501,7 +507,7 @@ class _EmptyState extends StatelessWidget {
                   ],
                 ),
                 child: const Text(
-                  'Add a Memory',
+                  AppStrings.addMemory,
                   style: TextStyle(
                     fontFamily: 'Georgia',
                     color: Colors.white,

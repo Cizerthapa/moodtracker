@@ -4,6 +4,8 @@ import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_
 import 'package:moodtrack/features/notes/presentation/pages/notes_screen.dart';
 import 'package:moodtrack/features/settings/presentation/pages/settings_screen.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
 
 class EntryScreen extends StatelessWidget {
   const EntryScreen({super.key});
@@ -27,7 +29,7 @@ class EntryScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'MoodTrack',
+                          AppStrings.appName,
                           style: TextStyle(
                             fontFamily: 'Georgia',
                             fontSize: 40,
@@ -38,7 +40,7 @@ class EntryScreen extends StatelessWidget {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Treasuring your feelings, one step at a time.',
+                          AppStrings.appSlogan,
                           style: TextStyle(
                             fontFamily: 'Georgia',
                             fontStyle: FontStyle.italic,
@@ -83,8 +85,8 @@ class EntryScreen extends StatelessWidget {
                   children: [
                     _buildFeatureCard(
                       context,
-                      title: 'Our Story',
-                      subtitle: 'Pinned memories of every adventure.',
+                      title: AppStrings.ourStoryTitle,
+                      subtitle: AppStrings.ourStorySubtitle,
                       icon: Icons.favorite_rounded,
                       color: AppColors.roseDeep,
                       destination: const MemoriesScreen(),
@@ -92,8 +94,8 @@ class EntryScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildFeatureCard(
                       context,
-                      title: 'Hydration',
-                      subtitle: 'Staying fresh & keeping healthy.',
+                      title: AppStrings.hydrationTitle,
+                      subtitle: AppStrings.hydrationSubtitle,
                       icon: Icons.water_drop_rounded,
                       color: const Color(0xFF6DAA7A), // earth green
                       destination: const WaterIntakeScreen(),
@@ -101,8 +103,8 @@ class EntryScreen extends StatelessWidget {
                     const SizedBox(height: 20),
                     _buildFeatureCard(
                       context,
-                      title: 'Daily Journal',
-                      subtitle: 'Reflection for a peaceful mind.',
+                      title: AppStrings.journalTitle,
+                      subtitle: AppStrings.journalSubtitle,
                       icon: Icons.auto_awesome_rounded,
                       color: const Color(0xFFD4A832), // warm gold
                       destination: const NotesScreen(),
@@ -133,7 +135,7 @@ class EntryScreen extends StatelessWidget {
             pageBuilder: (_, anim, __) => destination,
             transitionsBuilder: (_, anim, __, child) =>
                 FadeTransition(opacity: anim, child: child),
-            transitionDuration: const Duration(milliseconds: 300),
+            transitionDuration: const Duration(milliseconds: AppConstants.defaultTransitionDurationMs),
           ),
         );
       },

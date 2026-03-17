@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moodtrack/core/services/notification_service.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/features/settings/data/repositories/settings_repository.dart';
+import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -11,6 +13,7 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
+  final SettingsRepository _repository = SettingsRepository();
   bool _notificationsEnabled = false;
   final NotificationService _notificationService = NotificationService();
 
@@ -21,18 +24,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
+    final enabled = await _repository.getNotificationsEnabled();
     setState(() {
-      _notificationsEnabled = prefs.getBool('notifications_enabled') ?? false;
+      _notificationsEnabled = enabled;
     });
   }
 
   Future<void> _toggleNotifications(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
+    await _repository.setNotificationsEnabled(value);
     setState(() {
       _notificationsEnabled = value;
     });
-    await prefs.setBool('notifications_enabled', value);
 
     if (value) {
       await _notificationService.scheduleDailyNotifications();
@@ -40,7 +42,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Notifications turned on! (30s interval for 15m)'),
+            content: Text(AppStrings.notificationsOn),
           ),
         );
       }
@@ -49,7 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _notificationService.stopPeriodicNotifications();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Notifications turned off.')),
+          const SnackBar(content: Text(AppStrings.notificationsOff)),
         );
       }
     }
@@ -84,8 +86,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Text(
-                    'Settings',
+                  const Text(
+                    AppStrings.settingsTitle,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 34,
@@ -112,8 +114,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 padding: const EdgeInsets.all(28),
                 children: [
                   _buildSettingTile(
-                    title: 'Enable Notifications',
-                    subtitle: 'Daily morning, night & periodic alerts',
+                    title: AppStrings.enableNotifications,
+                    subtitle: AppStrings.notificationsSubtitle,
                     trailing: Switch.adaptive(
                       value: _notificationsEnabled,
                       activeColor: AppColors.roseDeep,
@@ -122,17 +124,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   const SizedBox(height: 20),
                   _buildSettingTile(
-                    title: 'Test Notification',
-                    subtitle: 'Send an instant notification',
-                    trailing: Icon(
+                    title: AppStrings.testNotification,
+                    subtitle: AppStrings.testNotificationSubtitle,
+                    trailing: const Icon(
                       Icons.notifications_active_rounded,
                       color: AppColors.roseDeep,
                     ),
                     onTap: () async {
                       await _notificationService.showInstantNotification(
-                        'Test Success! 🎉',
-                        'This is a notification from MoodTrack.',
+                        AppStrings.testNotificationTitle,
+                        AppStrings.testNotificationBody,
                       );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+                  _buildSettingTile(
+                    title: 'Logout',
+                    subtitle: 'Sign out of your account',
+                    trailing: const Icon(
+                      Icons.logout_rounded,
+                      color: AppColors.roseDeep,
+                    ),
+                    onTap: () async {
+                      await AuthRepository().signOut();
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('Logged out successfully')),
+                        );
+                        // Navigation is handled by AuthWrapper
+                      }
                     },
                   ),
                 ],
@@ -145,7 +165,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   Text(
-                    'made with love by',
+                    AppStrings.madeWithLoveBy,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
@@ -154,8 +174,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  Text(
-                    'Cizer Thapa',
+                  const Text(
+                    AppStrings.authorName,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontWeight: FontWeight.bold,
@@ -195,7 +215,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   Text(
                     title,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -205,7 +225,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SizedBox(height: 4),
                   Text(
                     subtitle,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 12,
                       color: AppColors.softBrown,

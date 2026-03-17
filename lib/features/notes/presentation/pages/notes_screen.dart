@@ -1,47 +1,18 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
 
-// Mood metadata: emoji, label, card tint, icon color
-const _moods = [
-  {
-    'emoji': '😊',
-    'label': 'Happy',
-    'tint': Color(0xFFFFF8EC),
-    'accent': Color(0xFFD4A832),
-  },
-  {
-    'emoji': '😌',
-    'label': 'Peaceful',
-    'tint': Color(0xFFEEF7F0),
-    'accent': Color(0xFF6DAA7A),
-  },
-  {
-    'emoji': '😐',
-    'label': 'Neutral',
-    'tint': Color(0xFFF5F2ED),
-    'accent': Color(0xFF9C8878),
-  },
-  {
-    'emoji': '😔',
-    'label': 'Sad',
-    'tint': Color(0xFFEFF3FA),
-    'accent': Color(0xFF7A8FBB),
-  },
-  {
-    'emoji': '😡',
-    'label': 'Upset',
-    'tint': Color(0xFFFFF0EC),
-    'accent': Color(0xFFC4635A),
-  },
-  {
-    'emoji': '😭',
-    'label': 'Crying',
-    'tint': Color(0xFFEFF3FA),
-    'accent': Color(0xFF6B8CB8),
-  },
+// Mood metadata: emoji, label, card tint, accent color
+final _moods = [
+  {'emoji': '😊', 'label': AppStrings.moodHappy, 'tint': const Color(0xFFFFF8EC), 'accent': const Color(0xFFD4A832)},
+  {'emoji': '😌', 'label': AppStrings.moodPeaceful, 'tint': const Color(0xFFEEF7F0), 'accent': const Color(0xFF6DAA7A)},
+  {'emoji': '😐', 'label': AppStrings.moodNeutral, 'tint': const Color(0xFFF5F2ED), 'accent': const Color(0xFF9C8878)},
+  {'emoji': '😔', 'label': AppStrings.moodSad, 'tint': const Color(0xFFEFF3FA), 'accent': const Color(0xFF7A8FBB)},
+  {'emoji': '😡', 'label': AppStrings.moodUpset, 'tint': const Color(0xFFFFF0EC), 'accent': const Color(0xFFC4635A)},
+  {'emoji': '😭', 'label': AppStrings.moodCrying, 'tint': const Color(0xFFEFF3FA), 'accent': const Color(0xFF6B8CB8)},
 ];
 
 class NotesScreen extends StatefulWidget {
@@ -53,6 +24,7 @@ class NotesScreen extends StatefulWidget {
 
 class _NotesScreenState extends State<NotesScreen>
     with SingleTickerProviderStateMixin {
+  final NotesRepository _repository = NotesRepository();
   List<Map<String, dynamic>> _notes = [];
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
@@ -62,7 +34,7 @@ class _NotesScreenState extends State<NotesScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _loadNotes();
@@ -75,34 +47,27 @@ class _NotesScreenState extends State<NotesScreen>
   }
 
   Future<void> _loadNotes() async {
-    final prefs = await SharedPreferences.getInstance();
-    final String? raw = prefs.getString('mood_notes');
-    if (raw != null) {
-      final List<dynamic> decoded = json.decode(raw);
-      setState(() {
-        _notes = decoded.cast<Map<String, dynamic>>().reversed.toList();
-      });
-    }
+    final notes = await _repository.getNotes();
+    setState(() {
+      _notes = notes;
+    });
     _fadeController.forward();
   }
 
   Future<void> _saveNote(String text, String emoji) async {
-    final note = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+    final newNote = {
       'text': text,
       'mood': emoji,
       'date': DateTime.now().toIso8601String(),
     };
-    final ascending = _notes.reversed.toList()..add(note);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('mood_notes', json.encode(ascending));
-    setState(() => _notes.insert(0, note));
+
+    await _repository.saveNote(newNote);
+    _loadNotes();
   }
 
-  void _deleteNote(String id) async {
-    setState(() => _notes.removeWhere((n) => n['id'] == id));
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('mood_notes', json.encode(_notes.reversed.toList()));
+  Future<void> _deleteNote(int index) async {
+    await _repository.deleteNote(index);
+    _loadNotes();
   }
 
   Map<String, dynamic> _moodMeta(String emoji) =>
@@ -159,7 +124,7 @@ class _NotesScreenState extends State<NotesScreen>
                   const SizedBox(height: 22),
 
                   const Text(
-                    'How are you feeling?',
+                    AppStrings.howAreYouFeeling,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 22,
@@ -168,8 +133,8 @@ class _NotesScreenState extends State<NotesScreen>
                     ),
                   ),
                   const SizedBox(height: 6),
-                  Text(
-                    'Pick a mood, then write your heart out.',
+                  const Text(
+                    AppStrings.pickAMood,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
@@ -248,7 +213,7 @@ class _NotesScreenState extends State<NotesScreen>
                     ),
                     cursorColor: AppColors.roseDeep,
                     decoration: InputDecoration(
-                      hintText: 'Write your thoughts...',
+                      hintText: AppStrings.writeThoughtsHint,
                       hintStyle: TextStyle(
                         color: AppColors.softBrown.withOpacity(0.5),
                         fontFamily: 'Georgia',
@@ -294,7 +259,7 @@ class _NotesScreenState extends State<NotesScreen>
                       },
                       icon: const Icon(Icons.favorite_rounded, size: 18),
                       label: const Text(
-                        'Save Note',
+                        AppStrings.saveNoteButton,
                         style: TextStyle(
                           fontFamily: 'Georgia',
                           fontSize: 16,
@@ -331,7 +296,7 @@ class _NotesScreenState extends State<NotesScreen>
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Journal',
+                          AppStrings.journalHeader,
                           style: TextStyle(
                             fontFamily: 'Georgia',
                             fontSize: 34,
@@ -349,8 +314,8 @@ class _NotesScreenState extends State<NotesScreen>
                               color: AppColors.roseDust,
                             ),
                             const SizedBox(width: 6),
-                            Text(
-                              'feelings, thoughts & little moments',
+                            const Text(
+                              AppStrings.journalSubHeader,
                               style: TextStyle(
                                 fontFamily: 'Georgia',
                                 fontStyle: FontStyle.italic,
@@ -587,7 +552,7 @@ class _EmptyState extends StatelessWidget {
             Text('📖', style: TextStyle(fontSize: 48)),
             const SizedBox(height: 18),
             const Text(
-              'Your journal is empty',
+              AppStrings.journalEmptyTitle,
               style: TextStyle(
                 fontFamily: 'Georgia',
                 fontSize: 22,
@@ -597,7 +562,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             Text(
-              'Write down how you feel.\nEvery little thought matters.',
+              AppStrings.journalEmptySubtitle,
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontFamily: 'Georgia',
@@ -627,7 +592,7 @@ class _EmptyState extends StatelessWidget {
                   ],
                 ),
                 child: const Text(
-                  'Write a Note',
+                  AppStrings.writeANoteButton,
                   style: TextStyle(
                     fontFamily: 'Georgia',
                     color: Colors.white,

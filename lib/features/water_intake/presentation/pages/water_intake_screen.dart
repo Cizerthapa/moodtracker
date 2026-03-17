@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
 
 enum DrinkType {
   water,
@@ -67,8 +69,9 @@ class WaterIntakeScreen extends StatefulWidget {
 }
 
 class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTickerProviderStateMixin {
+  final WaterRepository _repository = WaterRepository();
   int _currentIntake = 0;
-  final int _dailyGoal = 2500;
+  final int _dailyGoal = AppConstants.defaultDailyWaterGoal;
   List<DrinkEntry> _history = [];
   DrinkType _selectedType = DrinkType.water;
   int _viewIndex = 0; // 0: Track, 1: History, 2: Chart
@@ -80,7 +83,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 600),
+      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _loadData();
@@ -93,8 +96,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
   }
 
   Future<void> _loadData() async {
-    final prefs = await SharedPreferences.getInstance();
-    final historyJson = prefs.getStringList('drink_history') ?? [];
+    final historyJson = await _repository.getDrinkHistoryStrings();
     
     final loadedHistory = historyJson.map((e) => DrinkEntry.fromJson(json.decode(e))).toList();
     
@@ -117,24 +119,16 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
       timestamp: DateTime.now(),
     );
 
-    final prefs = await SharedPreferences.getInstance();
-    final historyJson = prefs.getStringList('drink_history') ?? [];
-    historyJson.add(json.encode(entry.toJson()));
-    await prefs.setStringList('drink_history', historyJson);
-
+    await _repository.addDrink(json.encode(entry.toJson()));
     await _loadData();
   }
 
   Future<void> _deleteDrink(int index) async {
-    final prefs = await SharedPreferences.getInstance();
-    final historyJson = prefs.getStringList('drink_history') ?? [];
-    
+    final historyJson = await _repository.getDrinkHistoryStrings();
     final originalIndex = historyJson.length - 1 - index;
-    if (originalIndex >= 0 && originalIndex < historyJson.length) {
-      historyJson.removeAt(originalIndex);
-      await prefs.setStringList('drink_history', historyJson);
-      await _loadData();
-    }
+    
+    await _repository.deleteDrink(originalIndex);
+    await _loadData();
   }
 
   @override
@@ -151,8 +145,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Hydration',
-                    style: TextStyle(
+                    AppStrings.waterIntakeHeader,
+                    style: const TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 34,
                       fontWeight: FontWeight.bold,
@@ -258,8 +252,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
               Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Text(
-                    'Today',
+                  const Text(
+                    AppStrings.today,
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
@@ -268,7 +262,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                   ),
                   Text(
                     '$_currentIntake',
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontFamily: 'Georgia',
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
@@ -276,7 +270,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                     ),
                   ),
                   Text(
-                    'of $_dailyGoal ml',
+                    AppStrings.drinkGoalMilli.replaceFirst('%s', '$_dailyGoal'),
                     style: TextStyle(
                       fontFamily: 'Georgia',
                       color: AppColors.softBrown.withOpacity(0.6),
@@ -290,7 +284,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
           const Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              'Select Beverage',
+              AppStrings.selectBeverage,
               style: TextStyle(
                 fontFamily: 'Georgia',
                 fontSize: 20,
@@ -382,14 +376,14 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
 
   Widget _buildHistoryView() {
     if (_history.isEmpty) {
-      return Center(
+      return const Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.history_rounded, size: 48, color: AppColors.champagne),
             const SizedBox(height: 16),
             Text(
-              'No history yet.',
+              AppStrings.noHistory,
               style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontStyle: FontStyle.italic),
             ),
           ],
@@ -440,18 +434,18 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                     children: [
                       Text(
                         entry.type.label,
-                        style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, color: AppColors.warmBrown),
+                        style: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, color: AppColors.warmBrown),
                       ),
                       Text(
                         DateFormat('MMM d · h:mm a').format(entry.timestamp),
-                        style: TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontSize: 11, fontStyle: FontStyle.italic),
+                        style: const TextStyle(fontFamily: 'Georgia', color: AppColors.softBrown, fontSize: 11, fontStyle: FontStyle.italic),
                       ),
                     ],
                   ),
                 ),
                 Text(
                   '${entry.amount} ml',
-                  style: TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.warmBrown),
+                  style: const TextStyle(fontFamily: 'Georgia', fontWeight: FontWeight.bold, fontSize: 16, color: AppColors.warmBrown),
                 ),
               ],
             ),
@@ -484,8 +478,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Last 7 Days',
+          const Text(
+            AppStrings.last7Days,
             style: TextStyle(fontFamily: 'Georgia', fontSize: 20, fontWeight: FontWeight.bold, color: AppColors.warmBrown),
           ),
           const SizedBox(height: 32),
@@ -515,7 +509,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                           padding: const EdgeInsets.only(top: 8.0),
                           child: Text(
                             days[value.toInt()],
-                            style: TextStyle(color: AppColors.softBrown, fontSize: 11, fontFamily: 'Georgia'),
+                            style: const TextStyle(color: AppColors.softBrown, fontSize: 11, fontFamily: 'Georgia'),
                           ),
                         );
                       },
