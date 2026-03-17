@@ -172,7 +172,7 @@ class _NotesScreenState extends State<NotesScreen>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: AppColors.roseDeep.withOpacity(0.3),
+                            color: AppColors.roseDeep.withValues(alpha: 0.3),
                             blurRadius: 14.r,
                             offset: Offset(0, 4.h),
                           ),
@@ -235,7 +235,7 @@ class _NotesScreenState extends State<NotesScreen>
                 children: [
                   Expanded(
                     child: Divider(
-                      color: AppColors.roseDust.withOpacity(0.4),
+                      color: AppColors.roseDust.withValues(alpha: 0.4),
                       thickness: 1,
                     ),
                   ),
@@ -244,12 +244,12 @@ class _NotesScreenState extends State<NotesScreen>
                     child: Icon(
                       Icons.favorite,
                       size: 10.r,
-                      color: AppColors.roseDust.withOpacity(0.7),
+                      color: AppColors.roseDust.withValues(alpha: 0.7),
                     ),
                   ),
                   Expanded(
                     child: Divider(
-                      color: AppColors.roseDust.withOpacity(0.4),
+                      color: AppColors.roseDust.withValues(alpha: 0.4),
                       thickness: 1,
                     ),
                   ),
@@ -355,7 +355,7 @@ class _NoteCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: 24.w),
         decoration: BoxDecoration(
-          color: AppColors.roseDeep.withOpacity(0.1),
+          color: AppColors.roseDeep.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: Icon(
@@ -370,10 +370,10 @@ class _NoteCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: tint,
           borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: accent.withOpacity(0.2), width: 1),
+          border: Border.all(color: accent.withValues(alpha: 0.2), width: 1),
           boxShadow: [
             BoxShadow(
-              color: accent.withOpacity(0.06),
+              color: accent.withValues(alpha: 0.06),
               blurRadius: 12.r,
               offset: Offset(0, 3.h),
             ),
@@ -403,10 +403,10 @@ class _NoteCard extends StatelessWidget {
                       vertical: 4.h,
                     ),
                     decoration: BoxDecoration(
-                      color: accent.withOpacity(0.12),
+                      color: accent.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(50.r),
                       border: Border.all(
-                        color: accent.withOpacity(0.25),
+                        color: accent.withValues(alpha: 0.25),
                         width: 1,
                       ),
                     ),
@@ -529,7 +529,7 @@ class _EmptyState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.roseDeep.withOpacity(0.3),
+                      color: AppColors.roseDeep.withValues(alpha: 0.3),
                       blurRadius: 16.r,
                       offset: Offset(0, 4.h),
                     ),
@@ -706,7 +706,7 @@ class _AddNoteSheetState extends State<_AddNoteSheet> {
                 if (_textController.text.trim().isNotEmpty) {
                   setState(() => _isSaving = true);
                   await widget.onSave(_textController.text.trim(), _selectedEmoji, _selectedImage);
-                  if (mounted) Navigator.pop(context);
+                  if (context.mounted) Navigator.pop(context);
                 }
               },
               child: _isSaving 

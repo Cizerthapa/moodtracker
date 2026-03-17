@@ -83,7 +83,7 @@ class _SplashScreenState extends State<SplashScreen>
                     Container(
                       padding: EdgeInsets.all(20.r),
                       decoration: BoxDecoration(
-                        color: AppColors.roseDust.withOpacity(0.2),
+                        color: AppColors.roseDust.withValues(alpha: 0.2),
                         shape: BoxShape.circle,
                       ),
                       child: Icon(
@@ -120,7 +120,7 @@ class _SplashScreenState extends State<SplashScreen>
                         fontFamily: 'Georgia',
                         fontStyle: FontStyle.italic,
                         fontSize: 14.sp,
-                        color: AppColors.softBrown.withOpacity(0.8),
+                        color: AppColors.softBrown.withValues(alpha: 0.8),
                       ),
                     ),
                   ],

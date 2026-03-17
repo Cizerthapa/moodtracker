@@ -1,30 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:moodtrack/core/theme/mood_palette.dart';
 
 class AppTheme {
-  static ThemeData get darkTheme {
+  static ThemeData getTheme(MoodPalette palette) {
     return ThemeData(
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF0A0A0E),
-      primaryColor: const Color(0xFF9E77ED),
-      colorScheme: const ColorScheme.dark(
-        primary: Color(0xFF9E77ED),
-        secondary: Color(0xFFF97066),
-        surface: Color(0xFF161622),
+      brightness: palette.isDark ? Brightness.dark : Brightness.light,
+      scaffoldBackgroundColor: palette.cream,
+      primaryColor: palette.roseDeep,
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: palette.roseDeep,
+        primary: palette.roseDeep,
+        secondary: palette.roseDust,
+        surface: palette.ivoryCard,
+        brightness: palette.isDark ? Brightness.dark : Brightness.light,
       ),
-      fontFamily: 'Inter',
+      fontFamily: 'Georgia',
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.transparent,
         elevation: 0,
         centerTitle: true,
-        iconTheme: const IconThemeData(color: Colors.white),
+        iconTheme: IconThemeData(color: palette.warmBrown),
         titleTextStyle: TextStyle(
-          color: Colors.white,
+          color: palette.warmBrown,
           fontSize: 20.sp,
           fontWeight: FontWeight.w600,
+          fontFamily: 'Georgia',
         ),
       ),
       useMaterial3: true,
     );
   }
+
+  // Keeping darkTheme for backward compatibility if needed, but it should now be dynamic
+  static ThemeData get darkTheme => getTheme(MoodPalette.midnight);
 }

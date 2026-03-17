@@ -146,7 +146,7 @@ class EntryScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(24.r),
           boxShadow: [
             BoxShadow(
-              color: AppColors.warmBrown.withOpacity(0.04),
+              color: AppColors.warmBrown.withValues(alpha: 0.04),
               blurRadius: 20.r,
               offset: Offset(0, 8.h),
             ),
@@ -159,7 +159,7 @@ class EntryScreen extends StatelessWidget {
             Container(
               padding: EdgeInsets.all(16.r),
               decoration: BoxDecoration(
-                color: color.withOpacity(0.12),
+                color: color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(18.r),
               ),
               child: Icon(icon, color: color, size: 28.r),
@@ -185,7 +185,7 @@ class EntryScreen extends StatelessWidget {
                       fontFamily: 'Georgia',
                       fontStyle: FontStyle.italic,
                       fontSize: 13.sp,
-                      color: AppColors.softBrown.withOpacity(0.8),
+                      color: AppColors.softBrown.withValues(alpha: 0.8),
                     ),
                   ),
                 ],
@@ -193,7 +193,7 @@ class EntryScreen extends StatelessWidget {
             ),
             Icon(
               Icons.chevron_right_rounded,
-              color: AppColors.roseDeep.withOpacity(0.4),
+              color: AppColors.roseDeep.withValues(alpha: 0.4),
               size: 22.r,
             ),
           ],

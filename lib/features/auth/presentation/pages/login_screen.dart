@@ -149,7 +149,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   _isLogin
                       ? "Don't have an account? Sign Up"
                       : "Already have an account? Login",
-                  style: const TextStyle(color: AppColors.roseDeep),
+                  style: TextStyle(color: AppColors.roseDeep),
                 ),
               ),
             ],

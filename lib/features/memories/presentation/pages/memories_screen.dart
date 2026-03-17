@@ -343,7 +343,7 @@ class _Header extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.roseDeep.withOpacity(0.3),
+                    color: AppColors.roseDeep.withValues(alpha: 0.3),
                     blurRadius: 14.r,
                     offset: Offset(0, 4.h),
                   ),
@@ -373,7 +373,7 @@ class _HeartDivider extends StatelessWidget {
         children: [
           Expanded(
             child: Divider(
-              color: AppColors.roseDust.withOpacity(0.4),
+              color: AppColors.roseDust.withValues(alpha: 0.4),
               thickness: 1,
             ),
           ),
@@ -382,12 +382,12 @@ class _HeartDivider extends StatelessWidget {
             child: Icon(
               Icons.favorite,
               size: 10.r,
-              color: AppColors.roseDust.withOpacity(0.7),
+              color: AppColors.roseDust.withValues(alpha: 0.7),
             ),
           ),
           Expanded(
             child: Divider(
-              color: AppColors.roseDust.withOpacity(0.4),
+              color: AppColors.roseDust.withValues(alpha: 0.4),
               thickness: 1,
             ),
           ),
@@ -459,14 +459,14 @@ class _MemoryCardState extends State<_MemoryCard>
             color: isUnique ? const Color(0xFFFFF0EC) : AppColors.ivoryCard,
             borderRadius: BorderRadius.circular(20.r),
             border: Border.all(
-              color: isUnique ? AppColors.roseDeep.withOpacity(0.35) : AppColors.champagne,
+              color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.35) : AppColors.champagne,
               width: isUnique ? 1.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isUnique
                     ? AppColors.roseDeep.withValues(alpha: 0.07)
-                    : AppColors.warmBrown.withOpacity(0.05),
+                    : AppColors.warmBrown.withValues(alpha: 0.05),
                 blurRadius: 12.r,
                 offset: Offset(0, 3.h),
               ),
@@ -481,7 +481,7 @@ class _MemoryCardState extends State<_MemoryCard>
                   width: 38.r,
                   height: 38.r,
                   decoration: BoxDecoration(
-                    color: isUnique ? AppColors.roseDeep.withOpacity(0.12) : AppColors.champagne,
+                    color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.12) : AppColors.champagne,
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
@@ -553,7 +553,7 @@ class _EmptyState extends StatelessWidget {
             Icon(
               Icons.favorite_border_rounded,
               size: 52.r,
-              color: AppColors.roseDust.withOpacity(0.5),
+              color: AppColors.roseDust.withValues(alpha: 0.5),
             ),
             SizedBox(height: 18.h),
             Text(
@@ -590,7 +590,7 @@ class _EmptyState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.roseDeep.withOpacity(0.3),
+                      color: AppColors.roseDeep.withValues(alpha: 0.3),
                       blurRadius: 16.r,
                       offset: Offset(0, 4.h),
                     ),
@@ -748,7 +748,7 @@ class _AddMemorySheetState extends State<_AddMemorySheet> {
                     _descController.text,
                     _selectedImage,
                   );
-                  if (mounted) Navigator.pop(context);
+                  if (context.mounted) Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.roseDeep,

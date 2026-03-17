@@ -14,4 +14,14 @@ class SettingsRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.notificationsPrefsKey, enabled);
   }
+
+  Future<String> getThemeName() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('theme_name') ?? 'Classic';
+  }
+
+  Future<void> setThemeName(String themeName) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('theme_name', themeName);
+  }
 }

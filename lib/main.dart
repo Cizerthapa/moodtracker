@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'package:moodtrack/core/services/notification_service.dart';
 import 'package:moodtrack/core/theme/app_theme.dart';
+import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/widgets/auth_wrapper.dart';
-
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 void main() async {
@@ -18,7 +19,12 @@ void main() async {
   final notificationService = NotificationService();
   await notificationService.init();
   
-  runApp(const MoodTrackApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => ThemeManager(),
+      child: const MoodTrackApp(),
+    ),
+  );
 }
 
 class MoodTrackApp extends StatelessWidget {
@@ -31,14 +37,17 @@ class MoodTrackApp extends StatelessWidget {
       minTextAdapt: true,
       splitScreenMode: true,
       builder: (context, child) {
-        return MaterialApp(
-          title: AppStrings.appName,
-          debugShowCheckedModeBanner: false,
-          theme: AppTheme.darkTheme,
-          home: const AuthWrapper(),
+        return Consumer<ThemeManager>(
+          builder: (context, themeManager, child) {
+            return MaterialApp(
+              title: AppStrings.appName,
+              debugShowCheckedModeBanner: false,
+              theme: AppTheme.getTheme(themeManager.palette),
+              home: const AuthWrapper(),
+            );
+          },
         );
       },
     );
   }
 }
-
