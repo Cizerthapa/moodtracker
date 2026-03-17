@@ -170,35 +170,37 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                             onRefresh: _onRefresh,
                             color: AppColors.roseDeep,
                             backgroundColor: Colors.white,
-                            child: ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                              itemCount: listToDisplay.length,
-                              itemBuilder: (context, index) {
-                                final data = listToDisplay[index];
-                                return _MemoryCard(
-                                  data: data,
-                                  index: index,
-                                  onTap: () {
-                                    if (docs.isNotEmpty) {
-                                      Navigator.push(
-                                        context,
-                                        PageRouteBuilder(
-                                          pageBuilder: (_, anim, __) =>
-                                              MemoryDetailScreen(doc: docs[index]),
-                                          transitionsBuilder: (_, anim, __, child) =>
-                                              FadeTransition(
-                                                opacity: anim,
-                                                child: child,
-                                              ),
-                                          transitionDuration: const Duration(
-                                            milliseconds: AppConstants.defaultTransitionDurationMs,
+                            child: RepaintBoundary(
+                              child: ListView.builder(
+                                padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                                itemCount: listToDisplay.length,
+                                itemBuilder: (context, index) {
+                                  final data = listToDisplay[index];
+                                  return _MemoryCard(
+                                    data: data,
+                                    index: index,
+                                    onTap: () {
+                                      if (docs.isNotEmpty) {
+                                        Navigator.push(
+                                          context,
+                                          PageRouteBuilder(
+                                            pageBuilder: (_, anim, __) =>
+                                                MemoryDetailScreen(doc: docs[index]),
+                                            transitionsBuilder: (_, anim, __, child) =>
+                                                FadeTransition(
+                                                  opacity: anim,
+                                                  child: child,
+                                                ),
+                                            transitionDuration: const Duration(
+                                              milliseconds: AppConstants.defaultTransitionDurationMs,
+                                            ),
                                           ),
-                                        ),
-                                      );
-                                    }
-                                  },
-                                );
-                              },
+                                        );
+                                      }
+                                    },
+                                  );
+                                },
+                              ),
                             ),
                           );
                         },
@@ -392,7 +394,7 @@ class _MemoryCardState extends State<_MemoryCard>
             boxShadow: [
               BoxShadow(
                 color: isUnique
-                    ? AppColors.roseDeep.withOpacity(0.07)
+                    ? AppColors.roseDeep.withValues(alpha: 0.07)
                     : AppColors.warmBrown.withOpacity(0.05),
                 blurRadius: 12,
                 offset: const Offset(0, 3),

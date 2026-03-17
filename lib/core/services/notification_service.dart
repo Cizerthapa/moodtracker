@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
@@ -145,7 +146,7 @@ class NotificationService {
     try {
       await _channel.invokeMethod('startBackground');
     } on PlatformException catch (e) {
-      print("Failed to start background service: '${e.message}'.");
+      debugPrint("Failed to start background service: '${e.message}'.");
       
       // Fallback for iOS or if native fails
       _periodicTimer?.cancel();
@@ -170,7 +171,7 @@ class NotificationService {
     try {
       await _channel.invokeMethod('stopBackground');
     } catch (e) {
-      print("Failed to stop background service: $e");
+      debugPrint("Failed to stop background service: $e");
     }
     _periodicTimer?.cancel();
   }

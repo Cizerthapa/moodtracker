@@ -4,6 +4,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 
 class MemoriesRepository {
+  MemoriesRepository._internal();
+  static final MemoriesRepository _instance = MemoriesRepository._internal();
+  factory MemoriesRepository() => _instance;
+
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   CollectionReference get _memoriesCollection =>

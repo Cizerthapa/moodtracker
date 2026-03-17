@@ -198,9 +198,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
                           const SizedBox(height: 48),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                            children: List.generate(3, (i) => ShimmerLoading(
+                            children: List.generate(3, (i) => const ShimmerLoading(
                               isLoading: true,
-                              child: const ShimmerSkeleton(height: 50, width: 80),
+                              child: ShimmerSkeleton(height: 50, width: 80),
                             )),
                           )
                         ],
@@ -269,15 +269,17 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
           Stack(
             alignment: Alignment.center,
             children: [
-              SizedBox(
-                width: 200,
-                height: 200,
-                child: CircularProgressIndicator(
-                  value: progress,
-                  strokeWidth: 12,
-                  backgroundColor: AppColors.champagne.withOpacity(0.5),
-                  valueColor: const AlwaysStoppedAnimation<Color>(AppColors.roseDeep),
-                  strokeCap: StrokeCap.round,
+              RepaintBoundary(
+                child: SizedBox(
+                  width: 200,
+                  height: 200,
+                  child: CircularProgressIndicator(
+                    value: progress,
+                    strokeWidth: 12,
+                    backgroundColor: AppColors.champagne.withOpacity(0.5),
+                    valueColor: const AlwaysStoppedAnimation<Color>(AppColors.roseDeep),
+                    strokeCap: StrokeCap.round,
+                  ),
                 ),
               ),
               Column(
@@ -515,59 +517,61 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
           ),
           const SizedBox(height: 32),
           Expanded(
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceAround,
-                maxY: maxIntake,
-                barTouchData: BarTouchData(
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipColor: (_) => AppColors.warmBrown,
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      return BarTooltipItem(
-                        '${rod.toY.toInt()} ml',
-                        const TextStyle(color: Colors.white, fontFamily: 'Georgia', fontWeight: FontWeight.bold),
-                      );
-                    },
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Padding(
-                          padding: const EdgeInsets.only(top: 8.0),
-                          child: Text(
-                            days[value.toInt()],
-                            style: const TextStyle(color: AppColors.softBrown, fontSize: 11, fontFamily: 'Georgia'),
-                          ),
+            child: RepaintBoundary(
+              child: BarChart(
+                BarChartData(
+                  alignment: BarChartAlignment.spaceAround,
+                  maxY: maxIntake,
+                  barTouchData: BarTouchData(
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipColor: (_) => AppColors.warmBrown,
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        return BarTooltipItem(
+                          '${rod.toY.toInt()} ml',
+                          const TextStyle(color: Colors.white, fontFamily: 'Georgia', fontWeight: FontWeight.bold),
                         );
                       },
                     ),
                   ),
-                  leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                ),
-                gridData: const FlGridData(show: false),
-                borderData: FlBorderData(show: false),
-                barGroups: List.generate(7, (i) => BarChartGroupData(
-                  x: i,
-                  barRods: [
-                    BarChartRodData(
-                      toY: dailyTotals[i],
-                      color: AppColors.roseDeep,
-                      width: 18,
-                      borderRadius: BorderRadius.circular(6),
-                      backDrawRodData: BackgroundBarChartRodData(
-                        show: true,
-                        toY: maxIntake,
-                        color: AppColors.champagne.withOpacity(0.3),
+                  titlesData: FlTitlesData(
+                    show: true,
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        getTitlesWidget: (value, meta) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 8.0),
+                            child: Text(
+                              days[value.toInt()],
+                              style: const TextStyle(color: AppColors.softBrown, fontSize: 11, fontFamily: 'Georgia'),
+                            ),
+                          );
+                        },
                       ),
                     ),
-                  ],
-                )),
+                    leftTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  barGroups: List.generate(7, (i) => BarChartGroupData(
+                    x: i,
+                    barRods: [
+                      BarChartRodData(
+                        toY: dailyTotals[i],
+                        color: AppColors.roseDeep,
+                        width: 18,
+                        borderRadius: BorderRadius.circular(6),
+                        backDrawRodData: BackgroundBarChartRodData(
+                          show: true,
+                          toY: maxIntake,
+                          color: AppColors.champagne.withOpacity(0.3),
+                        ),
+                      ),
+                    ],
+                  )),
+                ),
               ),
             ),
           ),

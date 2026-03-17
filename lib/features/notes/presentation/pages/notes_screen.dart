@@ -169,12 +169,12 @@ class _NotesScreenState extends State<NotesScreen>
                           ),
                           decoration: BoxDecoration(
                             color: isSelected
-                                ? accent.withOpacity(0.12)
+                                ? accent.withValues(alpha: 0.12)
                                 : Colors.transparent,
                             borderRadius: BorderRadius.circular(14),
                             border: Border.all(
                               color: isSelected
-                                  ? accent.withOpacity(0.5)
+                                  ? accent.withValues(alpha: 0.5)
                                   : AppColors.champagne,
                               width: 1.5,
                             ),
@@ -411,17 +411,19 @@ class _NotesScreenState extends State<NotesScreen>
                       ? _EmptyState(onAdd: _showAddNoteSheet)
                       : FadeTransition(
                           opacity: _fadeAnim,
-                          child: ListView.builder(
-                            padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                            itemCount: _notes.length,
-                            itemBuilder: (context, index) {
-                              final note = _notes[index];
-                              return _NoteCard(
-                                note: note,
-                                moodMeta: _moodMeta(note['mood'] ?? '😐'),
-                                onDelete: () => _deleteNote(note['id']),
-                              );
-                            },
+                          child: RepaintBoundary(
+                            child: ListView.builder(
+                              padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                              itemCount: _notes.length,
+                              itemBuilder: (context, index) {
+                                final note = _notes[index];
+                                return _NoteCard(
+                                  note: note,
+                                  moodMeta: _moodMeta(note['mood'] ?? '😐'),
+                                  onDelete: () => _deleteNote(note['id']),
+                                );
+                              },
+                            ),
                           ),
                         ),
             ),

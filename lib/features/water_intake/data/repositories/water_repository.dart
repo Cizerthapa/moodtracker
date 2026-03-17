@@ -2,6 +2,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 
 class WaterRepository {
+  WaterRepository._internal();
+  static final WaterRepository _instance = WaterRepository._internal();
+  factory WaterRepository() => _instance;
   Future<List<String>> getDrinkHistoryStrings() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList(AppConstants.drinkHistoryPrefsKey) ?? [];

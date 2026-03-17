@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import 'package:moodtrack/core/theme/app_colors.dart';
 
 class ShimmerLoading extends StatelessWidget {
   final Widget child;
