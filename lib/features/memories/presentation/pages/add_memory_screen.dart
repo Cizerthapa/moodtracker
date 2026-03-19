@@ -266,38 +266,36 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
               ),
             ),
 
-            if (_isUnique) ...[
-              SizedBox(height: 16.h),
-              TextField(
-                controller: _herFavController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: "Her Favorite Story",
-                  labelStyle: TextStyle(color: AppColors.softBrown),
-                  filled: true,
-                  fillColor: AppColors.ivoryCard,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.champagne),
-                  ),
+            SizedBox(height: 16.h),
+            TextField(
+              controller: _herFavController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "Her Favorite Memory",
+                labelStyle: TextStyle(color: AppColors.softBrown),
+                filled: true,
+                fillColor: AppColors.ivoryCard,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: AppColors.champagne),
                 ),
               ),
-              SizedBox(height: 12.h),
-              TextField(
-                controller: _hisFavController,
-                maxLines: 3,
-                decoration: InputDecoration(
-                  labelText: "His Favorite Story",
-                  labelStyle: TextStyle(color: AppColors.softBrown),
-                  filled: true,
-                  fillColor: AppColors.ivoryCard,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16),
-                    borderSide: BorderSide(color: AppColors.champagne),
-                  ),
+            ),
+            SizedBox(height: 12.h),
+            TextField(
+              controller: _hisFavController,
+              maxLines: 3,
+              decoration: InputDecoration(
+                labelText: "His Favorite Memory",
+                labelStyle: TextStyle(color: AppColors.softBrown),
+                filled: true,
+                fillColor: AppColors.ivoryCard,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16),
+                  borderSide: BorderSide(color: AppColors.champagne),
                 ),
               ),
-            ],
+            ),
 
             const SizedBox(height: 32),
 
