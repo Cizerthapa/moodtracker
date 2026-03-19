@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
-import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
-import 'package:moodtrack/core/widgets/shimmer_loading.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
-  final DocumentSnapshot doc;
-  const MemoryDetailScreen({super.key, required this.doc});
+  final Map<String, dynamic> memoryData;
+  const MemoryDetailScreen({super.key, required this.memoryData});
 
   @override
   State<MemoryDetailScreen> createState() => _MemoryDetailScreenState();
@@ -29,7 +29,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   @override
   void initState() {
     super.initState();
-    final data = widget.doc.data() as Map<String, dynamic>;
+    final data = widget.memoryData;
     _titleController = TextEditingController(text: data['title']);
     _descController = TextEditingController(text: data['description']);
     _location = LatLng(data['lat'], data['lng']);
@@ -52,7 +52,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   }
 
   Future<void> _updateMemory() async {
-    await _repository.updateMemory(widget.doc.id, {
+    await _repository.updateMemory(widget.memoryData['id'], {
       'title': _titleController.text.trim(),
       'description': _descController.text.trim(),
     });
@@ -60,7 +60,8 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   }
 
   Future<void> _deleteMemory() async {
-    final bool confirm = await showDialog(
+    final bool confirm =
+        await showDialog(
           context: context,
           builder: (context) => AlertDialog(
             backgroundColor: AppColors.ivoryCard,
@@ -68,36 +69,31 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
               borderRadius: BorderRadius.circular(24.r),
             ),
             title: Text(
-              AppStrings.deleteMemoryTitle,
+              AppLocalizations.of(context)!.deleteMemoryTitle,
               style: TextStyle(
-
                 color: AppColors.warmBrown,
                 fontWeight: FontWeight.bold,
               ),
             ),
             content: Text(
-              AppStrings.deleteMemoryContent,
-              style: TextStyle(
-                color: AppColors.softBrown,
-                fontSize: 14.sp,
-
-              ),
+              AppLocalizations.of(context)!.deleteMemoryContent,
+              style: TextStyle(color: AppColors.softBrown, fontSize: 14.sp),
             ),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
                 child: Text(
-                  AppStrings.keepIt,
+                  AppLocalizations.of(context)!.keepIt,
                   style: TextStyle(color: AppColors.softBrown),
                 ),
               ),
               TextButton(
                 onPressed: () => Navigator.pop(context, true),
                 child: Text(
-                  AppStrings.letGo,
+                  AppLocalizations.of(context)!.letGo,
                   style: TextStyle(
                     color: AppColors.roseDeep,
-    
+
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -108,7 +104,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         false;
 
     if (confirm) {
-      await _repository.deleteMemory(widget.doc.id);
+      await _repository.deleteMemory(widget.memoryData['id']);
       if (mounted) Navigator.pop(context);
     }
   }
@@ -146,17 +142,14 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         ),
         filled: true,
         fillColor: AppColors.ivoryCard,
-        contentPadding: EdgeInsets.symmetric(
-          horizontal: 16.w,
-          vertical: 14.h,
-        ),
+        contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.doc.data() as Map<String, dynamic>;
+    final data = widget.memoryData;
     final bool isUnique = data['isUnique'] == true;
 
     return Scaffold(
@@ -254,7 +247,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                           end: Alignment.bottomCenter,
                           colors: [
                             AppColors.cream.withValues(alpha: 0),
-                            AppColors.cream
+                            AppColors.cream,
                           ],
                         ),
                       ),
@@ -276,29 +269,45 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                   if (data['imageUrl'] != null) ...[
                     ClipRRect(
                       borderRadius: BorderRadius.circular(24.r),
-                      child: Image.network(
-                        data['imageUrl'],
-                        height: 250.h,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return ShimmerLoading(
-                            isLoading: true,
-                            child: ShimmerSkeleton(height: 250.h),
-                          );
-                        },
-                        errorBuilder: (context, error, stackTrace) => Container(
-                          height: 200.h,
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: AppColors.champagne,
-                            borderRadius: BorderRadius.circular(24.r),
-                          ),
-                          child: Icon(Icons.broken_image_outlined,
-                              color: AppColors.softBrown),
-                        ),
-                      ),
+                      child: data['imageUrl'].toString().startsWith('http')
+                          ? Image.network(
+                              data['imageUrl'],
+                              height: 250.h,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    height: 200.h,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.champagne,
+                                      borderRadius: BorderRadius.circular(24.r),
+                                    ),
+                                    child: Icon(
+                                      Icons.broken_image_outlined,
+                                      color: AppColors.softBrown,
+                                    ),
+                                  ),
+                            )
+                          : Image.file(
+                              File(data['imageUrl']),
+                              height: 250.h,
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Container(
+                                    height: 200.h,
+                                    width: double.infinity,
+                                    decoration: BoxDecoration(
+                                      color: AppColors.champagne,
+                                      borderRadius: BorderRadius.circular(24.r),
+                                    ),
+                                    child: Icon(
+                                      Icons.broken_image_outlined,
+                                      color: AppColors.softBrown,
+                                    ),
+                                  ),
+                            ),
                     ),
                     SizedBox(height: 24.h),
                   ],
@@ -332,7 +341,6 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                                   fontSize: 13.sp,
                                   color: AppColors.softBrown,
                                   fontStyle: FontStyle.italic,
-                  
                                 ),
                               ),
                             ],
@@ -348,7 +356,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                       style: TextStyle(
                         fontSize: 32.sp,
                         fontWeight: FontWeight.w700,
-        
+
                         color: AppColors.warmBrown,
                         height: 1.2,
                       ),
@@ -372,14 +380,14 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                     // ── Edit mode ─────────────────────────────────────
                     _buildEditField(
                       controller: _titleController,
-                      label: AppStrings.memoryTitleLabel,
+                      label: AppLocalizations.of(context)!.memoryTitleLabel,
                       fontSize: 22,
                       maxLines: 1,
                     ),
                     SizedBox(height: 20.h),
                     _buildEditField(
                       controller: _descController,
-                      label: AppStrings.memoryDateLabel,
+                      label: AppLocalizations.of(context)!.memoryDateLabel,
                       maxLines: 4,
                     ),
                     SizedBox(height: 32.h),
@@ -397,10 +405,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                           elevation: 0,
                         ),
                         icon: const Icon(Icons.check_rounded),
-                        label: const Text(
-                          AppStrings.saveMemory,
+                        label: Text(
+                          AppLocalizations.of(context)!.saveMemory,
                           style: TextStyle(
-            
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ),
@@ -426,11 +433,7 @@ class _CircleButton extends StatelessWidget {
   final VoidCallback onTap;
   final Color? color;
 
-  const _CircleButton({
-    required this.icon,
-    required this.onTap,
-    this.color,
-  });
+  const _CircleButton({required this.icon, required this.onTap, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -463,16 +466,20 @@ class _HeartDivider extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child:
-              Divider(color: AppColors.roseDust.withValues(alpha: 0.5), thickness: 1),
+          child: Divider(
+            color: AppColors.roseDust.withValues(alpha: 0.5),
+            thickness: 1,
+          ),
         ),
         Padding(
           padding: EdgeInsets.symmetric(horizontal: 10.w),
           child: Icon(Icons.favorite, size: 14.sp, color: AppColors.roseDust),
         ),
         Expanded(
-          child:
-              Divider(color: AppColors.roseDust.withValues(alpha: 0.5), thickness: 1),
+          child: Divider(
+            color: AppColors.roseDust.withValues(alpha: 0.5),
+            thickness: 1,
+          ),
         ),
       ],
     );
@@ -495,7 +502,7 @@ class _SpecialMemoryCard extends StatelessWidget {
           SizedBox(width: 12.w),
           Expanded(
             child: Text(
-              AppStrings.specialMemoryCallout,
+              AppLocalizations.of(context)!.specialMemoryCallout,
               style: TextStyle(
                 color: AppColors.softBrown,
                 fontSize: 13.sp,
@@ -537,7 +544,7 @@ class _LoveNoteFooter extends StatelessWidget {
           ),
           SizedBox(height: 10.h),
           Text(
-            AppStrings.loveNoteText,
+            AppLocalizations.of(context)!.loveNoteText,
             textAlign: TextAlign.center,
             style: TextStyle(
               fontStyle: FontStyle.italic,

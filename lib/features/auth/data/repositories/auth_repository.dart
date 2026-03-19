@@ -1,4 +1,5 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 
 class AuthRepository {
   AuthRepository._internal();
@@ -19,10 +20,14 @@ class AuthRepository {
   }
 
   Future<UserCredential> signUp(String email, String password) async {
-    return await _auth.createUserWithEmailAndPassword(
+    final credential = await _auth.createUserWithEmailAndPassword(
       email: email,
       password: password,
     );
+    if (credential.user != null) {
+      await UserRepository().createUserProfile(credential.user!);
+    }
+    return credential;
   }
 
   Future<void> signOut() async {

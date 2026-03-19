@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 
 class MemoriesRepository {
   MemoriesRepository._internal();
@@ -9,14 +12,59 @@ class MemoriesRepository {
   factory MemoriesRepository() => _instance;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  String get _uid => _auth.currentUser?.uid ?? 'anonymous';
 
   CollectionReference get _memoriesCollection =>
-      _firestore.collection(AppConstants.memoriesCollection);
+      _firestore.collection('users').doc(_uid).collection(AppConstants.memoriesCollection);
 
-  Stream<QuerySnapshot> getMemoriesStream() {
-    return _memoriesCollection
-        .orderBy('timestamp', descending: true)
-        .snapshots();
+  Stream<List<Map<String, dynamic>>> getMemoriesStream() {
+    final controller = StreamController<List<Map<String, dynamic>>>.broadcast();
+    List<Map<String, dynamic>> myMemories = [];
+    List<Map<String, dynamic>> partnerMemories = [];
+    
+    void updateAndEmit() {
+      final combined = [...myMemories, ...partnerMemories];
+      combined.sort((a, b) {
+        final tA = a['memoryDate'] ?? a['timestamp'];
+        final tB = b['memoryDate'] ?? b['timestamp'];
+        if (tA == null && tB == null) return 0;
+        if (tA == null) return 1;
+        if (tB == null) return -1;
+        if (tB is! Timestamp || tA is! Timestamp) return 0;
+        return tB.compareTo(tA);
+      });
+      controller.add(combined);
+    }
+    
+    StreamSubscription? mySub;
+    mySub = _memoriesCollection.orderBy('timestamp', descending: true).snapshots().listen((snap) {
+      myMemories = snap.docs.map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>}).toList();
+      updateAndEmit();
+    });
+
+    StreamSubscription? partnerSub;
+    final userSub = UserRepository().getUserProfileStream().listen((profile) {
+      if (profile?.partnerUid != null && partnerSub == null) {
+        partnerSub = _firestore.collection('users').doc(profile!.partnerUid).collection(AppConstants.memoriesCollection)
+          .orderBy('timestamp', descending: true).snapshots().listen((snap) {
+          partnerMemories = snap.docs.map((doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>}).toList();
+          updateAndEmit();
+        });
+      }
+    });
+
+    controller.onCancel = () {
+      mySub?.cancel();
+      partnerSub?.cancel();
+      userSub.cancel();
+    };
+
+    // Emit initial empty state or try to emit current
+    updateAndEmit();
+
+    return controller.stream;
   }
 
   Future<List<Map<String, dynamic>>> getCachedMemories() async {
@@ -56,7 +104,10 @@ class MemoriesRepository {
     required double lat,
     required double lng,
     String? imageUrl,
+    String? herFavStory,
+    String? hisFavStory,
     bool isUnique = false,
+    DateTime? memoryDate,
   }) async {
     await _memoriesCollection.add({
       'title': title,
@@ -64,7 +115,10 @@ class MemoriesRepository {
       'lat': lat,
       'lng': lng,
       'imageUrl': imageUrl,
+      'herFavStory': herFavStory,
+      'hisFavStory': hisFavStory,
       'isUnique': isUnique,
+      'memoryDate': memoryDate != null ? Timestamp.fromDate(memoryDate) : null,
       'timestamp': FieldValue.serverTimestamp(),
     });
     // Clear cache to force refresh on next load

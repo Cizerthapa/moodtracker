@@ -3,14 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/mood_palette.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/services/notification_service.dart';
-import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/features/settings/data/repositories/settings_repository.dart';
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
+import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
+import 'package:moodtrack/core/managers/locale_manager.dart';
+import 'package:moodtrack/features/auth/presentation/pages/login_screen.dart';
+import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/features/memories/presentation/pages/together_since_screen.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -21,7 +26,9 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   final SettingsRepository _repository = SettingsRepository();
+  final JournalRepository _journalRepository = JournalRepository();
   bool _notificationsEnabled = false;
+  bool _journalEncryptionEnabled = false;
   final NotificationService _notificationService = NotificationService();
 
   @override
@@ -32,8 +39,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _loadSettings() async {
     final enabled = await _repository.getNotificationsEnabled();
+    final encEnabled = await _journalRepository.getEncryptionEnabled();
     setState(() {
       _notificationsEnabled = enabled;
+      _journalEncryptionEnabled = encEnabled;
     });
   }
 
@@ -49,7 +58,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _notificationService.startPeriodicNotifications();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.notificationsOn)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.notificationsOn),
+          ),
         );
       }
     } else {
@@ -57,10 +68,52 @@ class _SettingsScreenState extends State<SettingsScreen> {
       await _notificationService.stopPeriodicNotifications();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text(AppStrings.notificationsOff)),
+          SnackBar(
+            content: Text(AppLocalizations.of(context)!.notificationsOff),
+          ),
         );
       }
     }
+  }
+
+  void _showLinkPartnerDialog() {
+    final TextEditingController emailController = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.ivoryCard,
+        title: Text("Link Partner", style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold)),
+        content: TextField(
+          controller: emailController,
+          decoration: InputDecoration(
+            hintText: "Partner's Email",
+            filled: true,
+            fillColor: AppColors.cream,
+            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AppColors.champagne)),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final email = emailController.text.trim();
+              if (email.isNotEmpty) {
+                final success = await UserRepository().linkPartnerByEmail(email);
+                if (mounted) {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success ? "Linked successfully!" : "Failed to link. Check email.")));
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
+            child: const Text("Link", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      )
+    );
   }
 
   @override
@@ -72,49 +125,50 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             // ── Header ──────────────────────────────────────────────
             Padding(
-              padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 12.h),
-              child: Row(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      HapticFeedback.lightImpact();
-                      Navigator.pop(context);
-                    },
-                    child: Container(
-                      padding: EdgeInsets.all(10.r),
-                      decoration: BoxDecoration(
-                        color: AppColors.ivoryCard,
-                        shape: BoxShape.circle,
-                        border: Border.all(color: AppColors.champagne),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                AppColors.warmBrown.withValues(alpha: 0.06),
-                            blurRadius: 8.r,
-                            offset: Offset(0, 2.h),
+                  padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 12.h),
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          Navigator.pop(context);
+                        },
+                        child: Container(
+                          padding: EdgeInsets.all(10.r),
+                          decoration: BoxDecoration(
+                            color: AppColors.ivoryCard,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: AppColors.champagne),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.warmBrown.withValues(
+                                  alpha: 0.06,
+                                ),
+                                blurRadius: 8.r,
+                                offset: Offset(0, 2.h),
+                              ),
+                            ],
                           ),
-                        ],
+                          child: Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            size: 18.sp,
+                            color: AppColors.warmBrown,
+                          ),
+                        ),
                       ),
-                      child: Icon(
-                        Icons.arrow_back_ios_new_rounded,
-                        size: 18.sp,
-                        color: AppColors.warmBrown,
+                      SizedBox(width: 20.w),
+                      Text(
+                        AppLocalizations.of(context)!.settingsTitle,
+                        style: GoogleFonts.outfit(
+                          fontSize: 34.sp,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.warmBrown,
+                          letterSpacing: -0.5,
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  SizedBox(width: 20.w),
-                  Text(
-                    AppStrings.settingsTitle,
-                    style: GoogleFonts.outfit(
-                      fontSize: 34.sp,
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.warmBrown,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ],
-              ),
-            )
+                )
                 .animate()
                 .fadeIn(duration: 400.ms)
                 .slideY(begin: -0.15, end: 0, duration: 400.ms),
@@ -157,8 +211,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
                   SizedBox(height: 16.h),
                   _buildSettingTile(
-                    title: AppStrings.enableNotifications,
-                    subtitle: AppStrings.notificationsSubtitle,
+                    title: AppLocalizations.of(context)!.enableNotifications,
+                    subtitle: AppLocalizations.of(
+                      context,
+                    )!.notificationsSubtitle,
                     icon: Icons.notifications_rounded,
                     trailing: Switch.adaptive(
                       value: _notificationsEnabled,
@@ -169,8 +225,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   SizedBox(height: 14.h),
                   _buildSettingTile(
-                    title: AppStrings.testNotification,
-                    subtitle: AppStrings.testNotificationSubtitle,
+                    title: AppLocalizations.of(context)!.testNotification,
+                    subtitle: AppLocalizations.of(
+                      context,
+                    )!.testNotificationSubtitle,
                     icon: Icons.notifications_active_rounded,
                     trailing: Icon(
                       Icons.chevron_right_rounded,
@@ -180,13 +238,146 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () async {
                       HapticFeedback.lightImpact();
                       await _notificationService.showInstantNotification(
-                        AppStrings.testNotificationTitle,
-                        AppStrings.testNotificationBody,
+                        AppLocalizations.of(context)!.testNotificationTitle,
+                        AppLocalizations.of(context)!.testNotificationBody,
                       );
                     },
                     index: 1,
                   ),
                   SizedBox(height: 14.h),
+                  _buildSettingTile(
+                    title: 'Language',
+                    subtitle: 'Choose your preferred language',
+                    icon: Icons.language_rounded,
+                    trailing: Consumer<LocaleManager>(
+                      builder: (context, localeManager, _) {
+                        return DropdownButton<String>(
+                          value: localeManager.locale.languageCode,
+                          underline: const SizedBox(),
+                          icon: Icon(
+                            Icons.arrow_drop_down_rounded,
+                            color: AppColors.roseDust,
+                          ),
+                          dropdownColor: AppColors.ivoryCard,
+                          style: GoogleFonts.outfit(
+                            color: AppColors.roseDeep,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          onChanged: (String? newValue) {
+                            if (newValue != null) {
+                              HapticFeedback.selectionClick();
+                              localeManager.setLocale(Locale(newValue));
+                            }
+                          },
+                          items: const [
+                            DropdownMenuItem(
+                              value: 'en',
+                              child: Text('English'),
+                            ),
+                            DropdownMenuItem(
+                              value: 'ne',
+                              child: Text('नेपाली'),
+                            ),
+                            DropdownMenuItem(value: 'zh', child: Text('中文')),
+                            DropdownMenuItem(value: 'ja', child: Text('日本語')),
+                          ],
+                        );
+                      },
+                    ),
+                    index: 2,
+                  ),
+                  SizedBox(height: 14.h),
+                  _buildSettingTile(
+                    title: 'Encrypt Journal',
+                    subtitle: 'AES-256 encrypt your journal entries',
+                    icon: Icons.lock_rounded,
+                    trailing: Switch.adaptive(
+                      value: _journalEncryptionEnabled,
+                      activeTrackColor: AppColors.roseDeep,
+                      onChanged: (value) async {
+                        HapticFeedback.selectionClick();
+                        // Show migration progress dialog
+                        showDialog(
+                          context: context,
+                          barrierDismissible: false,
+                          builder: (ctx) => AlertDialog(
+                            backgroundColor: AppColors.ivoryCard,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
+                            content: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircularProgressIndicator(
+                                  color: AppColors.roseDeep,
+                                ),
+                                SizedBox(height: 16.h),
+                                Text(
+                                  value
+                                      ? 'Encrypting entries...'
+                                      : 'Decrypting entries...',
+                                  style: GoogleFonts.outfit(
+                                    color: AppColors.warmBrown,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                        try {
+                          await _journalRepository.migrateEncryption(value);
+                          await _journalRepository.setEncryptionEnabled(value);
+                          if (mounted)
+                            setState(() => _journalEncryptionEnabled = value);
+                        } finally {
+                          if (mounted) Navigator.of(context).pop();
+                        }
+                      },
+                    ),
+                    index: 3,
+                  ),
+                  SizedBox(height: 14.h),
+                  // ── Couple Section ────────────────────────
+                  Text(
+                    'Couple',
+                    style: GoogleFonts.outfit(
+                      fontSize: 20.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.warmBrown,
+                    ),
+                  ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
+                  SizedBox(height: 16.h),
+                  _buildSettingTile(
+                    title: 'Link Partner',
+                    subtitle: 'Link accounts via email',
+                    icon: Icons.link_rounded,
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.roseDust,
+                      size: 22.r,
+                    ),
+                    onTap: () {
+                      _showLinkPartnerDialog();
+                    },
+                    index: 4,
+                  ),
+                  SizedBox(height: 14.h),
+                  _buildSettingTile(
+                    title: 'Together Timeline',
+                    subtitle: 'See how long you have been together',
+                    icon: Icons.timer_rounded,
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.roseDust,
+                      size: 22.r,
+                    ),
+                    onTap: () {
+                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TogetherSinceScreen()));
+                    },
+                    index: 5,
+                  ),
+                  SizedBox(height: 24.h),
+                  
                   _buildSettingTile(
                     title: 'Logout',
                     subtitle: 'Sign out of your account',
@@ -199,12 +390,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () async {
                       HapticFeedback.heavyImpact();
                       await AuthRepository().signOut();
-                      if (context.mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(
-                              content: Text('Logged out successfully')),
-                        );
-                      }
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(builder: (_) => const LoginScreen()),
+                        (_) => false,
+                      );
                     },
                     index: 2,
                   ),
@@ -218,7 +408,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               child: Column(
                 children: [
                   Text(
-                    AppStrings.madeWithLoveBy,
+                    AppLocalizations.of(context)!.madeWithLoveBy,
                     style: GoogleFonts.outfit(
                       fontStyle: FontStyle.italic,
                       color: AppColors.softBrown.withValues(alpha: 0.5),
@@ -228,7 +418,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   SizedBox(height: 4.h),
                   Text(
-                    AppStrings.authorName,
+                    AppLocalizations.of(context)!.authorName,
                     style: GoogleFonts.outfit(
                       fontWeight: FontWeight.w700,
                       color: AppColors.warmBrown,
@@ -259,84 +449,90 @@ class _SettingsScreenState extends State<SettingsScreen> {
               final isSelected = themeManager.palette.name == palette.name;
 
               return GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  themeManager.setTheme(palette);
-                },
-                child: AnimatedContainer(
-                  duration: 300.ms,
-                  curve: Curves.easeOutCubic,
-                  child: Column(
-                    children: [
-                      AnimatedContainer(
-                        duration: 300.ms,
-                        width: 66.r,
-                        height: 66.r,
-                        decoration: BoxDecoration(
-                          color: palette.cream,
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: isSelected
-                                ? palette.roseDeep
-                                : AppColors.champagne,
-                            width: isSelected ? 3.r : 1.r,
-                          ),
-                          boxShadow: isSelected
-                              ? [
-                                  BoxShadow(
-                                    color: palette.roseDeep
-                                        .withValues(alpha: 0.35),
-                                    blurRadius: 16.r,
-                                    offset: Offset(0, 6.h),
-                                  ),
-                                ]
-                              : [
-                                  BoxShadow(
-                                    color: AppColors.warmBrown
-                                        .withValues(alpha: 0.04),
-                                    blurRadius: 4.r,
-                                    offset: Offset(0, 2.h),
-                                  ),
-                                ],
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 34.r,
-                            height: 34.r,
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      themeManager.setTheme(palette);
+                    },
+                    child: AnimatedContainer(
+                      duration: 300.ms,
+                      curve: Curves.easeOutCubic,
+                      child: Column(
+                        children: [
+                          AnimatedContainer(
+                            duration: 300.ms,
+                            width: 66.r,
+                            height: 66.r,
                             decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  palette.roseDeep,
-                                  palette.roseDust,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
+                              color: palette.cream,
                               shape: BoxShape.circle,
+                              border: Border.all(
+                                color: isSelected
+                                    ? palette.roseDeep
+                                    : AppColors.champagne,
+                                width: isSelected ? 3.r : 1.r,
+                              ),
+                              boxShadow: isSelected
+                                  ? [
+                                      BoxShadow(
+                                        color: palette.roseDeep.withValues(
+                                          alpha: 0.35,
+                                        ),
+                                        blurRadius: 16.r,
+                                        offset: Offset(0, 6.h),
+                                      ),
+                                    ]
+                                  : [
+                                      BoxShadow(
+                                        color: AppColors.warmBrown.withValues(
+                                          alpha: 0.04,
+                                        ),
+                                        blurRadius: 4.r,
+                                        offset: Offset(0, 2.h),
+                                      ),
+                                    ],
                             ),
-                            child: isSelected
-                                ? Icon(Icons.check_rounded,
-                                    color: Colors.white, size: 18.r)
-                                : null,
+                            child: Center(
+                              child: Container(
+                                width: 34.r,
+                                height: 34.r,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      palette.roseDeep,
+                                      palette.roseDust,
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: isSelected
+                                    ? Icon(
+                                        Icons.check_rounded,
+                                        color: Colors.white,
+                                        size: 18.r,
+                                      )
+                                    : null,
+                              ),
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 10.h),
+                          Text(
+                            palette.name,
+                            style: GoogleFonts.outfit(
+                              fontSize: 12.sp,
+                              fontWeight: isSelected
+                                  ? FontWeight.w700
+                                  : FontWeight.w400,
+                              color: isSelected
+                                  ? AppColors.roseDeep
+                                  : AppColors.softBrown,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 10.h),
-                      Text(
-                        palette.name,
-                        style: GoogleFonts.outfit(
-                          fontSize: 12.sp,
-                          fontWeight:
-                              isSelected ? FontWeight.w700 : FontWeight.w400,
-                          color: isSelected
-                              ? AppColors.roseDeep
-                              : AppColors.softBrown,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              )
+                    ),
+                  )
                   .animate()
                   .fadeIn(
                     delay: Duration(milliseconds: 150 + (index * 100)),
@@ -364,65 +560,61 @@ class _SettingsScreenState extends State<SettingsScreen> {
     required int index,
   }) {
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(20.r),
-        decoration: BoxDecoration(
-          color: AppColors.ivoryCard,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: AppColors.champagne),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.warmBrown.withValues(alpha: 0.04),
-              blurRadius: 8.r,
-              offset: Offset(0, 2.h),
+          onTap: onTap,
+          child: Container(
+            padding: EdgeInsets.all(20.r),
+            decoration: BoxDecoration(
+              color: AppColors.ivoryCard,
+              borderRadius: BorderRadius.circular(20.r),
+              border: Border.all(color: AppColors.champagne),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.warmBrown.withValues(alpha: 0.04),
+                  blurRadius: 8.r,
+                  offset: Offset(0, 2.h),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: EdgeInsets.all(10.r),
-              decoration: BoxDecoration(
-                color: AppColors.roseDeep.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(12.r),
-              ),
-              child: Icon(
-                icon,
-                color: AppColors.roseDeep,
-                size: 22.r,
-              ),
-            ),
-            SizedBox(width: 16.w),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: GoogleFonts.outfit(
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.warmBrown,
-                    ),
+            child: Row(
+              children: [
+                Container(
+                  padding: EdgeInsets.all(10.r),
+                  decoration: BoxDecoration(
+                    color: AppColors.roseDeep.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12.r),
                   ),
-                  SizedBox(height: 3.h),
-                  Text(
-                    subtitle,
-                    style: GoogleFonts.outfit(
-                      fontSize: 12.sp,
-                      color: AppColors.softBrown.withValues(alpha: 0.7),
-                      fontWeight: FontWeight.w300,
-                    ),
+                  child: Icon(icon, color: AppColors.roseDeep, size: 22.r),
+                ),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: GoogleFonts.outfit(
+                          fontSize: 16.sp,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.warmBrown,
+                        ),
+                      ),
+                      SizedBox(height: 3.h),
+                      Text(
+                        subtitle,
+                        style: GoogleFonts.outfit(
+                          fontSize: 12.sp,
+                          color: AppColors.softBrown.withValues(alpha: 0.7),
+                          fontWeight: FontWeight.w300,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+                trailing,
+              ],
             ),
-            trailing,
-          ],
-        ),
-      ),
-    )
+          ),
+        )
         .animate()
         .fadeIn(
           delay: Duration(milliseconds: 300 + (index * 120)),

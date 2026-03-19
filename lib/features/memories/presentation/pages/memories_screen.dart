@@ -3,15 +3,17 @@ import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
+import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
-import 'package:moodtrack/core/constants/app_strings.dart';
+import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
-import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
-import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:moodtrack/core/services/storage_service.dart';
-import 'dart:io';
+import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
+import 'package:moodtrack/features/memories/presentation/pages/add_memory_screen.dart';
+import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 class MemoriesScreen extends StatefulWidget {
@@ -24,7 +26,6 @@ class MemoriesScreen extends StatefulWidget {
 class _MemoriesScreenState extends State<MemoriesScreen>
     with SingleTickerProviderStateMixin {
   final MemoriesRepository _repository = MemoriesRepository();
-  final StorageService _storageService = StorageService();
   bool _isLoading = true;
   List<Map<String, dynamic>> _memories = [];
   String _searchQuery = "";
@@ -37,7 +38,9 @@ class _MemoriesScreenState extends State<MemoriesScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
+      duration: const Duration(
+        milliseconds: AppConstants.fadeTransitionDurationMs,
+      ),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _searchController = TextEditingController();
@@ -64,7 +67,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
 
     // 2. Then seed if empty or just wait for real-time stream
     await _seedMemoriesIfEmpty();
-    
+
     // 3. Keep loading indicator if nothing in cache
     if (_memories.isEmpty && mounted) {
       setState(() => _isLoading = false);
@@ -74,8 +77,8 @@ class _MemoriesScreenState extends State<MemoriesScreen>
 
   Future<void> _seedMemoriesIfEmpty() async {
     // Check Firestore directly for seeding
-    final snapshot = await _repository.getMemoriesStream().first;
-    if (snapshot.docs.isNotEmpty) return;
+    final memories = await _repository.getMemoriesStream().first;
+    if (memories.isNotEmpty) return;
 
     final List<Map<String, dynamic>> seeds = [
       {
@@ -99,174 +102,202 @@ class _MemoriesScreenState extends State<MemoriesScreen>
         'lng': -73.9654,
         'isUnique': false,
       },
+      {
+        'title': 'Coffee & Rainy Days',
+        'description': 'That small cafe in Patan where we talked for hours',
+        'lat': 27.6744,
+        'lng': 85.3240,
+        'isUnique': false,
+        'herFavStory': 'I loved how you wiped the rain off my nose.',
+        'hisFavStory': 'Watching you smile while sipping mocha was everything.',
+      },
     ];
 
-    await _repository.seedMemories(seeds);
+    // Only seed if user is sangyaa3@gmail.com
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null && user.email == 'sangyaa3@gmail.com') {
+      await _repository.seedMemories(seeds);
+    }
   }
 
   Future<void> _onRefresh() async {
     await _repository.fetchAndCacheMemories();
-    // The StreamBuilder will handle the state update if we still use it, 
+    // The StreamBuilder will handle the state update if we still use it,
     // or we can manually reload if we switch to manual state.
     // Let's stick with StreamBuilder for real-time benefits but add RefreshIndicator.
   }
 
   void _showAddMemorySheet() {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) => _AddMemorySheet(
-        onSave: (title, desc, image) async {
-          String? imageUrl;
-          if (image != null) {
-            final path = 'memories/${DateTime.now().millisecondsSinceEpoch}.jpg';
-            imageUrl = await _storageService.uploadFile(file: image, path: path);
-          }
-          
-          await _repository.addMemory(
-            title: title,
-            description: desc,
-            lat: 27.7172, // Use current location in production
-            lng: 85.3240,
-            imageUrl: imageUrl,
-            isUnique: false,
-          );
-        },
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const AddMemoryScreen(),
+        fullscreenDialog: true,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.cream,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            _Header(onAdd: _showAddMemorySheet),
-            // Search Bar
-            Padding(
-              padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 12.h),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) => setState(() => _searchQuery = val),
-                style: GoogleFonts.outfit(fontSize: 14.sp, color: AppColors.warmBrown),
-                decoration: InputDecoration(
-                  hintText: "Search memories...",
-                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust, size: 20.r),
-                  suffixIcon: _searchQuery.isNotEmpty 
-                    ? IconButton(
-                        icon: Icon(Icons.clear_rounded, size: 18.r),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = "");
-                        },
-                      )
-                    : null,
+    return Consumer<ThemeManager>(
+      builder: (context, themeManager, _) => Scaffold(
+        backgroundColor: AppColors.cream,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _Header(onAdd: _showAddMemorySheet),
+              // Search Bar
+              Padding(
+                padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 12.h),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  style: GoogleFonts.outfit(
+                    fontSize: 14.sp,
+                    color: AppColors.warmBrown,
+                  ),
+                  decoration: InputDecoration(
+                    hintText: "Search memories...",
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: AppColors.roseDust,
+                      size: 20.r,
+                    ),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear_rounded, size: 18.r),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = "");
+                            },
+                          )
+                        : null,
+                  ),
                 ),
-              ),
-            ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
-            const _HeartDivider(),
-            Expanded(
-              child: _isLoading
-                  ? ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                      itemCount: 5,
-                      itemBuilder: (context, index) => Padding(
-                        padding: EdgeInsets.all(8.0.r),
-                        child: ShimmerLoading(
-                          isLoading: true,
-                          child: ShimmerSkeleton(
-                            height: 100.h,
-                            borderRadius: BorderRadius.circular(20.r),
+              ).animate().fadeIn(delay: 300.ms, duration: 400.ms),
+              const _HeartDivider(),
+              Expanded(
+                child: _isLoading
+                    ? ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                        itemCount: 5,
+                        itemBuilder: (context, index) => Padding(
+                          padding: EdgeInsets.all(8.0.r),
+                          child: ShimmerLoading(
+                            isLoading: true,
+                            child: ShimmerSkeleton(
+                              height: 100.h,
+                              borderRadius: BorderRadius.circular(20.r),
+                            ),
                           ),
                         ),
-                      ),
-                    )
-                  : FadeTransition(
-                      opacity: _fadeAnim,
-                      child: StreamBuilder<QuerySnapshot>(
-                        stream: _repository.getMemoriesStream(),
-                        builder: (context, snapshot) {
-                          if (!snapshot.hasData && _memories.isEmpty) {
-                            return ListView.builder(
-                              padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                              itemCount: 5,
-                              itemBuilder: (context, index) => Padding(
-                                padding: EdgeInsets.only(bottom: 12.h),
-                                child: ShimmerLoading(
-                                  isLoading: true,
-                                  child: ShimmerSkeleton(
-                                    height: 100.h,
-                                    borderRadius: BorderRadius.circular(20.r),
+                      )
+                    : FadeTransition(
+                        opacity: _fadeAnim,
+                        child: StreamBuilder<List<Map<String, dynamic>>>(
+                          stream: _repository.getMemoriesStream(),
+                          builder: (context, snapshot) {
+                            if (!snapshot.hasData && _memories.isEmpty) {
+                              return ListView.builder(
+                                padding: const EdgeInsets.fromLTRB(
+                                  20,
+                                  4,
+                                  20,
+                                  100,
+                                ),
+                                itemCount: 5,
+                                itemBuilder: (context, index) => Padding(
+                                  padding: EdgeInsets.only(bottom: 12.h),
+                                  child: ShimmerLoading(
+                                    isLoading: true,
+                                    child: ShimmerSkeleton(
+                                      height: 100.h,
+                                      borderRadius: BorderRadius.circular(20.r),
+                                    ),
                                   ),
+                                ),
+                              );
+                            }
+
+                            final docs = snapshot.hasData
+                                ? snapshot.data!
+                                : <Map<String, dynamic>>[];
+                            var listToDisplay = docs.isNotEmpty
+                                ? docs
+                                : _memories;
+
+                            if (_searchQuery.isNotEmpty) {
+                              listToDisplay = listToDisplay.where((m) {
+                                final title = (m['title'] ?? "")
+                                    .toString()
+                                    .toLowerCase();
+                                final desc = (m['description'] ?? "")
+                                    .toString()
+                                    .toLowerCase();
+                                return title.contains(
+                                      _searchQuery.toLowerCase(),
+                                    ) ||
+                                    desc.contains(_searchQuery.toLowerCase());
+                              }).toList();
+                            }
+
+                            if (listToDisplay.isEmpty) {
+                              return _EmptyState(onAdd: _showAddMemorySheet);
+                            }
+
+                            return RefreshIndicator(
+                              onRefresh: _onRefresh,
+                              color: AppColors.roseDeep,
+                              backgroundColor: Colors.white,
+                              child: RepaintBoundary(
+                                child: ListView.builder(
+                                  padding: EdgeInsets.fromLTRB(
+                                    20.w,
+                                    4.h,
+                                    20.w,
+                                    100.h,
+                                  ),
+                                  itemCount: listToDisplay.length,
+                                  itemBuilder: (context, index) {
+                                    final data = listToDisplay[index];
+                                    return _MemoryCard(
+                                      data: data,
+                                      index: index,
+                                      onTap: () {
+                                        if (docs.isNotEmpty) {
+                                          Navigator.push(
+                                            context,
+                                            PageRouteBuilder(
+                                              pageBuilder: (_, anim, __) =>
+                                                  MemoryDetailScreen(
+                                                    memoryData: docs[index],
+                                                  ),
+                                              transitionsBuilder:
+                                                  (_, anim, __, child) =>
+                                                      FadeTransition(
+                                                        opacity: anim,
+                                                        child: child,
+                                                      ),
+                                              transitionDuration: const Duration(
+                                                milliseconds: AppConstants
+                                                    .defaultTransitionDurationMs,
+                                              ),
+                                            ),
+                                          );
+                                        }
+                                      },
+                                    );
+                                  },
                                 ),
                               ),
                             );
-                          }
-
-                          final docs = snapshot.hasData ? snapshot.data!.docs : [];
-                          var listToDisplay = docs.isNotEmpty 
-                            ? docs.map((d) => d.data() as Map<String, dynamic>).toList()
-                            : _memories;
-
-                          if (_searchQuery.isNotEmpty) {
-                            listToDisplay = listToDisplay.where((m) {
-                              final title = (m['title'] ?? "").toString().toLowerCase();
-                              final desc = (m['description'] ?? "").toString().toLowerCase();
-                              return title.contains(_searchQuery.toLowerCase()) || 
-                                     desc.contains(_searchQuery.toLowerCase());
-                            }).toList();
-                          }
-
-                          if (listToDisplay.isEmpty) {
-                            return _EmptyState(onAdd: _showAddMemorySheet);
-                          }
-
-                          return RefreshIndicator(
-                            onRefresh: _onRefresh,
-                            color: AppColors.roseDeep,
-                            backgroundColor: Colors.white,
-                            child: RepaintBoundary(
-                              child: ListView.builder(
-                                padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
-                                itemCount: listToDisplay.length,
-                                itemBuilder: (context, index) {
-                                  final data = listToDisplay[index];
-                                  return _MemoryCard(
-                                    data: data,
-                                    index: index,
-                                    onTap: () {
-                                      if (docs.isNotEmpty) {
-                                        Navigator.push(
-                                          context,
-                                          PageRouteBuilder(
-                                            pageBuilder: (_, anim, __) =>
-                                                MemoryDetailScreen(doc: docs[index]),
-                                            transitionsBuilder: (_, anim, __, child) =>
-                                                FadeTransition(
-                                                  opacity: anim,
-                                                  child: child,
-                                                ),
-                                            transitionDuration: const Duration(
-                                              milliseconds: AppConstants.defaultTransitionDurationMs,
-                                            ),
-                                          ),
-                                        );
-                                      }
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          );
-                        },
+                          },
+                        ),
                       ),
-                    ),
-            ),
-          ],
+              ),
+            ],
+          ),
         ),
       ),
     );
@@ -280,80 +311,83 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 8.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  AppStrings.ourStoryHeader,
-                  style: GoogleFonts.outfit(
-                    fontSize: 34.sp,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.warmBrown,
-                    height: 1.1,
-                    letterSpacing: -0.8,
-                  ),
-                ),
-                SizedBox(height: 6.h),
-                Row(
+          padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 8.h),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.favorite_rounded,
-                      size: 12.r,
-                      color: AppColors.roseDust,
-                    ),
-                    SizedBox(width: 6.w),
                     Text(
-                      AppStrings.ourStorySlogan,
+                      AppLocalizations.of(context)!.ourStoryHeader,
                       style: GoogleFonts.outfit(
-                        fontStyle: FontStyle.italic,
-                        fontSize: 13.sp,
-                        color: AppColors.softBrown,
-                        fontWeight: FontWeight.w300,
+                        fontSize: 34.sp,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.warmBrown,
+                        height: 1.1,
+                        letterSpacing: -0.8,
                       ),
+                    ),
+                    SizedBox(height: 6.h),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.favorite_rounded,
+                          size: 12.r,
+                          color: AppColors.roseDust,
+                        ),
+                        SizedBox(width: 6.w),
+                        Text(
+                          AppLocalizations.of(context)!.ourStorySlogan,
+                          style: GoogleFonts.outfit(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 13.sp,
+                            color: AppColors.softBrown,
+                            fontWeight: FontWeight.w300,
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
-              ],
-            ),
-          ),
-          GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onAdd();
-            },
-            child: Container(
-              width: 48.r,
-              height: 48.r,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [AppColors.roseDeep, AppColors.roseDust],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.roseDeep.withValues(alpha: 0.35),
-                    blurRadius: 16.r,
-                    offset: Offset(0, 6.h),
+              ),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.lightImpact();
+                  onAdd();
+                },
+                child: Container(
+                  width: 48.r,
+                  height: 48.r,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [AppColors.roseDeep, AppColors.roseDust],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.roseDeep.withValues(alpha: 0.35),
+                        blurRadius: 16.r,
+                        offset: Offset(0, 6.h),
+                      ),
+                    ],
                   ),
-                ],
+                  child: Icon(
+                    Icons.add_rounded,
+                    color: Colors.white,
+                    size: 24.r,
+                  ),
+                ),
               ),
-              child: Icon(
-                Icons.add_rounded,
-                color: Colors.white,
-                size: 24.r,
-              ),
-            ),
+            ],
           ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.15, end: 0, duration: 500.ms);
+        )
+        .animate()
+        .fadeIn(duration: 500.ms)
+        .slideY(begin: -0.15, end: 0, duration: 500.ms);
   }
 }
 
@@ -440,112 +474,131 @@ class _MemoryCardState extends State<_MemoryCard>
     final String description = widget.data['description'] ?? '';
 
     return GestureDetector(
-      onTapDown: (_) => _pressController.forward(),
-      onTapUp: (_) {
-        _pressController.reverse();
-        HapticFeedback.lightImpact();
-        widget.onTap();
-      },
-      onTapCancel: () => _pressController.reverse(),
-      child: ScaleTransition(
-        scale: _scaleAnim,
-        child: Container(
-          margin: EdgeInsets.only(bottom: 14.h),
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: isUnique
-                  ? [const Color(0xFFFFF0EC), AppColors.roseDeep.withValues(alpha: 0.04)]
-                  : [AppColors.ivoryCard, AppColors.ivoryCard],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(
-              color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.3) : AppColors.champagne,
-              width: isUnique ? 1.5 : 1,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: isUnique
-                    ? AppColors.roseDeep.withValues(alpha: 0.1)
-                    : AppColors.warmBrown.withValues(alpha: 0.06),
-                blurRadius: 16.r,
-                offset: Offset(0, 4.h),
+          onTapDown: (_) => _pressController.forward(),
+          onTapUp: (_) {
+            _pressController.reverse();
+            HapticFeedback.lightImpact();
+            widget.onTap();
+          },
+          onTapCancel: () => _pressController.reverse(),
+          child: ScaleTransition(
+            scale: _scaleAnim,
+            child: Container(
+              margin: EdgeInsets.only(bottom: 14.h),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: isUnique
+                      ? [
+                          const Color(0xFFFFF0EC),
+                          AppColors.roseDeep.withValues(alpha: 0.04),
+                        ]
+                      : [AppColors.ivoryCard, AppColors.ivoryCard],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(20.r),
+                border: Border.all(
+                  color: isUnique
+                      ? AppColors.roseDeep.withValues(alpha: 0.3)
+                      : AppColors.champagne,
+                  width: isUnique ? 1.5 : 1,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: isUnique
+                        ? AppColors.roseDeep.withValues(alpha: 0.1)
+                        : AppColors.warmBrown.withValues(alpha: 0.06),
+                    blurRadius: 16.r,
+                    offset: Offset(0, 4.h),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-            child: Row(
-              children: [
-                // Icon dot
-                Container(
-                  width: 40.r,
-                  height: 40.r,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: isUnique
-                          ? [AppColors.roseDeep.withValues(alpha: 0.15), AppColors.roseDeep.withValues(alpha: 0.06)]
-                          : [AppColors.champagne, AppColors.champagne.withValues(alpha: 0.6)],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+                child: Row(
+                  children: [
+                    // Icon dot
+                    Container(
+                      width: 40.r,
+                      height: 40.r,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isUnique
+                              ? [
+                                  AppColors.roseDeep.withValues(alpha: 0.15),
+                                  AppColors.roseDeep.withValues(alpha: 0.06),
+                                ]
+                              : [
+                                  AppColors.champagne,
+                                  AppColors.champagne.withValues(alpha: 0.6),
+                                ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        isUnique ? Icons.star_rounded : Icons.favorite_rounded,
+                        color: isUnique
+                            ? AppColors.roseDeep
+                            : AppColors.roseDust,
+                        size: 18.r,
+                      ),
                     ),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(
-                    isUnique ? Icons.star_rounded : Icons.favorite_rounded,
-                    color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
-                    size: 18.r,
-                  ),
-                ),
-                SizedBox(width: 14.w),
+                    SizedBox(width: 14.w),
 
-                // Text
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        description,
-                        style: GoogleFonts.outfit(
-                          fontStyle: FontStyle.italic,
-                          fontSize: 11.sp,
-                          color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
-                          fontWeight: FontWeight.w500,
-                        ),
+                    // Text
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            description,
+                            style: GoogleFonts.outfit(
+                              fontStyle: FontStyle.italic,
+                              fontSize: 11.sp,
+                              color: isUnique
+                                  ? AppColors.roseDeep
+                                  : AppColors.softBrown,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          SizedBox(height: 4.h),
+                          Text(
+                            title,
+                            style: GoogleFonts.outfit(
+                              fontSize: 16.sp,
+                              fontWeight: FontWeight.w700,
+                              color: AppColors.warmBrown,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(height: 4.h),
-                      Text(
-                        title,
-                        style: GoogleFonts.outfit(
-                          fontSize: 16.sp,
-                          fontWeight: FontWeight.w700,
-                          color: AppColors.warmBrown,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                    ),
 
-                // Arrow
-                Container(
-                  padding: EdgeInsets.all(6.r),
-                  decoration: BoxDecoration(
-                    color: (isUnique ? AppColors.roseDeep : AppColors.roseDust).withValues(alpha: 0.08),
-                    borderRadius: BorderRadius.circular(10.r),
-                  ),
-                  child: Icon(
-                    Icons.arrow_forward_rounded,
-                    color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
-                    size: 16.r,
-                  ),
+                    // Arrow
+                    Container(
+                      padding: EdgeInsets.all(6.r),
+                      decoration: BoxDecoration(
+                        color:
+                            (isUnique ? AppColors.roseDeep : AppColors.roseDust)
+                                .withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10.r),
+                      ),
+                      child: Icon(
+                        Icons.arrow_forward_rounded,
+                        color: isUnique
+                            ? AppColors.roseDeep
+                            : AppColors.roseDust,
+                        size: 16.r,
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           ),
-        ),
-      ),
-    )
+        )
         .animate()
         .fadeIn(
           delay: Duration(milliseconds: 100 + (widget.index * 80)),
@@ -582,7 +635,7 @@ class _EmptyState extends StatelessWidget {
             ),
             SizedBox(height: 18.h),
             Text(
-              AppStrings.noMemories,
+              AppLocalizations.of(context)!.noMemories,
               style: GoogleFonts.outfit(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w700,
@@ -591,7 +644,7 @@ class _EmptyState extends StatelessWidget {
             ),
             SizedBox(height: 10.h),
             Text(
-              AppStrings.noMemoriesSubtitle,
+              AppLocalizations.of(context)!.noMemoriesSubtitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
@@ -608,10 +661,7 @@ class _EmptyState extends StatelessWidget {
                 onAdd();
               },
               child: Container(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 28.w,
-                  vertical: 14.h,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [AppColors.roseDeep, AppColors.roseDust],
@@ -628,167 +678,13 @@ class _EmptyState extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  AppStrings.addMemory,
+                  AppLocalizations.of(context)!.addMemory,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,
                     fontSize: 15.sp,
                   ),
                 ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-class _AddMemorySheet extends StatefulWidget {
-  final Function(String, String, File?) onSave;
-  const _AddMemorySheet({required this.onSave});
-
-  @override
-  State<_AddMemorySheet> createState() => _AddMemorySheetState();
-}
-
-class _AddMemorySheetState extends State<_AddMemorySheet> {
-  final _titleController = TextEditingController();
-  final _descController = TextEditingController();
-  File? _selectedImage;
-  bool _isUploading = false;
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (pickedFile != null) {
-      setState(() => _selectedImage = File(pickedFile.path));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).viewInsets.bottom,
-      ),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(30.r)),
-      ),
-      child: SingleChildScrollView(
-        padding: EdgeInsets.fromLTRB(28.w, 20.h, 28.w, 28.h),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Center(
-              child: Container(
-                width: 40.w,
-                height: 4.h,
-                decoration: BoxDecoration(
-                  color: AppColors.champagne,
-                  borderRadius: BorderRadius.circular(2.r),
-                ),
-              ),
-            ),
-            SizedBox(height: 24.h),
-            Text(
-              "New Memory",
-              style: GoogleFonts.outfit(
-                fontSize: 24.sp,
-                fontWeight: FontWeight.w700,
-                color: AppColors.warmBrown,
-                letterSpacing: -0.5,
-              ),
-            ),
-            SizedBox(height: 20.h),
-            
-            // Image Picker UI
-            GestureDetector(
-              onTap: _pickImage,
-              child: Container(
-                height: 180.h,
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: AppColors.ivoryCard,
-                  borderRadius: BorderRadius.circular(20.r),
-                  border: Border.all(color: AppColors.champagne),
-                ),
-                child: _selectedImage != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(20.r),
-                        child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                      )
-                    : Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 40.r),
-                          SizedBox(height: 8.h),
-                          Text(
-                            "Add a Photo",
-                            style: GoogleFonts.outfit(
-                              color: AppColors.softBrown,
-                              fontSize: 14.sp,
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-              ),
-            ),
-            const SizedBox(height: 20),
-
-            TextField(
-              controller: _titleController,
-              decoration: InputDecoration(
-                labelText: "Title",
-                labelStyle: TextStyle(color: AppColors.softBrown),
-                filled: true,
-                fillColor: AppColors.ivoryCard,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: AppColors.champagne),
-                ),
-              ),
-            ),
-            SizedBox(height: 12.h),
-            TextField(
-              controller: _descController,
-              decoration: InputDecoration(
-                labelText: "Date or Note",
-                labelStyle: TextStyle(color: AppColors.softBrown),
-                filled: true,
-                fillColor: AppColors.ivoryCard,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide(color: AppColors.champagne),
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isUploading ? null : () async {
-                  if (_titleController.text.isEmpty) return;
-                  setState(() => _isUploading = true);
-                  await widget.onSave(
-                    _titleController.text,
-                    _descController.text,
-                    _selectedImage,
-                  );
-                  if (context.mounted) Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.roseDeep,
-                  foregroundColor: Colors.white,
-                  padding: EdgeInsets.symmetric(vertical: 16.h),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-                ),
-                child: _isUploading 
-                  ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                  : const Text("Save Memory", style: TextStyle(fontWeight: FontWeight.bold)),
               ),
             ),
           ],

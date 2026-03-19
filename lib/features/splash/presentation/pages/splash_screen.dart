@@ -6,8 +6,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/entry/presentation/pages/entry_screen.dart';
-import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -30,10 +30,11 @@ class _SplashScreenState extends State<SplashScreen> {
                 const EntryScreen(),
             transitionsBuilder:
                 (context, animation, secondaryAnimation, child) {
-              return FadeTransition(opacity: animation, child: child);
-            },
+                  return FadeTransition(opacity: animation, child: child);
+                },
             transitionDuration: const Duration(
-                milliseconds: AppConstants.fadeTransitionDurationMs),
+              milliseconds: AppConstants.fadeTransitionDurationMs,
+            ),
           ),
         );
       }
@@ -50,31 +51,31 @@ class _SplashScreenState extends State<SplashScreen> {
           children: [
             // ── Animated Icon ──────────────────────────────────────
             Container(
-              padding: EdgeInsets.all(24.r),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppColors.roseDeep.withValues(alpha: 0.15),
-                    AppColors.roseDust.withValues(alpha: 0.08),
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                shape: BoxShape.circle,
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.roseDeep.withValues(alpha: 0.15),
-                    blurRadius: 40.r,
-                    spreadRadius: 5.r,
+                  padding: EdgeInsets.all(24.r),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppColors.roseDeep.withValues(alpha: 0.15),
+                        AppColors.roseDust.withValues(alpha: 0.08),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.roseDeep.withValues(alpha: 0.15),
+                        blurRadius: 40.r,
+                        spreadRadius: 5.r,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Icon(
-                Icons.favorite_rounded,
-                color: AppColors.roseDeep,
-                size: 64.r,
-              ),
-            )
+                  child: Icon(
+                    Icons.favorite_rounded,
+                    color: AppColors.roseDeep,
+                    size: 64.r,
+                  ),
+                )
                 .animate()
                 .scale(
                   begin: const Offset(0.5, 0.5),
@@ -88,14 +89,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
             // ── Welcome Text ────────────────────────────────────────
             Text(
-              AppStrings.welcomeBack,
-              style: GoogleFonts.outfit(
-                fontStyle: FontStyle.italic,
-                fontSize: 20.sp,
-                color: AppColors.softBrown,
-                fontWeight: FontWeight.w400,
-              ),
-            )
+                  AppLocalizations.of(context)!.welcomeBack,
+                  style: GoogleFonts.outfit(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 20.sp,
+                    color: AppColors.softBrown,
+                    fontWeight: FontWeight.w400,
+                  ),
+                )
                 .animate()
                 .fadeIn(delay: 300.ms, duration: 600.ms)
                 .slideY(begin: 0.3, end: 0, delay: 300.ms, duration: 600.ms),
@@ -104,14 +105,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
             // ── Name ──────────────────────────────────────────────
             Text(
-              AppStrings.userName,
-              style: GoogleFonts.outfit(
-                fontSize: 38.sp,
-                fontWeight: FontWeight.w800,
-                color: AppColors.warmBrown,
-                letterSpacing: -0.5,
-              ),
-            )
+                  AppLocalizations.of(context)!.userName,
+                  style: GoogleFonts.outfit(
+                    fontSize: 38.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.warmBrown,
+                    letterSpacing: -0.5,
+                  ),
+                )
                 .animate()
                 .fadeIn(delay: 500.ms, duration: 600.ms)
                 .slideY(begin: 0.3, end: 0, delay: 500.ms, duration: 600.ms),
@@ -120,14 +121,14 @@ class _SplashScreenState extends State<SplashScreen> {
 
             // ── Subtitle ────────────────────────────────────────────
             Text(
-              AppStrings.trackMoodToday,
-              style: GoogleFonts.outfit(
-                fontStyle: FontStyle.italic,
-                fontSize: 14.sp,
-                color: AppColors.softBrown.withValues(alpha: 0.7),
-                fontWeight: FontWeight.w300,
-              ),
-            )
+                  AppLocalizations.of(context)!.trackMoodToday,
+                  style: GoogleFonts.outfit(
+                    fontStyle: FontStyle.italic,
+                    fontSize: 14.sp,
+                    color: AppColors.softBrown.withValues(alpha: 0.7),
+                    fontWeight: FontWeight.w300,
+                  ),
+                )
                 .animate()
                 .fadeIn(delay: 700.ms, duration: 600.ms)
                 .slideY(begin: 0.3, end: 0, delay: 700.ms, duration: 600.ms),
