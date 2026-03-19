@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
@@ -12,7 +11,6 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
 import 'package:moodtrack/features/memories/presentation/pages/add_memory_screen.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
