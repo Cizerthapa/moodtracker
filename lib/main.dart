@@ -43,7 +43,10 @@ class MoodTrackApp extends StatelessWidget {
               title: AppStrings.appName,
               debugShowCheckedModeBanner: false,
               theme: AppTheme.getTheme(themeManager.palette),
-              home: const AuthWrapper(),
+              home: KeyedSubtree(
+                key: ValueKey(themeManager.palette.name),
+                child: const AuthWrapper(),
+              ),
             );
           },
         );
