@@ -3,11 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:moodtrack/features/memories/presentation/pages/memories_screen.dart';
 import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_screen.dart';
-import 'package:moodtrack/features/notes/presentation/pages/notes_screen.dart';
+import 'package:moodtrack/features/journal/presentation/pages/journal_screen.dart';
 import 'package:moodtrack/features/settings/presentation/pages/settings_screen.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 
@@ -16,7 +18,8 @@ class EntryScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer<ThemeManager>(
+      builder: (context, themeManager, _) => Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Padding(
@@ -128,7 +131,7 @@ class EntryScreen extends StatelessWidget {
                       subtitle: AppStrings.journalSubtitle,
                       icon: Icons.auto_awesome_rounded,
                       color: const Color(0xFFD4A832),
-                      destination: const NotesScreen(),
+                      destination: const JournalScreen(),
                       index: 2,
                     ),
                   ],
@@ -138,7 +141,7 @@ class EntryScreen extends StatelessWidget {
           ),
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildFeatureCard(
