@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
@@ -113,7 +115,8 @@ class _NotesScreenState extends State<NotesScreen>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer<ThemeManager>(
+      builder: (context, themeManager, _) => Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Column(
@@ -321,7 +324,7 @@ class _NotesScreenState extends State<NotesScreen>
           ],
         ),
       ),
-    );
+    ));
   }
 }
 
