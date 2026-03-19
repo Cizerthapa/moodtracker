@@ -4,7 +4,9 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
@@ -142,7 +144,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return Consumer<ThemeManager>(
+      builder: (context, themeManager, _) => Scaffold(
       backgroundColor: AppColors.cream,
       body: SafeArea(
         child: Column(
@@ -217,7 +220,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
           ],
         ),
       ),
-    );
+    ));
   }
 
   Widget _buildTabButton(int index, IconData icon, String label) {
@@ -448,6 +451,34 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen> with SingleTicker
               size: 24.r,
             ),
           ),
+          confirmDismiss: (direction) async {
+            HapticFeedback.mediumImpact();
+            return await showDialog<bool>(
+              context: context,
+              builder: (ctx) => AlertDialog(
+                backgroundColor: AppColors.ivoryCard,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+                title: Text(
+                  'Remove Entry?',
+                  style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: AppColors.warmBrown),
+                ),
+                content: Text(
+                  'Are you sure you want to remove this drink entry?',
+                  style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 14.sp),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(false),
+                    child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.softBrown)),
+                  ),
+                  TextButton(
+                    onPressed: () => Navigator.of(ctx).pop(true),
+                    child: Text('Delete', style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.w700)),
+                  ),
+                ],
+              ),
+            ) ?? false;
+          },
           onDismissed: (_) => _deleteDrink(index),
           child: Container(
             margin: EdgeInsets.only(bottom: 12.h),
