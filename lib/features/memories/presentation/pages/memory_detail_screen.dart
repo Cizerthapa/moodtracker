@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
@@ -17,13 +17,15 @@ class MemoryDetailScreen extends StatefulWidget {
 }
 
 class _MemoryDetailScreenState extends State<MemoryDetailScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late LatLng _location;
   bool _isEditing = false;
   late AnimationController _heartController;
+  late AnimationController _fadeController;
   late Animation<double> _heartAnim;
+  late Animation<double> _fadeAnim;
   final MemoriesRepository _repository = MemoriesRepository();
 
   @override
@@ -36,16 +38,23 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
 
     _heartController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 900),
+      duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-    _heartAnim = Tween<double>(begin: 1.0, end: 1.18).animate(
+    _heartAnim = Tween<double>(begin: 1.0, end: 1.22).animate(
       CurvedAnimation(parent: _heartController, curve: Curves.easeInOut),
     );
+
+    _fadeController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    )..forward();
+    _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
   }
 
   @override
   void dispose() {
     _heartController.dispose();
+    _fadeController.dispose();
     _titleController.dispose();
     _descController.dispose();
     super.dispose();
@@ -61,45 +70,10 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
 
   Future<void> _deleteMemory() async {
     final bool confirm =
-        await showDialog(
+        await showModalBottomSheet<bool>(
           context: context,
-          builder: (context) => AlertDialog(
-            backgroundColor: AppColors.ivoryCard,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(24.r),
-            ),
-            title: Text(
-              AppLocalizations.of(context)!.deleteMemoryTitle,
-              style: TextStyle(
-                color: AppColors.warmBrown,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            content: Text(
-              AppLocalizations.of(context)!.deleteMemoryContent,
-              style: TextStyle(color: AppColors.softBrown, fontSize: 14.sp),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, false),
-                child: Text(
-                  AppLocalizations.of(context)!.keepIt,
-                  style: TextStyle(color: AppColors.softBrown),
-                ),
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context, true),
-                child: Text(
-                  AppLocalizations.of(context)!.letGo,
-                  style: TextStyle(
-                    color: AppColors.roseDeep,
-
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
-          ),
+          backgroundColor: Colors.transparent,
+          builder: (context) => _DeleteSheet(),
         ) ??
         false;
 
@@ -109,35 +83,869 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     }
   }
 
-  Widget _buildEditField({
-    required TextEditingController controller,
-    required String label,
-    int maxLines = 1,
-    double fontSize = 16,
-  }) {
+  String _formatDate(dynamic date) {
+    if (date == null) return '';
+    DateTime dt;
+    if (date is DateTime) {
+      dt = date;
+    } else if (date.runtimeType.toString().contains('Timestamp')) {
+      dt = (date as dynamic).toDate();
+    } else {
+      return date.toString();
+    }
+    const months = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    final hour = dt.hour > 12 ? dt.hour - 12 : (dt.hour == 0 ? 12 : dt.hour);
+    final ampm = dt.hour >= 12 ? 'PM' : 'AM';
+    final minute = dt.minute.toString().padLeft(2, '0');
+    return '${months[dt.month - 1]} ${dt.day}, ${dt.year}  ·  $hour:$minute $ampm';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final data = widget.memoryData;
+    final bool isUnique = data['isUnique'] == true;
+    final String? herFav = data['herFavStory'];
+    final String? hisFav = data['hisFavStory'];
+
+    return Scaffold(
+      backgroundColor: AppColors.cream,
+      body: FadeTransition(
+        opacity: _fadeAnim,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(),
+          slivers: [
+            // ── Hero Map / Image Header ─────────────────────────────────
+            SliverAppBar(
+              expandedHeight: 340.h,
+              pinned: true,
+              backgroundColor: AppColors.cream,
+              elevation: 0,
+              leading: Padding(
+                padding: EdgeInsets.all(8.r),
+                child: _GlassButton(
+                  icon: Icons.arrow_back_ios_new_rounded,
+                  onTap: () => Navigator.pop(context),
+                ),
+              ),
+              actions: [
+                Padding(
+                  padding: EdgeInsets.only(right: 8.w),
+                  child: _GlassButton(
+                    icon: _isEditing ? Icons.check_rounded : Icons.edit_rounded,
+                    onTap: () => _isEditing
+                        ? _updateMemory()
+                        : setState(() => _isEditing = true),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(right: 16.w),
+                  child: _GlassButton(
+                    icon: Icons.delete_outline_rounded,
+                    onTap: _deleteMemory,
+                    tint: AppColors.roseDeep,
+                  ),
+                ),
+              ],
+              flexibleSpace: FlexibleSpaceBar(
+                background: _HeroSection(
+                  data: data,
+                  location: _location,
+                  heartAnim: _heartAnim,
+                  isUnique: isUnique,
+                ),
+              ),
+            ),
+
+            // ── Body ────────────────────────────────────────────────────
+            SliverToBoxAdapter(
+              child: _isEditing
+                  ? _EditPanel(
+                      titleController: _titleController,
+                      descController: _descController,
+                      onSave: _updateMemory,
+                      onCancel: () => setState(() => _isEditing = false),
+                    )
+                  : _ViewPanel(
+                      data: data,
+                      isUnique: isUnique,
+                      herFav: herFav,
+                      hisFav: hisFav,
+                      formatDate: _formatDate,
+                    ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Hero Section ──────────────────────────────────────────────────────────
+
+class _HeroSection extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final LatLng location;
+  final Animation<double> heartAnim;
+  final bool isUnique;
+
+  const _HeroSection({
+    required this.data,
+    required this.location,
+    required this.heartAnim,
+    required this.isUnique,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final hasImage = data['imageUrl'] != null;
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        // Background: photo or map
+        if (hasImage)
+          _MemoryImage(url: data['imageUrl'])
+        else
+          FlutterMap(
+            options: MapOptions(
+              initialCenter: location,
+              initialZoom: 15.0,
+              interactionOptions: const InteractionOptions(
+                flags: InteractiveFlag.none,
+              ),
+            ),
+            children: [
+              TileLayer(
+                urlTemplate:
+                    'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                subdomains: const ['a', 'b', 'c', 'd'],
+              ),
+              MarkerLayer(
+                markers: [
+                  Marker(
+                    point: location,
+                    width: 64.r,
+                    height: 64.r,
+                    child: ScaleTransition(
+                      scale: heartAnim,
+                      child: Icon(
+                        isUnique ? Icons.star_rounded : Icons.favorite_rounded,
+                        color: AppColors.roseDeep,
+                        size: 42.sp,
+                        shadows: [
+                          Shadow(color: Colors.white, blurRadius: 16.r),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+
+        // Gradient scrim — always
+        Positioned.fill(
+          child: DecoratedBox(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                stops: const [0.0, 0.5, 1.0],
+                colors: [
+                  Colors.black.withValues(alpha: 0.15),
+                  Colors.transparent,
+                  AppColors.cream,
+                ],
+              ),
+            ),
+          ),
+        ),
+
+        // If image shown, small pulsing map pip in corner
+        if (hasImage)
+          Positioned(
+            bottom: 70.h,
+            right: 20.w,
+            child: _MapPip(
+              location: location,
+              heartAnim: heartAnim,
+              isUnique: isUnique,
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+class _MemoryImage extends StatelessWidget {
+  final String url;
+  const _MemoryImage({required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    final isNetwork = url.startsWith('http');
+    return isNetwork
+        ? Image.network(
+            url,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _ImageFallback(),
+          )
+        : Image.file(
+            File(url),
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => _ImageFallback(),
+          );
+  }
+}
+
+class _ImageFallback extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: AppColors.champagne,
+      child: Center(
+        child: Icon(
+          Icons.broken_image_outlined,
+          color: AppColors.softBrown,
+          size: 48.sp,
+        ),
+      ),
+    );
+  }
+}
+
+class _MapPip extends StatelessWidget {
+  final LatLng location;
+  final Animation<double> heartAnim;
+  final bool isUnique;
+
+  const _MapPip({
+    required this.location,
+    required this.heartAnim,
+    required this.isUnique,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16.r),
+      child: SizedBox(
+        width: 110.w,
+        height: 80.h,
+        child: Stack(
+          children: [
+            FlutterMap(
+              options: MapOptions(
+                initialCenter: location,
+                initialZoom: 14.0,
+                interactionOptions: const InteractionOptions(
+                  flags: InteractiveFlag.none,
+                ),
+              ),
+              children: [
+                TileLayer(
+                  urlTemplate:
+                      'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+                  subdomains: const ['a', 'b', 'c', 'd'],
+                ),
+                MarkerLayer(
+                  markers: [
+                    Marker(
+                      point: location,
+                      width: 28.r,
+                      height: 28.r,
+                      child: ScaleTransition(
+                        scale: heartAnim,
+                        child: Icon(
+                          isUnique
+                              ? Icons.star_rounded
+                              : Icons.favorite_rounded,
+                          color: AppColors.roseDeep,
+                          size: 20.sp,
+                          shadows: [
+                            Shadow(color: Colors.white, blurRadius: 8.r),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            // border overlay
+            Positioned.fill(
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(16.r),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    width: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── View Panel ─────────────────────────────────────────────────────────────
+
+class _ViewPanel extends StatelessWidget {
+  final Map<String, dynamic> data;
+  final bool isUnique;
+  final String? herFav;
+  final String? hisFav;
+  final String Function(dynamic) formatDate;
+
+  const _ViewPanel({
+    required this.data,
+    required this.isUnique,
+    required this.herFav,
+    required this.hisFav,
+    required this.formatDate,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24.w, 0, 24.w, 60.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          SizedBox(height: 4.h),
+
+          // ── Unique badge ─────────────────────────────────────────────
+          if (isUnique) ...[_UniqueBadge(), SizedBox(height: 14.h)],
+
+          // ── Title ────────────────────────────────────────────────────
+          Text(
+            data['title'] ?? '',
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 38.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.warmBrown,
+              height: 1.15,
+              letterSpacing: -0.5,
+            ),
+          ),
+          SizedBox(height: 10.h),
+
+          // ── Date pill ────────────────────────────────────────────────
+          Row(
+            children: [
+              Icon(
+                Icons.schedule_rounded,
+                size: 13.sp,
+                color: AppColors.roseDust,
+              ),
+              SizedBox(width: 6.w),
+              Text(
+                formatDate(data['memoryDate'] ?? data['createdAt']),
+                style: GoogleFonts.outfit(
+                  fontSize: 12.sp,
+                  color: AppColors.softBrown,
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 24.h),
+
+          // ── Ornamental divider ───────────────────────────────────────
+          _OrnamentalDivider(),
+          SizedBox(height: 24.h),
+
+          // ── Description ──────────────────────────────────────────────
+          if (data['description'] != null &&
+              data['description'].toString().isNotEmpty) ...[
+            Text(
+              data['description'],
+              style: GoogleFonts.lora(
+                fontSize: 15.sp,
+                color: AppColors.softBrown,
+                height: 1.75,
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+            SizedBox(height: 28.h),
+          ],
+
+          // ── Favorite stories ─────────────────────────────────────────
+          if (herFav != null || hisFav != null) ...[
+            _StoryCards(herFav: herFav, hisFav: hisFav),
+            SizedBox(height: 28.h),
+          ],
+
+          // ── Love note footer ─────────────────────────────────────────
+          _LoveNoteCard(),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Edit Panel ─────────────────────────────────────────────────────────────
+
+class _EditPanel extends StatelessWidget {
+  final TextEditingController titleController;
+  final TextEditingController descController;
+  final VoidCallback onSave;
+  final VoidCallback onCancel;
+
+  const _EditPanel({
+    required this.titleController,
+    required this.descController,
+    required this.onSave,
+    required this.onCancel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(24.w, 20.h, 24.w, 60.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Edit Memory',
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 28.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.warmBrown,
+            ),
+          ),
+          SizedBox(height: 20.h),
+          _StyledField(
+            controller: titleController,
+            label: 'Title',
+            maxLines: 1,
+            fontSize: 18.sp,
+            fontWeight: FontWeight.w600,
+          ),
+          SizedBox(height: 16.h),
+          _StyledField(
+            controller: descController,
+            label: 'Short Note / Description',
+            maxLines: 4,
+          ),
+          SizedBox(height: 28.h),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: onCancel,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.softBrown,
+                    side: BorderSide(color: AppColors.champagne, width: 1.5),
+                    padding: EdgeInsets.symmetric(vertical: 15.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Cancel',
+                    style: GoogleFonts.outfit(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                flex: 2,
+                child: ElevatedButton.icon(
+                  onPressed: onSave,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.roseDeep,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 15.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  icon: Icon(Icons.check_rounded, size: 18.sp),
+                  label: Text(
+                    'Save Changes',
+                    style: GoogleFonts.outfit(
+                      fontSize: 15.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+class _UniqueBadge extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            AppColors.roseDeep.withValues(alpha: 0.15),
+            AppColors.champagne,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(50.r),
+        border: Border.all(
+          color: AppColors.roseDust.withValues(alpha: 0.4),
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.star_rounded, size: 14.sp, color: AppColors.roseDeep),
+          SizedBox(width: 6.w),
+          Text(
+            'Special Memory',
+            style: GoogleFonts.outfit(
+              fontSize: 12.sp,
+              color: AppColors.roseDeep,
+              fontWeight: FontWeight.w600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OrnamentalDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.champagne.withValues(alpha: 0),
+                  AppColors.roseDust.withValues(alpha: 0.5),
+                ],
+              ),
+            ),
+          ),
+        ),
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 12.w),
+          child: Row(
+            children: [
+              Icon(Icons.favorite, size: 8.sp, color: AppColors.roseDust),
+              SizedBox(width: 5.w),
+              Icon(Icons.favorite, size: 12.sp, color: AppColors.roseDust),
+              SizedBox(width: 5.w),
+              Icon(Icons.favorite, size: 8.sp, color: AppColors.roseDust),
+            ],
+          ),
+        ),
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppColors.roseDust.withValues(alpha: 0.5),
+                  AppColors.champagne.withValues(alpha: 0),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _StoryCards extends StatelessWidget {
+  final String? herFav;
+  final String? hisFav;
+
+  const _StoryCards({this.herFav, this.hisFav});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Our Perspectives',
+          style: GoogleFonts.cormorantGaramond(
+            fontSize: 20.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.warmBrown,
+            letterSpacing: 0.3,
+          ),
+        ),
+        SizedBox(height: 14.h),
+        if (herFav != null)
+          _PerspectiveCard(
+            label: 'Her Story',
+            text: herFav!,
+            icon: Icons.favorite_rounded,
+            accentColor: const Color(0xFFE8A5B0),
+            isLeft: true,
+          ),
+        if (herFav != null && hisFav != null) SizedBox(height: 12.h),
+        if (hisFav != null)
+          _PerspectiveCard(
+            label: 'His Story',
+            text: hisFav!,
+            icon: Icons.favorite_rounded,
+            accentColor: const Color(0xFFB5C4D8),
+            isLeft: false,
+          ),
+      ],
+    );
+  }
+}
+
+class _PerspectiveCard extends StatelessWidget {
+  final String label;
+  final String text;
+  final IconData icon;
+  final Color accentColor;
+  final bool isLeft;
+
+  const _PerspectiveCard({
+    required this.label,
+    required this.text,
+    required this.icon,
+    required this.accentColor,
+    required this.isLeft,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(18.r),
+      decoration: BoxDecoration(
+        color: AppColors.ivoryCard,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(isLeft ? 4.r : 20.r),
+          topRight: Radius.circular(isLeft ? 20.r : 4.r),
+          bottomLeft: Radius.circular(20.r),
+          bottomRight: Radius.circular(20.r),
+        ),
+        border: Border.all(color: AppColors.champagne),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.12),
+            blurRadius: 16.r,
+            offset: Offset(0, 4.h),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 28.r,
+                height: 28.r,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: Icon(icon, size: 14.sp, color: accentColor),
+              ),
+              SizedBox(width: 10.w),
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.softBrown,
+                  letterSpacing: 0.4,
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 12.h),
+          Text(
+            text,
+            style: GoogleFonts.lora(
+              fontSize: 14.sp,
+              color: AppColors.warmBrown,
+              height: 1.7,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LoveNoteCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(vertical: 28.h, horizontal: 24.w),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.ivoryCard,
+            AppColors.champagne.withValues(alpha: 0.5),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(28.r),
+        border: Border.all(color: AppColors.champagne),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.roseDust.withValues(alpha: 0.1),
+            blurRadius: 24.r,
+            offset: Offset(0, 6.h),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.favorite_rounded,
+                size: 10.sp,
+                color: AppColors.roseDust.withValues(alpha: 0.5),
+              ),
+              SizedBox(width: 6.w),
+              Icon(
+                Icons.favorite_rounded,
+                size: 16.sp,
+                color: AppColors.roseDust,
+              ),
+              SizedBox(width: 6.w),
+              Icon(
+                Icons.favorite_rounded,
+                size: 10.sp,
+                color: AppColors.roseDust.withValues(alpha: 0.5),
+              ),
+            ],
+          ),
+          SizedBox(height: 14.h),
+          Text(
+            AppLocalizations.of(context)!.loveNoteText,
+            textAlign: TextAlign.center,
+            style: GoogleFonts.cormorantGaramond(
+              fontStyle: FontStyle.italic,
+              fontSize: 17.sp,
+              color: AppColors.softBrown,
+              height: 1.7,
+              letterSpacing: 0.2,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GlassButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final Color? tint;
+
+  const _GlassButton({required this.icon, required this.onTap, this.tint});
+
+  @override
+  Widget build(BuildContext context) {
+    final color = tint ?? AppColors.warmBrown;
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 40.r,
+        height: 40.r,
+        decoration: BoxDecoration(
+          color: AppColors.cream.withValues(alpha: 0.88),
+          shape: BoxShape.circle,
+          border: Border.all(color: color.withValues(alpha: 0.12), width: 1),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.1),
+              blurRadius: 12.r,
+              offset: Offset(0, 2.h),
+            ),
+          ],
+        ),
+        child: Icon(icon, size: 17.sp, color: color),
+      ),
+    );
+  }
+}
+
+class _StyledField extends StatelessWidget {
+  final TextEditingController controller;
+  final String label;
+  final int maxLines;
+  final double? fontSize;
+  final FontWeight? fontWeight;
+
+  const _StyledField({
+    required this.controller,
+    required this.label,
+    this.maxLines = 1,
+    this.fontSize,
+    this.fontWeight,
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return TextField(
       controller: controller,
       maxLines: maxLines,
-      style: TextStyle(
-        fontSize: fontSize.sp,
-        fontFamily: 'Georgia',
+      style: GoogleFonts.lora(
+        fontSize: fontSize ?? 14.sp,
         color: AppColors.warmBrown,
-        fontWeight: maxLines == 1 ? FontWeight.bold : FontWeight.normal,
+        fontWeight: fontWeight ?? FontWeight.normal,
       ),
       cursorColor: AppColors.roseDeep,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(
+        labelStyle: GoogleFonts.outfit(
           color: AppColors.softBrown,
-          fontFamily: 'Georgia',
-          fontSize: 14.sp,
+          fontSize: 13.sp,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
           borderSide: BorderSide(color: AppColors.champagne, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(16.r),
+          borderRadius: BorderRadius.circular(14.r),
           borderSide: BorderSide(color: AppColors.roseDust, width: 1.5),
         ),
         filled: true,
@@ -146,412 +954,108 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
       ),
     );
   }
-
-  @override
-  Widget build(BuildContext context) {
-    final data = widget.memoryData;
-    final bool isUnique = data['isUnique'] == true;
-
-    return Scaffold(
-      backgroundColor: AppColors.cream,
-      body: CustomScrollView(
-        slivers: [
-          // ── Collapsible Map Header ──────────────────────────────────────
-          SliverAppBar(
-            expandedHeight: 300.h,
-            pinned: true,
-            backgroundColor: AppColors.cream,
-            leading: Padding(
-              padding: EdgeInsets.all(8.r),
-              child: _CircleButton(
-                icon: Icons.arrow_back_ios_new_rounded,
-                onTap: () => Navigator.pop(context),
-              ),
-            ),
-            actions: [
-              Padding(
-                padding: EdgeInsets.only(right: 6.w),
-                child: _CircleButton(
-                  icon: _isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                  onTap: () => _isEditing
-                      ? _updateMemory()
-                      : setState(() => _isEditing = true),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(right: 12.w),
-                child: _CircleButton(
-                  icon: Icons.delete_outline_rounded,
-                  onTap: _deleteMemory,
-                  color: AppColors.roseDeep,
-                ),
-              ),
-            ],
-            flexibleSpace: FlexibleSpaceBar(
-              background: Stack(
-                fit: StackFit.expand,
-                children: [
-                  // Map
-                  FlutterMap(
-                    options: MapOptions(
-                      initialCenter: _location,
-                      initialZoom: 15.0,
-                      interactionOptions: const InteractionOptions(
-                        flags: InteractiveFlag.none,
-                      ),
-                    ),
-                    children: [
-                      TileLayer(
-                        urlTemplate:
-                            'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-                        subdomains: const ['a', 'b', 'c', 'd'],
-                      ),
-                      MarkerLayer(
-                        markers: [
-                          Marker(
-                            point: _location,
-                            width: 64.r,
-                            height: 64.r,
-                            child: ScaleTransition(
-                              scale: _heartAnim,
-                              child: Icon(
-                                isUnique
-                                    ? Icons.star_rounded
-                                    : Icons.favorite_rounded,
-                                color: AppColors.roseDeep,
-                                size: 40.sp,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.white,
-                                    blurRadius: 12.r,
-                                    offset: const Offset(0, 0),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                  // Fade-to-cream at the bottom
-                  Positioned(
-                    bottom: 0,
-                    left: 0,
-                    right: 0,
-                    height: 80.h,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            AppColors.cream.withValues(alpha: 0),
-                            AppColors.cream,
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-          // ── Content ────────────────────────────────────────────────────
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 8.h),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Memory Image
-                  if (data['imageUrl'] != null) ...[
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(24.r),
-                      child: data['imageUrl'].toString().startsWith('http')
-                          ? Image.network(
-                              data['imageUrl'],
-                              height: 250.h,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    height: 200.h,
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.champagne,
-                                      borderRadius: BorderRadius.circular(24.r),
-                                    ),
-                                    child: Icon(
-                                      Icons.broken_image_outlined,
-                                      color: AppColors.softBrown,
-                                    ),
-                                  ),
-                            )
-                          : Image.file(
-                              File(data['imageUrl']),
-                              height: 250.h,
-                              width: double.infinity,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    height: 200.h,
-                                    width: double.infinity,
-                                    decoration: BoxDecoration(
-                                      color: AppColors.champagne,
-                                      borderRadius: BorderRadius.circular(24.r),
-                                    ),
-                                    child: Icon(
-                                      Icons.broken_image_outlined,
-                                      color: AppColors.softBrown,
-                                    ),
-                                  ),
-                            ),
-                    ),
-                    SizedBox(height: 24.h),
-                  ],
-                  // Date badge / description chip
-                  if (!_isEditing) ...[
-                    Row(
-                      children: [
-                        Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 14.w,
-                            vertical: 6.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: AppColors.champagne,
-                            borderRadius: BorderRadius.circular(50.r),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isUnique
-                                    ? Icons.star_rounded
-                                    : Icons.favorite_rounded,
-                                size: 14.sp,
-                                color: AppColors.roseDeep,
-                              ),
-                              SizedBox(width: 6.w),
-                              Text(
-                                data['description'] ?? '',
-                                style: TextStyle(
-                                  fontSize: 13.sp,
-                                  color: AppColors.softBrown,
-                                  fontStyle: FontStyle.italic,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                    SizedBox(height: 16.h),
-
-                    // Title
-                    Text(
-                      data['title'] ?? '',
-                      style: TextStyle(
-                        fontSize: 32.sp,
-                        fontWeight: FontWeight.w700,
-
-                        color: AppColors.warmBrown,
-                        height: 1.2,
-                      ),
-                    ),
-                    SizedBox(height: 20.h),
-
-                    // Divider with heart
-                    _HeartDivider(),
-                    SizedBox(height: 20.h),
-
-                    // Unique memory callout
-                    if (isUnique) ...[
-                      _SpecialMemoryCard(),
-                      SizedBox(height: 20.h),
-                    ],
-
-                    // Bottom love note
-                    _LoveNoteFooter(),
-                    SizedBox(height: 40.h),
-                  ] else ...[
-                    // ── Edit mode ─────────────────────────────────────
-                    _buildEditField(
-                      controller: _titleController,
-                      label: AppLocalizations.of(context)!.memoryTitleLabel,
-                      fontSize: 22,
-                      maxLines: 1,
-                    ),
-                    SizedBox(height: 20.h),
-                    _buildEditField(
-                      controller: _descController,
-                      label: AppLocalizations.of(context)!.memoryDateLabel,
-                      maxLines: 4,
-                    ),
-                    SizedBox(height: 32.h),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton.icon(
-                        onPressed: _updateMemory,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.roseDeep,
-                          foregroundColor: Colors.white,
-                          padding: EdgeInsets.symmetric(vertical: 16.h),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16.r),
-                          ),
-                          elevation: 0,
-                        ),
-                        icon: const Icon(Icons.check_rounded),
-                        label: Text(
-                          AppLocalizations.of(context)!.saveMemory,
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 40.h),
-                  ],
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
-// ─── Helpers ────────────────────────────────────────────────────────────────
-
-class _CircleButton extends StatelessWidget {
-  final IconData icon;
-  final VoidCallback onTap;
-  final Color? color;
-
-  const _CircleButton({required this.icon, required this.onTap, this.color});
-
-  @override
-  Widget build(BuildContext context) {
-    final effectiveColor = color ?? AppColors.warmBrown;
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 40.r,
-        height: 40.r,
-        decoration: BoxDecoration(
-          color: AppColors.cream.withValues(alpha: 0.92),
-          shape: BoxShape.circle,
-          boxShadow: [
-            BoxShadow(
-              color: effectiveColor.withValues(alpha: 0.12),
-              blurRadius: 10.r,
-              offset: Offset(0, 2.h),
-            ),
-          ],
-        ),
-        child: Icon(icon, size: 18.sp, color: effectiveColor),
-      ),
-    );
-  }
-}
-
-class _HeartDivider extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: Divider(
-            color: AppColors.roseDust.withValues(alpha: 0.5),
-            thickness: 1,
-          ),
-        ),
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 10.w),
-          child: Icon(Icons.favorite, size: 14.sp, color: AppColors.roseDust),
-        ),
-        Expanded(
-          child: Divider(
-            color: AppColors.roseDust.withValues(alpha: 0.5),
-            thickness: 1,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _SpecialMemoryCard extends StatelessWidget {
+class _DeleteSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(18.r),
-      decoration: BoxDecoration(
-        color: AppColors.champagne,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppColors.roseDust.withValues(alpha: 0.4)),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.star_rounded, color: AppColors.roseDeep, size: 22.sp),
-          SizedBox(width: 12.w),
-          Expanded(
-            child: Text(
-              AppLocalizations.of(context)!.specialMemoryCallout,
-              style: TextStyle(
-                color: AppColors.softBrown,
-                fontSize: 13.sp,
-
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LoveNoteFooter extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 22.h, horizontal: 20.w),
+      margin: EdgeInsets.fromLTRB(16.w, 0, 16.w, 32.h),
+      padding: EdgeInsets.fromLTRB(24.w, 28.h, 24.w, 24.h),
       decoration: BoxDecoration(
         color: AppColors.ivoryCard,
-        borderRadius: BorderRadius.circular(24.r),
-        border: Border.all(color: AppColors.champagne),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.roseDust.withValues(alpha: 0.08),
-            blurRadius: 20.r,
-            offset: Offset(0, 4.h),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(28.r),
       ),
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            Icons.favorite_rounded,
-            color: AppColors.roseDust.withValues(alpha: 0.7),
-            size: 28.sp,
+          Container(
+            width: 40.w,
+            height: 4.h,
+            margin: EdgeInsets.only(bottom: 24.h),
+            decoration: BoxDecoration(
+              color: AppColors.champagne,
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          Container(
+            width: 56.r,
+            height: 56.r,
+            decoration: BoxDecoration(
+              color: AppColors.roseDeep.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.delete_outline_rounded,
+              color: AppColors.roseDeep,
+              size: 26.sp,
+            ),
+          ),
+          SizedBox(height: 18.h),
+          Text(
+            'Let this memory go?',
+            style: GoogleFonts.cormorantGaramond(
+              fontSize: 24.sp,
+              fontWeight: FontWeight.w700,
+              color: AppColors.warmBrown,
+            ),
           ),
           SizedBox(height: 10.h),
           Text(
-            AppLocalizations.of(context)!.loveNoteText,
+            'This memory will be gone forever.\nAre you sure?',
             textAlign: TextAlign.center,
-            style: TextStyle(
-              fontStyle: FontStyle.italic,
-              fontSize: 15.sp,
+            style: GoogleFonts.outfit(
+              fontSize: 14.sp,
               color: AppColors.softBrown,
-              height: 1.6,
+              height: 1.5,
             ),
+          ),
+          SizedBox(height: 28.h),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.softBrown,
+                    side: BorderSide(color: AppColors.champagne, width: 1.5),
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Keep It',
+                    style: GoogleFonts.outfit(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+              SizedBox(width: 12.w),
+              Expanded(
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.roseDeep,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    padding: EdgeInsets.symmetric(vertical: 14.h),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(14.r),
+                    ),
+                  ),
+                  child: Text(
+                    'Let Go',
+                    style: GoogleFonts.outfit(
+                      fontSize: 14.sp,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
