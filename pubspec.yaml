@@ -38,7 +38,7 @@ dependencies:
   latlong2: ^0.9.1
   geolocator: ^14.0.2
   shared_preferences: ^2.5.4
-  intl: ^0.20.2
+  intl: any
   url_launcher: ^6.3.2
   firebase_core: ^4.5.0
   firebase_auth: ^6.2.0
@@ -57,6 +57,8 @@ dependencies:
   encrypt: ^5.0.3
   path_provider: ^2.1.5
   crypto: ^3.0.7
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:
