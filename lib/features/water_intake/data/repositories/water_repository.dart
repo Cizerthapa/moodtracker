@@ -30,4 +30,14 @@ class WaterRepository {
       await prefs.setStringList(AppConstants.drinkHistoryPrefsKey, history);
     }
   }
+
+  Future<String> getHydrationUnit() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('hydration_unit') ?? 'ml';
+  }
+
+  Future<void> setHydrationUnit(String unit) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('hydration_unit', unit);
+  }
 }

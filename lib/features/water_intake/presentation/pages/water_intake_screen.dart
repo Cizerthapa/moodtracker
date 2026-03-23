@@ -73,6 +73,16 @@ class DrinkEntry {
   );
 }
 
+enum HydrationUnit {
+  ml(label: 'ml', factorToMl: 1.0),
+  liters(label: 'L', factorToMl: 1000.0),
+  cups(label: 'cups', factorToMl: 250.0);
+
+  final String label;
+  final double factorToMl;
+  const HydrationUnit({required this.label, required this.factorToMl});
+}
+
 class WaterIntakeScreen extends StatefulWidget {
   const WaterIntakeScreen({super.key});
 
@@ -91,6 +101,34 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
   int _viewIndex = 0; // 0: Track, 1: History, 2: Chart
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
+  HydrationUnit _selectedUnit = HydrationUnit.ml;
+
+  String _formatAmount(int mlAmount) {
+    if (_selectedUnit == HydrationUnit.ml) return '$mlAmount ml';
+    if (_selectedUnit == HydrationUnit.liters) return '${(mlAmount / 1000).toStringAsFixed(2)} L';
+    if (_selectedUnit == HydrationUnit.cups) {
+      double cups = mlAmount / 250;
+      return '${cups == cups.toInt() ? cups.toInt() : cups.toStringAsFixed(1)} cups';
+    }
+    return '$mlAmount ml';
+  }
+
+  Future<void> _changeUnit(HydrationUnit newUnit) async {
+    if (_selectedUnit == newUnit) return;
+    await _repository.setHydrationUnit(newUnit.name);
+    setState(() => _selectedUnit = newUnit);
+  }
+
+  List<double> get _quickAddOptions {
+    switch (_selectedUnit) {
+      case HydrationUnit.ml:
+        return [150, 250, 500];
+      case HydrationUnit.liters:
+        return [0.15, 0.25, 0.5];
+      case HydrationUnit.cups:
+        return [0.5, 1, 2];
+    }
+  }
 
   @override
   void initState() {
@@ -114,6 +152,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
     final historyJson = await _repository.getDrinkHistoryStrings();
+    final unitStr = await _repository.getHydrationUnit();
+    HydrationUnit savedUnit = HydrationUnit.ml;
+    try {
+      savedUnit = HydrationUnit.values.firstWhere((e) => e.name == unitStr);
+    } catch (_) {}
 
     final loadedHistory = historyJson
         .map((e) => DrinkEntry.fromJson(json.decode(e)))
@@ -128,6 +171,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
       setState(() {
         _history = loadedHistory.reversed.toList();
         _currentIntake = todayIntake;
+        _selectedUnit = savedUnit;
         _isLoading = false;
       });
       _fadeController.forward();
@@ -167,14 +211,48 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      AppLocalizations.of(context)!.waterIntakeHeader,
-                      style: GoogleFonts.outfit(
-                        fontSize: 34.sp,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.warmBrown,
-                        letterSpacing: -0.8,
-                      ),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          AppLocalizations.of(context)!.waterIntakeHeader,
+                          style: GoogleFonts.outfit(
+                            fontSize: 34.sp,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.warmBrown,
+                            letterSpacing: -0.8,
+                          ),
+                        ),
+                        Container(
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 2.h),
+                          decoration: BoxDecoration(
+                            color: AppColors.ivoryCard,
+                            borderRadius: BorderRadius.circular(20.r),
+                            border: Border.all(color: AppColors.champagne),
+                          ),
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<HydrationUnit>(
+                              value: _selectedUnit,
+                              isDense: true,
+                              icon: Icon(Icons.arrow_drop_down_rounded, color: AppColors.softBrown),
+                              style: GoogleFonts.outfit(
+                                color: AppColors.warmBrown,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 13.sp,
+                              ),
+                              items: HydrationUnit.values.map((unit) {
+                                return DropdownMenuItem(
+                                  value: unit,
+                                  child: Text(unit.label),
+                                );
+                              }).toList(),
+                              onChanged: (val) {
+                                if (val != null) _changeUnit(val);
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                     SizedBox(height: 12.h),
                     Row(
@@ -330,7 +408,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                     ),
                   ),
                   Text(
-                    '$_currentIntake',
+                    _formatAmount(_currentIntake).split(' ')[0],
                     style: GoogleFonts.outfit(
                       fontSize: 48.sp,
                       fontWeight: FontWeight.w800,
@@ -340,7 +418,8 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                   Text(
                     AppLocalizations.of(
                       context,
-                    )!.drinkGoalMilli(_dailyGoal.toString()),
+                    )!.drinkGoalMilli(_formatAmount(_dailyGoal).split(' ')[0])
+                      .replaceAll('ml', _selectedUnit.label),
                     style: GoogleFonts.outfit(
                       color: AppColors.softBrown.withValues(alpha: 0.6),
                       fontWeight: FontWeight.w300,
@@ -372,11 +451,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
           SizedBox(height: 48.h),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _buildAddButton(150),
-              _buildAddButton(250),
-              _buildAddButton(500),
-            ],
+            children: _quickAddOptions.map((amount) => _buildAddButton(amount)).toList(),
           ),
         ],
       ),
@@ -433,7 +508,17 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
     );
   }
 
-  Widget _buildAddButton(int amount) {
+  Widget _buildAddButton(double amount) {
+    int mlAmount = (amount * _selectedUnit.factorToMl).round();
+    String displayStr;
+    if (_selectedUnit == HydrationUnit.ml) {
+      displayStr = '+${amount.toInt()} ml';
+    } else if (_selectedUnit == HydrationUnit.liters) {
+      displayStr = '+$amount L';
+    } else {
+      displayStr = '+${amount == amount.toInt() ? amount.toInt() : amount} cups';
+    }
+
     return ElevatedButton(
       style: ElevatedButton.styleFrom(
         backgroundColor: _selectedType.color,
@@ -444,10 +529,10 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
         ),
         padding: EdgeInsets.symmetric(horizontal: 22.w, vertical: 16.h),
       ),
-      onPressed: () => _addDrink(amount),
+      onPressed: () => _addDrink(mlAmount),
       child: Text(
-        '+$amount ml',
-        style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 15.sp),
+        displayStr,
+        style: GoogleFonts.outfit(fontWeight: FontWeight.w700, fontSize: 13.sp),
       ),
     );
   }
@@ -590,7 +675,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                   ),
                 ),
                 Text(
-                  '${entry.amount} ml',
+                  _formatAmount(entry.amount),
                   style: GoogleFonts.outfit(
                     fontWeight: FontWeight.w700,
                     fontSize: 16.sp,
@@ -648,7 +733,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                       getTooltipColor: (_) => AppColors.warmBrown,
                       getTooltipItem: (group, groupIndex, rod, rodIndex) {
                         return BarTooltipItem(
-                          '${rod.toY.toInt()} ml',
+                          _formatAmount(rod.toY.toInt()),
                           GoogleFonts.outfit(
                             color: Colors.white,
                             fontWeight: FontWeight.w700,
