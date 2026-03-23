@@ -2,7 +2,7 @@ class AppStrings {
   AppStrings._();
 
   // Common
-  static const String appName = 'MoodTrack';
+  static const String appName = 'Aves World';
   static const String appSlogan = 'Treasuring your feelings, one step at a time.';
   static const String madeWithLoveBy = 'made with love by';
   static const String authorName = 'Cizer Thapa';
@@ -75,14 +75,14 @@ class AppStrings {
   static const String notificationsOn = 'Notifications turned on! (30s interval for 15m)';
   static const String notificationsOff = 'Notifications turned off.';
   static const String testNotificationTitle = 'Test Success! 🎉';
-  static const String testNotificationBody = 'This is a notification from MoodTrack.';
+  static const String testNotificationBody = 'This is a notification from Aves World.';
 
   // Notifications
   static const String morningTitle = 'Good Morning! ☀️';
   static const String morningBody = 'Today is a beautiful day to track your progress. Have an amazing morning!';
   static const String nightTitle = 'Sweet Dreams 🌙';
   static const String nightBody = 'You did great today. Rest well and see you tomorrow!';
-  static const String periodicHeader = 'MoodTrack Alert';
+  static const String periodicHeader = 'Aves World Alert';
 
   static const List<String> periodicMessages = [
     'Cizer loves you! ❤️',

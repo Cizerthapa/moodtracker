@@ -9,7 +9,7 @@ class AppLocalizationsJa extends AppLocalizations {
   AppLocalizationsJa([String locale = 'ja']) : super(locale);
 
   @override
-  String get appName => 'MoodTrack';
+  String get appName => 'Aves World';
 
   @override
   String get appSlogan => 'あなたの感情を大切に、一歩ずつ。';
@@ -188,7 +188,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get testNotificationTitle => 'テスト成功！🎉';
 
   @override
-  String get testNotificationBody => 'これはMoodTrackからの通知です。';
+  String get testNotificationBody => 'これはAves Worldからの通知です。';
 
   @override
   String get morningTitle => 'おはようございます！☀️';
@@ -203,7 +203,7 @@ class AppLocalizationsJa extends AppLocalizations {
   String get nightBody => '今日も一日よく頑張りました。ゆっくり休んで、また明日！';
 
   @override
-  String get periodicHeader => 'MoodTrack アラート';
+  String get periodicHeader => 'Aves World アラート';
 
   @override
   String get periodicMessage0 => 'Cizer はあなたを愛しています！❤️';

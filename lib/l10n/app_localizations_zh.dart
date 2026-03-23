@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get appName => 'MoodTrack';
+  String get appName => 'Aves World';
 
   @override
   String get appSlogan => '珍惜你的感受，一步一个脚印。';
@@ -188,7 +188,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get testNotificationTitle => '测试成功！🎉';
 
   @override
-  String get testNotificationBody => '这是一条来自 MoodTrack 的通知。';
+  String get testNotificationBody => '这是一条来自 Aves World 的通知。';
 
   @override
   String get morningTitle => '早上好！☀️';
@@ -203,7 +203,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nightBody => '你今天做得很好。好好休息，明天见！';
 
   @override
-  String get periodicHeader => 'MoodTrack 提醒';
+  String get periodicHeader => 'Aves World 提醒';
 
   @override
   String get periodicMessage0 => 'Cizer 爱你！❤️';

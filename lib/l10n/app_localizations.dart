@@ -105,7 +105,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In en, this message translates to:
-  /// **'MoodTrack'**
+  /// **'Aves World'**
   String get appName;
 
   /// No description provided for @appSlogan.
@@ -459,7 +459,7 @@ abstract class AppLocalizations {
   /// No description provided for @testNotificationBody.
   ///
   /// In en, this message translates to:
-  /// **'This is a notification from MoodTrack.'**
+  /// **'This is a notification from Aves World.'**
   String get testNotificationBody;
 
   /// No description provided for @morningTitle.
@@ -489,7 +489,7 @@ abstract class AppLocalizations {
   /// No description provided for @periodicHeader.
   ///
   /// In en, this message translates to:
-  /// **'MoodTrack Alert'**
+  /// **'Aves World Alert'**
   String get periodicHeader;
 
   /// No description provided for @periodicMessage0.

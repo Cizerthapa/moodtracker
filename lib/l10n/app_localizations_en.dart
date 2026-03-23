@@ -9,7 +9,7 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
-  String get appName => 'MoodTrack';
+  String get appName => 'Aves World';
 
   @override
   String get appSlogan => 'Treasuring your feelings, one step at a time.';
@@ -194,7 +194,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get testNotificationTitle => 'Test Success! 🎉';
 
   @override
-  String get testNotificationBody => 'This is a notification from MoodTrack.';
+  String get testNotificationBody => 'This is a notification from Aves World.';
 
   @override
   String get morningTitle => 'Good Morning! ☀️';
@@ -211,7 +211,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'You did great today. Rest well and see you tomorrow!';
 
   @override
-  String get periodicHeader => 'MoodTrack Alert';
+  String get periodicHeader => 'Aves World Alert';
 
   @override
   String get periodicMessage0 => 'Cizer loves you! ❤️';

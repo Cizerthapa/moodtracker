@@ -92,7 +92,7 @@ class BackgroundNotificationService : Service() {
 
     private fun createForegroundNotification(): Notification {
         return NotificationCompat.Builder(this, "BackgroundServiceChannel")
-            .setContentTitle("MoodTrack Service")
+            .setContentTitle("Aves World Service")
             .setContentText("Keeping track of notifications")
             .setSmallIcon(R.mipmap.ic_launcher)
             .build()
@@ -103,7 +103,7 @@ class BackgroundNotificationService : Service() {
         val message = messages.random()
         
         val notification = NotificationCompat.Builder(this, "instant_channel")
-            .setContentTitle("MoodTrack Alert")
+            .setContentTitle("Aves World Alert")
             .setContentText(message)
             .setSmallIcon(R.mipmap.ic_launcher)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
