@@ -12,6 +12,7 @@ import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
+import 'package:moodtrack/features/journal/presentation/pages/add_journal_entry_screen.dart';
 
 // Mood metadata matching the original NotesScreen style
 List<Map<String, dynamic>> _getJournalMoods(AppLocalizations l10n) => [
@@ -113,10 +114,11 @@ class _JournalScreenState extends State<JournalScreen>
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => _AddJournalScreen(
+        builder: (context) => AddJournalEntryScreen(
           onSave: (text, emoji) async {
             await _addJournal(text, emoji);
           },
+          moods: _getJournalMoods(AppLocalizations.of(context)!),
         ),
         fullscreenDialog: true,
       ),
@@ -795,209 +797,6 @@ class _JournalEmptyState extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-// ─── Add Journal Full-Screen ──────────────────────────────────────────────────
-
-class _AddJournalScreen extends StatefulWidget {
-  final Future<void> Function(String text, String emoji) onSave;
-  const _AddJournalScreen({required this.onSave});
-
-  @override
-  State<_AddJournalScreen> createState() => _AddJournalScreenState();
-}
-
-class _AddJournalScreenState extends State<_AddJournalScreen> {
-  final _textController = TextEditingController();
-  String? _selectedEmoji;
-  bool _isSaving = false;
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _selectedEmoji ??=
-        _getJournalMoods(AppLocalizations.of(context)!)[0]['emoji'] as String;
-  }
-
-  @override
-  void dispose() {
-    _textController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.cream,
-      appBar: AppBar(
-        backgroundColor: AppColors.cream,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.close_rounded, color: AppColors.warmBrown),
-          onPressed: () => Navigator.pop(context),
-        ),
-        title: Text(
-          'New Entry',
-          style: GoogleFonts.outfit(
-            fontWeight: FontWeight.w700,
-            color: AppColors.warmBrown,
-            fontSize: 20.sp,
-          ),
-        ),
-        actions: [
-          Padding(
-            padding: EdgeInsets.only(right: 16.w),
-            child: _isSaving
-                ? SizedBox(
-                    width: 20.r,
-                    height: 20.r,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: AppColors.roseDeep,
-                    ),
-                  )
-                : TextButton(
-                    onPressed: () async {
-                      if (_textController.text.trim().isEmpty ||
-                          _selectedEmoji == null)
-                        return;
-                      setState(() => _isSaving = true);
-                      await widget.onSave(
-                        _textController.text.trim(),
-                        _selectedEmoji!,
-                      );
-                      if (context.mounted) Navigator.pop(context);
-                    },
-                    child: Text(
-                      'Save',
-                      style: GoogleFonts.outfit(
-                        color: AppColors.roseDeep,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16.sp,
-                      ),
-                    ),
-                  ),
-          ),
-        ],
-      ),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: EdgeInsets.fromLTRB(28.w, 16.h, 28.w, 40.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // ── Mood selector ───────────────────────────────────────
-              Text(
-                AppLocalizations.of(context)!.howAreYouFeeling,
-                style: GoogleFonts.outfit(
-                  fontSize: 20.sp,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.warmBrown,
-                ),
-              ),
-              SizedBox(height: 20.h),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: _getJournalMoods(AppLocalizations.of(context)!).map(
-                    (m) {
-                      final emoji = m['emoji'] as String;
-                      final label = m['label'] as String;
-                      final accent = m['accent'] as Color;
-                      final isSelected = emoji == _selectedEmoji;
-                      return GestureDetector(
-                        onTap: () {
-                          HapticFeedback.selectionClick();
-                          setState(() => _selectedEmoji = emoji);
-                        },
-                        child: Container(
-                          margin: EdgeInsets.only(right: 12.w),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 10.h,
-                          ),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? accent.withValues(alpha: 0.1)
-                                : Colors.transparent,
-                            borderRadius: BorderRadius.circular(14.r),
-                            border: Border.all(
-                              color: isSelected
-                                  ? accent.withValues(alpha: 0.4)
-                                  : AppColors.champagne,
-                            ),
-                          ),
-                          child: Column(
-                            children: [
-                              Text(
-                                emoji,
-                                style: TextStyle(
-                                  fontSize: isSelected ? 28.sp : 24.sp,
-                                ),
-                              ),
-                              SizedBox(height: 4.h),
-                              Text(
-                                label,
-                                style: GoogleFonts.outfit(
-                                  fontSize: 10.sp,
-                                  color: isSelected
-                                      ? accent
-                                      : AppColors.softBrown,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  ).toList(),
-                ),
-              ),
-              SizedBox(height: 28.h),
-
-              // ── Text Field ─────────────────────────────────────────
-              Text(
-                AppLocalizations.of(context)!.writeThoughtsHint,
-                style: GoogleFonts.outfit(
-                  fontSize: 16.sp,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.warmBrown,
-                ),
-              ),
-              SizedBox(height: 12.h),
-              TextField(
-                controller: _textController,
-                maxLines: null,
-                minLines: 8,
-                autofocus: true,
-                textAlignVertical: TextAlignVertical.top,
-                style: GoogleFonts.outfit(
-                  fontSize: 15.sp,
-                  color: AppColors.warmBrown,
-                  height: 1.6,
-                ),
-                decoration: InputDecoration(
-                  hintText: 'Let your thoughts flow freely...',
-                  hintStyle: GoogleFonts.outfit(
-                    fontSize: 14.sp,
-                    color: AppColors.softBrown.withValues(alpha: 0.5),
-                    fontStyle: FontStyle.italic,
-                  ),
-                  filled: true,
-                  fillColor: AppColors.ivoryCard,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(18.r),
-                    borderSide: BorderSide.none,
-                  ),
-                  contentPadding: EdgeInsets.all(20.r),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ).animate().fadeIn(duration: 300.ms),
     );
   }
 }
