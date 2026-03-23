@@ -267,12 +267,12 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                                           Navigator.push(
                                             context,
                                             PageRouteBuilder(
-                                              pageBuilder: (_, anim, __) =>
+                                              pageBuilder: (_, anim, _) =>
                                                   MemoryDetailScreen(
                                                     memoryData: docs[index],
                                                   ),
                                               transitionsBuilder:
-                                                  (_, anim, __, child) =>
+                                                  (_, anim, _, child) =>
                                                       FadeTransition(
                                                         opacity: anim,
                                                         child: child,

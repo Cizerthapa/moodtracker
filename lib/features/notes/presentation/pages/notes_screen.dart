@@ -7,10 +7,10 @@ import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
-import 'package:image_picker/image_picker.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
-import 'dart:io';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'add_note_screen.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
 final _moods = [
@@ -71,9 +71,10 @@ class _NotesScreenState extends State<NotesScreen>
     }
   }
 
-  Future<void> _saveNote(String text, String emoji, String? imageUrl) async {
+  Future<void> _saveNote(String title, String text, String emoji, String? imageUrl) async {
     final newNote = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(), // Add id for Dismissible
+      'title': title,
       'text': text,
       'mood': emoji,
       'imageUrl': imageUrl,
@@ -92,24 +93,22 @@ class _NotesScreenState extends State<NotesScreen>
   Map<String, dynamic> _moodMeta(String emoji) =>
       _moods.firstWhere((m) => m['emoji'] == emoji, orElse: () => _moods[2]);
 
-  void _showAddNoteSheet() {
-
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return _AddNoteSheet(
-          onSave: (text, emoji, image) async {
+  void _showAddNoteScreen() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddNoteScreen(
+          onSave: (title, text, emoji, image) async {
             String? imageUrl;
             if (image != null) {
               final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
               imageUrl = await _storageService.uploadFile(file: image, path: path);
             }
-            await _saveNote(text, emoji, imageUrl);
+            await _saveNote(title, text, emoji, imageUrl);
           },
-        );
-      },
+        ),
+        fullscreenDialog: true,
+      ),
     );
   }
 
@@ -166,7 +165,7 @@ class _NotesScreenState extends State<NotesScreen>
                     ),
                   ),
                   GestureDetector(
-                    onTap: _showAddNoteSheet,
+                    onTap: _showAddNoteScreen,
                     child: Container(
                       width: 46.r,
                       height: 46.r,
@@ -278,7 +277,7 @@ class _NotesScreenState extends State<NotesScreen>
                       ),
                     )
                   : _notes.isEmpty
-                      ? _EmptyState(onAdd: _showAddNoteSheet)
+                      ? _EmptyState(onAdd: _showAddNoteScreen)
                       : FadeTransition(
                           opacity: _fadeAnim,
                           child: RepaintBoundary(
@@ -434,13 +433,27 @@ class _NoteCard extends StatelessWidget {
               ),
               SizedBox(height: 12.h),
 
+              // Note Title
+              if (note['title'] != null && note['title'].toString().isNotEmpty) ...[
+                Text(
+                  note['title'],
+                  style: GoogleFonts.outfit(
+                    fontSize: 18.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.warmBrown,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+              ],
+
               // Note text
               Text(
                 note['text'] ?? '',
-                style: TextStyle(
-  
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
+                style: GoogleFonts.outfit(
                   fontSize: 15.sp,
-                  color: AppColors.warmBrown,
+                  color: AppColors.warmBrown.withOpacity(0.85),
                   height: 1.55,
                 ),
               ),
@@ -500,8 +513,7 @@ class _EmptyState extends StatelessWidget {
             SizedBox(height: 18.h),
             Text(
               AppStrings.journalEmptyTitle,
-              style: TextStyle(
-
+              style: GoogleFonts.outfit(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
                 color: AppColors.warmBrown,
@@ -511,8 +523,7 @@ class _EmptyState extends StatelessWidget {
             Text(
               AppStrings.journalEmptySubtitle,
               textAlign: TextAlign.center,
-              style: TextStyle(
-
+              style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
                 fontSize: 14.sp,
                 color: AppColors.softBrown,
@@ -540,8 +551,7 @@ class _EmptyState extends StatelessWidget {
                 ),
                 child: Text(
                   AppStrings.writeANoteButton,
-                  style: TextStyle(
-    
+                  style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 15.sp,
@@ -551,172 +561,6 @@ class _EmptyState extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _AddNoteSheet extends StatefulWidget {
-  final Function(String, String, File?) onSave;
-  const _AddNoteSheet({required this.onSave});
-
-  @override
-  State<_AddNoteSheet> createState() => _AddNoteSheetState();
-}
-
-class _AddNoteSheetState extends State<_AddNoteSheet> {
-  final _textController = TextEditingController();
-  String _selectedEmoji = _moods[0]['emoji'] as String;
-  File? _selectedImage;
-  bool _isSaving = false;
-
-  Future<void> _pickImage() async {
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (pickedFile != null) {
-      setState(() => _selectedImage = File(pickedFile.path));
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 250),
-      decoration: BoxDecoration(
-        color: AppColors.cream,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(32.r)),
-      ),
-      padding: EdgeInsets.only(
-        left: 28.w,
-        right: 28.w,
-        top: 12.h,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 28.h,
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Center(
-            child: Container(
-              width: 40.w,
-              height: 4.h,
-              decoration: BoxDecoration(
-                color: AppColors.champagne,
-                borderRadius: BorderRadius.circular(4.r),
-              ),
-            ),
-          ),
-          SizedBox(height: 22.h),
-          Text(
-            AppStrings.howAreYouFeeling,
-            style: TextStyle(
-              fontSize: 22.sp,
-              fontWeight: FontWeight.bold,
-              color: AppColors.warmBrown,
-            ),
-          ),
-          SizedBox(height: 22.h),
-
-          // Mood selector
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              children: _moods.map((m) {
-                final emoji = m['emoji'] as String;
-                final label = m['label'] as String;
-                final accent = m['accent'] as Color;
-                final isSelected = emoji == _selectedEmoji;
-
-                return GestureDetector(
-                  onTap: () => setState(() => _selectedEmoji = emoji),
-                  child: Container(
-                    margin: EdgeInsets.only(right: 12.w),
-                    padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                    decoration: BoxDecoration(
-                      color: isSelected ? accent.withValues(alpha: 0.1) : Colors.transparent,
-                      borderRadius: BorderRadius.circular(14.r),
-                      border: Border.all(
-                        color: isSelected ? accent.withValues(alpha: 0.4) : AppColors.champagne,
-                      ),
-                    ),
-                    child: Column(
-                      children: [
-                        Text(emoji, style: TextStyle(fontSize: isSelected ? 28.sp : 24.sp)),
-                        SizedBox(height: 4.h),
-                        Text(label, style: TextStyle(fontSize: 10.sp, color: isSelected ? accent : AppColors.softBrown)),
-                      ],
-                    ),
-                  ),
-                );
-              }).toList(),
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          // Image Picker
-          GestureDetector(
-            onTap: _pickImage,
-            child: Container(
-              height: 120.h,
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: AppColors.ivoryCard,
-                borderRadius: BorderRadius.circular(18.r),
-                border: Border.all(color: AppColors.champagne),
-              ),
-              child: _selectedImage != null
-                  ? ClipRRect(
-                      borderRadius: BorderRadius.circular(18.r),
-                      child: Image.file(_selectedImage!, fit: BoxFit.cover),
-                    )
-                  : Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 24.r),
-                        SizedBox(width: 12.w),
-                        Text("Add a photo", style: TextStyle(color: AppColors.softBrown, fontSize: 14.sp)),
-                      ],
-                    ),
-            ),
-          ),
-          const SizedBox(height: 16),
-
-          TextField(
-            controller: _textController,
-            maxLines: 3,
-            decoration: InputDecoration(
-              hintText: AppStrings.writeThoughtsHint,
-              hintStyle: TextStyle(fontSize: 14.sp),
-              filled: true,
-              fillColor: AppColors.ivoryCard,
-              border: OutlineInputBorder(borderRadius: BorderRadius.circular(18.r), borderSide: BorderSide.none),
-              contentPadding: EdgeInsets.all(16.r),
-            ),
-          ),
-          const SizedBox(height: 22),
-
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.roseDeep,
-                foregroundColor: Colors.white,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
-              ),
-              onPressed: _isSaving ? null : () async {
-                if (_textController.text.trim().isNotEmpty) {
-                  setState(() => _isSaving = true);
-                  await widget.onSave(_textController.text.trim(), _selectedEmoji, _selectedImage);
-                  if (context.mounted) Navigator.pop(context);
-                }
-              },
-              child: _isSaving 
-                ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Text(AppStrings.saveNoteButton, style: TextStyle(fontWeight: FontWeight.bold)),
-            ),
-          ),
-        ],
       ),
     );
   }

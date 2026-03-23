@@ -397,12 +397,12 @@ class _MemoryImage extends StatelessWidget {
         ? Image.network(
             url,
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _ImageFallback(),
+            errorBuilder: (_, _, _) => _ImageFallback(),
           )
         : Image.file(
             File(url),
             fit: BoxFit.cover,
-            errorBuilder: (_, __, ___) => _ImageFallback(),
+            errorBuilder: (_, _, _) => _ImageFallback(),
           );
   }
 }

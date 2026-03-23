@@ -351,8 +351,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         try {
                           await _journalRepository.migrateEncryption(value);
                           await _journalRepository.setEncryptionEnabled(value);
-                          if (mounted)
+                          if (mounted) {
                             setState(() => _journalEncryptionEnabled = value);
+                          }
                         } finally {
                           if (mounted) Navigator.of(context).pop();
                         }

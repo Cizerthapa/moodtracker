@@ -97,8 +97,9 @@ class _JournalScreenState extends State<JournalScreen>
     if (mounted) setState(() => _encryptionEnabled = enabled);
   }
 
-  Future<void> _addJournal(String text, String emoji) async {
+  Future<void> _addJournal(String? title, String text, String emoji) async {
     await _repository.addJournal(
+      title: title,
       text: text,
       mood: emoji,
       encrypt: _encryptionEnabled,
@@ -114,8 +115,8 @@ class _JournalScreenState extends State<JournalScreen>
       context,
       MaterialPageRoute(
         builder: (context) => AddJournalEntryScreen(
-          onSave: (text, emoji) async {
-            await _addJournal(text, emoji);
+          onSave: (title, text, emoji) async {
+            await _addJournal(title, text, emoji);
           },
           moods: _getJournalMoods(AppLocalizations.of(context)!),
         ),
@@ -355,6 +356,7 @@ class _JournalScreenState extends State<JournalScreen>
         final doc = docs[index];
         final data = doc.data() as Map<String, dynamic>;
         final decryptedText = _repository.decryptIfNeeded(data);
+        final decryptedTitle = _repository.decryptIfNeeded(data, isTitle: true);
         final emoji = data['mood'] as String? ?? '😐';
         final meta = _moodMeta(emoji, l10n);
         final ts = data['timestamp'];
@@ -363,6 +365,7 @@ class _JournalScreenState extends State<JournalScreen>
 
         return _JournalEntryCard(
           id: doc.id,
+          title: decryptedTitle,
           text: decryptedText,
           emoji: emoji,
           moodMeta: meta,
@@ -558,6 +561,7 @@ class _JournalScreenState extends State<JournalScreen>
 
 class _JournalEntryCard extends StatelessWidget {
   final String id;
+  final String? title;
   final String text;
   final String emoji;
   final Map<String, dynamic> moodMeta;
@@ -567,6 +571,7 @@ class _JournalEntryCard extends StatelessWidget {
 
   const _JournalEntryCard({
     required this.id,
+    this.title,
     required this.text,
     required this.emoji,
     required this.moodMeta,
@@ -715,14 +720,28 @@ class _JournalEntryCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
+              if (title != null && title!.isNotEmpty) ...[
+                SizedBox(height: 8.h),
+                Text(
+                  title!,
+                  style: GoogleFonts.outfit(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.warmBrown,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+              ],
+              SizedBox(height: title == null ? 12.h : 0),
               Text(
                 text,
                 style: GoogleFonts.outfit(
-                  fontSize: 15.sp,
-                  color: AppColors.warmBrown,
+                  fontSize: 14.sp,
+                  color: AppColors.warmBrown.withOpacity(0.8),
                   height: 1.55,
                 ),
+                maxLines: 4,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),

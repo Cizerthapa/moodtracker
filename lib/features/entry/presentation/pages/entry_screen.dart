@@ -166,8 +166,8 @@ class EntryScreen extends StatelessWidget {
             Navigator.push(
               context,
               PageRouteBuilder(
-                pageBuilder: (_, anim, __) => destination,
-                transitionsBuilder: (_, anim, __, child) =>
+                pageBuilder: (_, anim, _) => destination,
+                transitionsBuilder: (_, anim, _, child) =>
                     FadeTransition(opacity: anim, child: child),
                 transitionDuration: const Duration(
                   milliseconds: AppConstants.defaultTransitionDurationMs,

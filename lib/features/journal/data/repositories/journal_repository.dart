@@ -40,13 +40,16 @@ class JournalRepository {
   }
 
   Future<void> addJournal({
+    String? title,
     required String text,
     required String mood,
     String? imageLocalPath,
     bool encrypt = false,
   }) async {
+    final encryptedTitle = (encrypt && title != null) ? _encryption.encrypt(title, _uid) : title;
     final content = encrypt ? _encryption.encrypt(text, _uid) : text;
     await _journalsCollection.add({
+      'title': encryptedTitle,
       'text': content,
       'mood': mood,
       'imageLocalPath': imageLocalPath,
@@ -60,13 +63,18 @@ class JournalRepository {
   }
 
   /// Decrypts text if the document is marked as encrypted.
-  String decryptIfNeeded(Map<String, dynamic> data) {
+  String decryptIfNeeded(Map<String, dynamic> data, {bool isTitle = false}) {
     final isEncrypted = data['encrypted'] == true;
-    final text = data['text'] as String? ?? '';
-    if (isEncrypted) {
-      return _encryption.decrypt(text, _uid);
+    final field = isTitle ? 'title' : 'text';
+    final content = data[field] as String? ?? '';
+    if (isEncrypted && content.isNotEmpty) {
+      try {
+        return _encryption.decrypt(content, _uid);
+      } catch (e) {
+        return content;
+      }
     }
-    return text;
+    return content;
   }
 
   // ── Migration ──────────────────────────────────────────────────────────────
@@ -84,13 +92,19 @@ class JournalRepository {
 
       if (enableEncryption && !currentlyEncrypted) {
         // Encrypt plain text
+        final currentTitle = data['title'] as String?;
         batch.update(doc.reference, {
+          'title': currentTitle != null ? _encryption.encrypt(currentTitle, _uid) : null,
           'text': _encryption.encrypt(currentText, _uid),
           'encrypted': true,
         });
       } else if (!enableEncryption && currentlyEncrypted) {
         // Decrypt encrypted text
+        final currentTitle = data['title'] as String?;
         batch.update(doc.reference, {
+          'title': (currentTitle != null && currentTitle.isNotEmpty) 
+              ? _encryption.decrypt(currentTitle, _uid) 
+              : currentTitle,
           'text': _encryption.decrypt(currentText, _uid),
           'encrypted': false,
         });
