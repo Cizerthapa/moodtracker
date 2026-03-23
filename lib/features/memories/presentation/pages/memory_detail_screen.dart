@@ -7,6 +7,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
   final Map<String, dynamic> memoryData;
@@ -20,6 +22,8 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     with TickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _descController;
+  late TextEditingController _herFavController;
+  late TextEditingController _hisFavController;
   late LatLng _location;
   bool _isEditing = false;
   late AnimationController _heartController;
@@ -27,6 +31,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   late Animation<double> _heartAnim;
   late Animation<double> _fadeAnim;
   final MemoriesRepository _repository = MemoriesRepository();
+  List<File> _additionalImages = [];
 
   @override
   void initState() {
@@ -34,7 +39,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     final data = widget.memoryData;
     _titleController = TextEditingController(text: data['title']);
     _descController = TextEditingController(text: data['description']);
-    _location = LatLng(data['lat'], data['lng']);
+    _herFavController = TextEditingController(text: data['herFavStory'] ?? '');
+    _hisFavController = TextEditingController(text: data['hisFavStory'] ?? '');
+    _location = LatLng(data['lat'] ?? 0.0, data['lng'] ?? 0.0);
 
     _heartController = AnimationController(
       vsync: this,
@@ -49,6 +56,31 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
       duration: const Duration(milliseconds: 600),
     )..forward();
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
+    _loadLocalImages();
+  }
+
+  Future<void> _loadLocalImages() async {
+    final int count = widget.memoryData['imageCount'] ?? 0;
+    if (count == 0 || widget.memoryData['id'] == null) {
+      return;
+    }
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final List<File> loaded = [];
+      for (int i = 0; i < count; i++) {
+        final f = File('${dir.path}/memory_${widget.memoryData['id']}_img_$i.jpg');
+        if (await f.exists()) {
+          loaded.add(f);
+        }
+      }
+      if (mounted) {
+        setState(() {
+          _additionalImages = loaded;
+        });
+      }
+    } catch (_) {
+      // Ignored
+    }
   }
 
   @override
@@ -57,15 +89,71 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     _fadeController.dispose();
     _titleController.dispose();
     _descController.dispose();
+    _herFavController.dispose();
+    _hisFavController.dispose();
     super.dispose();
   }
 
+  Future<void> _pickImages() async {
+    if (_additionalImages.length >= 25) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Maximum 25 images allowed')));
+      return;
+    }
+    final picker = ImagePicker();
+    final picked = await picker.pickMultiImage(imageQuality: 70);
+    if (picked.isNotEmpty) {
+      int availableSlots = 25 - _additionalImages.length;
+      final toAdd = picked.take(availableSlots).map((x) => File(x.path)).toList();
+      setState(() {
+        _additionalImages.addAll(toAdd);
+      });
+      if (picked.length > availableSlots) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Only $availableSlots more images could be added, max 25 reached.')));
+        }
+      }
+    }
+  }
+
   Future<void> _updateMemory() async {
-    await _repository.updateMemory(widget.memoryData['id'], {
-      'title': _titleController.text.trim(),
-      'description': _descController.text.trim(),
-    });
-    setState(() => _isEditing = false);
+    try {
+      final dir = await getApplicationDocumentsDirectory();
+      final memoryId = widget.memoryData['id'];
+      int count = 0;
+      for (var file in _additionalImages) {
+        final newPath = '${dir.path}/memory_${memoryId}_img_$count.jpg';
+        if (file.path != newPath) {
+          await file.copy(newPath);
+        }
+        count++;
+      }
+      int oldCount = widget.memoryData['imageCount'] ?? 0;
+      for (int i = count; i < oldCount; i++) {
+        final f = File('${dir.path}/memory_${memoryId}_img_$i.jpg');
+        if (await f.exists()) await f.delete();
+      }
+
+      await _repository.updateMemory(memoryId, {
+        'title': _titleController.text.trim(),
+        'description': _descController.text.trim(),
+        'herFavStory': _herFavController.text.trim().isEmpty ? null : _herFavController.text.trim(),
+        'hisFavStory': _hisFavController.text.trim().isEmpty ? null : _hisFavController.text.trim(),
+        'imageCount': count,
+      });
+
+      setState(() {
+         widget.memoryData['imageCount'] = count;
+         widget.memoryData['title'] = _titleController.text.trim();
+         widget.memoryData['description'] = _descController.text.trim();
+         widget.memoryData['herFavStory'] = _herFavController.text.trim().isEmpty ? null : _herFavController.text.trim();
+         widget.memoryData['hisFavStory'] = _hisFavController.text.trim().isEmpty ? null : _hisFavController.text.trim();
+         _isEditing = false;
+      });
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save memory: $e')));
+      }
+    }
   }
 
   Future<void> _deleteMemory() async {
@@ -175,6 +263,13 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                   ? _EditPanel(
                       titleController: _titleController,
                       descController: _descController,
+                      herFavController: _herFavController,
+                      hisFavController: _hisFavController,
+                      additionalImages: _additionalImages,
+                      onPickImages: _pickImages,
+                      onRemoveImage: (index) {
+                        setState(() => _additionalImages.removeAt(index));
+                      },
                       onSave: _updateMemory,
                       onCancel: () => setState(() => _isEditing = false),
                     )
@@ -183,6 +278,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                       isUnique: isUnique,
                       herFav: herFav,
                       hisFav: hisFav,
+                      additionalImages: _additionalImages,
                       formatDate: _formatDate,
                     ),
             ),
@@ -411,6 +507,7 @@ class _ViewPanel extends StatelessWidget {
   final bool isUnique;
   final String? herFav;
   final String? hisFav;
+  final List<File> additionalImages;
   final String Function(dynamic) formatDate;
 
   const _ViewPanel({
@@ -418,6 +515,7 @@ class _ViewPanel extends StatelessWidget {
     required this.isUnique,
     required this.herFav,
     required this.hisFav,
+    required this.additionalImages,
     required this.formatDate,
   });
 
@@ -492,6 +590,39 @@ class _ViewPanel extends StatelessWidget {
             SizedBox(height: 28.h),
           ],
 
+          if (additionalImages.isNotEmpty) ...[
+            Text(
+              'Captured Moments',
+              style: GoogleFonts.cormorantGaramond(
+                fontSize: 20.sp,
+                fontWeight: FontWeight.w600,
+                color: AppColors.warmBrown,
+                letterSpacing: 0.3,
+              ),
+            ),
+            SizedBox(height: 14.h),
+            SizedBox(
+              height: 140.h,
+              child: ListView.builder(
+                physics: BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemCount: additionalImages.length,
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin: EdgeInsets.only(right: 16.w),
+                    width: 110.r,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(16.r),
+                      image: DecorationImage(image: FileImage(additionalImages[index]), fit: BoxFit.cover),
+                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8.r, offset: Offset(0, 4.h))],
+                    ),
+                  );
+                }
+              ),
+            ),
+            SizedBox(height: 28.h),
+          ],
+
           // ── Love note footer ─────────────────────────────────────────
           _LoveNoteCard(),
         ],
@@ -505,12 +636,22 @@ class _ViewPanel extends StatelessWidget {
 class _EditPanel extends StatelessWidget {
   final TextEditingController titleController;
   final TextEditingController descController;
+  final TextEditingController herFavController;
+  final TextEditingController hisFavController;
+  final List<File> additionalImages;
+  final VoidCallback onPickImages;
+  final Function(int) onRemoveImage;
   final VoidCallback onSave;
   final VoidCallback onCancel;
 
   const _EditPanel({
     required this.titleController,
     required this.descController,
+    required this.herFavController,
+    required this.hisFavController,
+    required this.additionalImages,
+    required this.onPickImages,
+    required this.onRemoveImage,
     required this.onSave,
     required this.onCancel,
   });
@@ -544,6 +685,68 @@ class _EditPanel extends StatelessWidget {
             label: 'Short Note / Description',
             maxLines: 4,
           ),
+          SizedBox(height: 16.h),
+          _StyledField(
+            controller: herFavController,
+            label: 'Her Favorite Story',
+            maxLines: 3,
+          ),
+          SizedBox(height: 16.h),
+          _StyledField(
+            controller: hisFavController,
+            label: 'His Favorite Story',
+            maxLines: 3,
+          ),
+          SizedBox(height: 24.h),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+               Text(
+                 'Extra Memories (${additionalImages.length}/25)',
+                 style: GoogleFonts.outfit(fontSize: 14.sp, fontWeight: FontWeight.w600, color: AppColors.warmBrown),
+               ),
+               TextButton.icon(
+                 onPressed: onPickImages,
+                 icon: Icon(Icons.add_a_photo_rounded, size: 16.sp, color: AppColors.roseDeep),
+                 label: Text('Add Photos', style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold)),
+               )
+            ],
+          ),
+          if (additionalImages.isNotEmpty) 
+            SizedBox(
+              height: 100.h,
+              child: ListView.builder(
+                scrollDirection: Axis.horizontal,
+                itemCount: additionalImages.length,
+                itemBuilder: (context, index) {
+                  return Stack(
+                    children: [
+                       Container(
+                         margin: EdgeInsets.only(right: 12.w, top: 8.h),
+                         width: 90.r,
+                         height: 90.r,
+                         decoration: BoxDecoration(
+                           borderRadius: BorderRadius.circular(12.r),
+                           image: DecorationImage(image: FileImage(additionalImages[index]), fit: BoxFit.cover),
+                         ),
+                       ),
+                       Positioned(
+                         top: 0,
+                         right: 4.w,
+                         child: GestureDetector(
+                           onTap: () => onRemoveImage(index),
+                           child: Container(
+                             padding: EdgeInsets.all(4.r),
+                             decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]),
+                             child: Icon(Icons.close_rounded, size: 14.sp, color: AppColors.roseDust),
+                           )
+                         )
+                       )
+                    ]
+                  );
+                }
+              ),
+            ),
           SizedBox(height: 28.h),
           Row(
             children: [
