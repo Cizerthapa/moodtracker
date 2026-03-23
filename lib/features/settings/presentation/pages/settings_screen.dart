@@ -29,6 +29,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   final JournalRepository _journalRepository = JournalRepository();
   bool _notificationsEnabled = false;
   bool _journalEncryptionEnabled = false;
+  bool _biometricEnabled = false;
   final NotificationService _notificationService = NotificationService();
 
   @override
@@ -40,9 +41,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Future<void> _loadSettings() async {
     final enabled = await _repository.getNotificationsEnabled();
     final encEnabled = await _journalRepository.getEncryptionEnabled();
+    final bioEnabled = await _repository.getBiometricEnabled();
     setState(() {
       _notificationsEnabled = enabled;
       _journalEncryptionEnabled = encEnabled;
+      _biometricEnabled = bioEnabled;
     });
   }
 
@@ -82,14 +85,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: AppColors.ivoryCard,
-        title: Text("Link Partner", style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold)),
+        title: Text(
+          "Link Partner",
+          style: GoogleFonts.outfit(
+            color: AppColors.warmBrown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
         content: TextField(
           controller: emailController,
           decoration: InputDecoration(
             hintText: "Partner's Email",
             filled: true,
             fillColor: AppColors.cream,
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide(color: AppColors.champagne)),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: AppColors.champagne),
+            ),
           ),
         ),
         actions: [
@@ -101,18 +113,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () async {
               final email = emailController.text.trim();
               if (email.isNotEmpty) {
-                final success = await UserRepository().linkPartnerByEmail(email);
+                final success = await UserRepository().linkPartnerByEmail(
+                  email,
+                );
                 if (mounted) {
                   Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(success ? "Linked successfully!" : "Failed to link. Check email.")));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        success
+                            ? "Linked successfully!"
+                            : "Failed to link. Check email.",
+                      ),
+                    ),
+                  );
                 }
               }
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.roseDeep,
+            ),
             child: const Text("Link", style: TextStyle(color: Colors.white)),
           ),
         ],
-      )
+      ),
     );
   }
 
@@ -337,6 +361,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     index: 3,
                   ),
                   SizedBox(height: 14.h),
+                  _buildSettingTile(
+                    title: 'Biometric Lock',
+                    subtitle: 'Secure your app with Fingerprint/FaceID',
+                    icon: Icons.fingerprint_rounded,
+                    trailing: Switch.adaptive(
+                      value: _biometricEnabled,
+                      activeTrackColor: AppColors.roseDeep,
+                      onChanged: (value) async {
+                        HapticFeedback.selectionClick();
+                        await _repository.setBiometricEnabled(value);
+                        setState(() => _biometricEnabled = value);
+                      },
+                    ),
+                    index: 4,
+                  ),
+                  SizedBox(height: 14.h),
                   // ── Couple Section ────────────────────────
                   Text(
                     'Couple',
@@ -372,12 +412,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: 22.r,
                     ),
                     onTap: () {
-                      Navigator.push(context, MaterialPageRoute(builder: (_) => const TogetherSinceScreen()));
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TogetherSinceScreen(),
+                        ),
+                      );
                     },
                     index: 5,
                   ),
                   SizedBox(height: 24.h),
-                  
+
                   _buildSettingTile(
                     title: 'Logout',
                     subtitle: 'Sign out of your account',

@@ -24,4 +24,14 @@ class SettingsRepository {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('theme_name', themeName);
   }
+
+  Future<bool> getBiometricEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(AppConstants.biometricPrefsKey) ?? false;
+  }
+
+  Future<void> setBiometricEnabled(bool enabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(AppConstants.biometricPrefsKey, enabled);
+  }
 }

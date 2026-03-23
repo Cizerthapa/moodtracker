@@ -7,9 +7,10 @@ import 'package:moodtrack/core/services/notification_service.dart';
 import 'package:moodtrack/core/theme/app_theme.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
-import 'package:moodtrack/core/widgets/auth_wrapper.dart';
+
 import 'package:moodtrack/core/managers/locale_manager.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:moodtrack/features/splash/presentation/pages/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,7 +55,7 @@ class MoodTrackApp extends StatelessWidget {
                 key: ValueKey(
                   '${themeManager.palette.name}_${localeManager.locale.languageCode}',
                 ),
-                child: const AuthWrapper(),
+                child: const SplashScreen(),
               ),
             );
           },

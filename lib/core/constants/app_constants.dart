@@ -23,6 +23,7 @@ class AppConstants {
   static const String drinkHistoryPrefsKey = 'drink_history';
   static const String notesCollection = 'notes';
   static const String notificationsPrefsKey = 'notifications_enabled';
+  static const String biometricPrefsKey = 'biometric_enabled';
   static const String memoriesCacheKey = 'memories_cache';
 
   // Notifications
