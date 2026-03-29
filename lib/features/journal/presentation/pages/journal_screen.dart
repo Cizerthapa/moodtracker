@@ -125,6 +125,37 @@ class _JournalScreenState extends State<JournalScreen>
     );
   }
 
+  void _showEditEntryScreen(
+    String id,
+    String? title,
+    String text,
+    String emoji,
+    bool isEncrypted,
+  ) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => AddJournalEntryScreen(
+          onSave: (newTitle, newText, newEmoji) async {
+            await _repository.updateJournal(
+              id,
+              title: newTitle,
+              text: newText,
+              mood: newEmoji,
+              encrypt: isEncrypted,
+            );
+          },
+          moods: _getJournalMoods(AppLocalizations.of(context)!),
+          initialTitle: title,
+          initialText: text,
+          initialMood: emoji,
+          isEditing: true,
+        ),
+        fullscreenDialog: true,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeManager>(
@@ -372,6 +403,13 @@ class _JournalScreenState extends State<JournalScreen>
           formattedDate: formattedDate,
           isEncrypted: data['encrypted'] == true,
           onDelete: () => _deleteJournal(doc.id),
+          onTap: () => _showEditEntryScreen(
+            doc.id,
+            decryptedTitle,
+            decryptedText,
+            emoji,
+            data['encrypted'] == true,
+          ),
         );
       },
     );
@@ -568,6 +606,7 @@ class _JournalEntryCard extends StatelessWidget {
   final String formattedDate;
   final bool isEncrypted;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const _JournalEntryCard({
     required this.id,
@@ -578,6 +617,7 @@ class _JournalEntryCard extends StatelessWidget {
     required this.formattedDate,
     required this.isEncrypted,
     required this.onDelete,
+    required this.onTap,
   });
 
   @override
@@ -650,100 +690,107 @@ class _JournalEntryCard extends StatelessWidget {
           size: 24.r,
         ),
       ),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        decoration: BoxDecoration(
-          color: tint,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: accent.withValues(alpha: 0.2), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: accent.withValues(alpha: 0.06),
-              blurRadius: 12.r,
-              offset: Offset(0, 3.h),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(18.r),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Row(
-                    children: [
-                      Text(
-                        formattedDate,
-                        style: GoogleFonts.outfit(
-                          fontStyle: FontStyle.italic,
-                          fontSize: 11.sp,
-                          color: AppColors.softBrown,
-                        ),
-                      ),
-                      if (isEncrypted) ...[
-                        SizedBox(width: 6.w),
-                        Icon(
-                          Icons.lock_rounded,
-                          size: 10.r,
-                          color: AppColors.roseDust.withValues(alpha: 0.6),
-                        ),
-                      ],
-                    ],
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(50.r),
-                      border: Border.all(color: accent.withValues(alpha: 0.25)),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(emoji, style: TextStyle(fontSize: 14.sp)),
-                        SizedBox(width: 5.w),
-                        Text(
-                          label,
-                          style: GoogleFonts.outfit(
-                            fontSize: 11.sp,
-                            color: accent,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              if (title != null && title!.isNotEmpty) ...[
-                SizedBox(height: 8.h),
-                Text(
-                  title!,
-                  style: GoogleFonts.outfit(
-                    fontSize: 17.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.warmBrown,
-                  ),
-                ),
-                SizedBox(height: 4.h),
-              ],
-              SizedBox(height: title == null ? 12.h : 0),
-              Text(
-                text,
-                style: GoogleFonts.outfit(
-                  fontSize: 14.sp,
-                  color: AppColors.warmBrown.withOpacity(0.8),
-                  height: 1.55,
-                ),
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          decoration: BoxDecoration(
+            color: tint,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: accent.withValues(alpha: 0.2), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.06),
+                blurRadius: 12.r,
+                offset: Offset(0, 3.h),
               ),
             ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(18.r),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Text(
+                          formattedDate,
+                          style: GoogleFonts.outfit(
+                            fontStyle: FontStyle.italic,
+                            fontSize: 11.sp,
+                            color: AppColors.softBrown,
+                          ),
+                        ),
+                        if (isEncrypted) ...[
+                          SizedBox(width: 6.w),
+                          Icon(
+                            Icons.lock_rounded,
+                            size: 10.r,
+                            color: AppColors.roseDust.withValues(alpha: 0.6),
+                          ),
+                        ],
+                      ],
+                    ),
+                    Container(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: 10.w,
+                        vertical: 4.h,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(50.r),
+                        border:
+                            Border.all(color: accent.withValues(alpha: 0.25)),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(emoji, style: TextStyle(fontSize: 14.sp)),
+                          SizedBox(width: 5.w),
+                          Text(
+                            label,
+                            style: GoogleFonts.outfit(
+                              fontSize: 11.sp,
+                              color: accent,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                if (title != null && title!.isNotEmpty) ...[
+                  SizedBox(height: 8.h),
+                  Text(
+                    title!,
+                    style: GoogleFonts.outfit(
+                      fontSize: 17.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.warmBrown,
+                    ),
+                  ),
+                  SizedBox(height: 4.h),
+                ],
+                SizedBox(height: title == null ? 12.h : 0),
+                Text(
+                  text,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14.sp,
+                    color: AppColors.warmBrown.withOpacity(0.8),
+                    height: 1.55,
+                  ),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ),
       ),

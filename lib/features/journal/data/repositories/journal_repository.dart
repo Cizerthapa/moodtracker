@@ -58,6 +58,25 @@ class JournalRepository {
     });
   }
 
+  Future<void> updateJournal(
+    String id, {
+    String? title,
+    required String text,
+    required String mood,
+    bool encrypt = false,
+  }) async {
+    final encryptedTitle =
+        (encrypt && title != null) ? _encryption.encrypt(title, _uid) : title;
+    final content = encrypt ? _encryption.encrypt(text, _uid) : text;
+    await _journalsCollection.doc(id).update({
+      'title': encryptedTitle,
+      'text': content,
+      'mood': mood,
+      'encrypted': encrypt,
+      'lastUpdated': FieldValue.serverTimestamp(),
+    });
+  }
+
   Future<void> deleteJournal(String id) async {
     await _journalsCollection.doc(id).delete();
   }

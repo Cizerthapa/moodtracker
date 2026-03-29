@@ -30,11 +30,19 @@ import '../../../../l10n/app_localizations.dart';
 class AddJournalEntryScreen extends StatefulWidget {
   final Future<void> Function(String? title, String text, String mood) onSave;
   final List<Map<String, dynamic>> moods;
+  final String? initialTitle;
+  final String? initialText;
+  final String? initialMood;
+  final bool isEditing;
 
   const AddJournalEntryScreen({
     super.key,
     required this.onSave,
     required this.moods,
+    this.initialTitle,
+    this.initialText,
+    this.initialMood,
+    this.isEditing = false,
   });
 
   @override
@@ -121,11 +129,22 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
     );
 
     if (widget.moods.isNotEmpty) {
-      final first = widget.moods.first;
-      _selectedEmoji = first['emoji'] as String;
-      _accentColor = first['accent'] as Color;
-      _tintColor = first['tint'] as Color;
+      final initialMood = widget.initialMood ?? widget.moods.first['emoji'] as String;
+      final meta = widget.moods.firstWhere(
+        (m) => m['emoji'] == initialMood,
+        orElse: () => widget.moods.first,
+      );
+      _selectedEmoji = meta['emoji'] as String;
+      _accentColor = meta['accent'] as Color;
+      _tintColor = meta['tint'] as Color;
       _prevTintColor = _tintColor;
+    }
+
+    _titleController.text = widget.initialTitle ?? '';
+    _textController.text = widget.initialText ?? '';
+    _wasEmpty = _textController.text.trim().isEmpty;
+    if (!_wasEmpty) {
+      _insightController.value = 1.0;
     }
 
     _bgColorAnim = ColorTween(
@@ -693,7 +712,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                           Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 15.sp),
                                           SizedBox(width: 8.w),
                                           Text(
-                                            'Save Entry',
+                                            widget.isEditing ? 'Update Entry' : 'Save Entry',
                                             style: GoogleFonts.dmSans(
                                               fontSize: 14.sp,
                                               fontWeight: FontWeight.w600,
