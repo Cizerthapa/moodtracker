@@ -22,8 +22,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   // Palette
   static const _bg = Color(0xFF0D1117);
   static const _surface = Color(0xFF161B22);
-  static const _card = Color(0xFF21262D);
-  static const _border = Color(0xFF30363D);
+
   static const _accent = Color(0xFF58A6FF);
   static const _danger = Color(0xFFFF7B72);
   static const _success = Color(0xFF3FB950);
@@ -208,6 +207,7 @@ class _UsersTab extends StatelessWidget {
   static const _textSecondary = Color(0xFF8B949E);
   static const _accent = Color(0xFF58A6FF);
   static const _danger = Color(0xFFFF7B72);
+  static const _success = Color(0xFF3FB950);
 
   @override
   Widget build(BuildContext context) {
@@ -232,51 +232,116 @@ class _UsersTab extends StatelessWidget {
             final email = user['email'] as String? ?? uid;
             final displayName = user['displayName'] as String?;
             final partnerUid = user['partnerUid'] as String?;
+            final fcmToken = user['fcmToken'] as String?;
+            final platform = user['platform'] as String?;
+            final lastSeenTs = user['lastSeen'];
+            String? lastSeenStr;
+            if (lastSeenTs != null) {
+              try {
+                final dt = (lastSeenTs as dynamic).toDate() as DateTime;
+                lastSeenStr = '${dt.day}/${dt.month}/${dt.year}  ${dt.hour.toString().padLeft(2,'0')}:${dt.minute.toString().padLeft(2,'0')}';
+              } catch (_) {}
+            }
 
             return Container(
-              margin: EdgeInsets.only(bottom: 10.h),
-              padding: EdgeInsets.all(16.r),
+              margin: EdgeInsets.only(bottom: 12.h),
               decoration: BoxDecoration(
                 color: _card,
                 borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(color: _border),
               ),
-              child: Row(
+              child: Column(
                 children: [
-                  CircleAvatar(
-                    radius: 20.r,
-                    backgroundColor: _accent.withValues(alpha: 0.15),
-                    child: Text(
-                      (displayName ?? email).isNotEmpty ? (displayName ?? email)[0].toUpperCase() : '?',
-                      style: GoogleFonts.outfit(color: _accent, fontWeight: FontWeight.w700),
-                    ),
-                  ),
-                  SizedBox(width: 14.w),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                  Padding(
+                    padding: EdgeInsets.all(14.r),
+                    child: Row(
                       children: [
-                        if (displayName != null)
-                          Text(displayName, style: GoogleFonts.outfit(color: _textPrimary, fontWeight: FontWeight.w600, fontSize: 14.sp)),
-                        Text(email, style: GoogleFonts.jetBrainsMono(color: _textSecondary, fontSize: 11.sp)),
-                        if (partnerUid != null)
-                          Padding(
-                            padding: EdgeInsets.only(top: 4.h),
-                            child: Row(
-                              children: [
-                                Icon(Icons.favorite_rounded, color: _danger, size: 11.r),
-                                SizedBox(width: 4.w),
-                                Text('Linked', style: GoogleFonts.outfit(color: _danger, fontSize: 10.sp)),
-                              ],
-                            ),
+                        CircleAvatar(
+                          radius: 20.r,
+                          backgroundColor: _accent.withValues(alpha: 0.15),
+                          child: Text(
+                            (displayName ?? email).isNotEmpty ? (displayName ?? email)[0].toUpperCase() : '?',
+                            style: GoogleFonts.outfit(color: _accent, fontWeight: FontWeight.w700),
                           ),
+                        ),
+                        SizedBox(width: 12.w),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (displayName != null)
+                                Text(displayName, style: GoogleFonts.outfit(color: _textPrimary, fontWeight: FontWeight.w600, fontSize: 14.sp)),
+                              Text(email, style: GoogleFonts.jetBrainsMono(color: _textSecondary, fontSize: 11.sp)),
+                              SizedBox(height: 4.h),
+                              Row(
+                                children: [
+                                  if (platform != null) ...[
+                                    Container(
+                                      padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
+                                      decoration: BoxDecoration(
+                                        color: _accent.withValues(alpha: 0.1),
+                                        borderRadius: BorderRadius.circular(6.r),
+                                      ),
+                                      child: Text(platform, style: GoogleFonts.jetBrainsMono(color: _accent, fontSize: 9.sp)),
+                                    ),
+                                    SizedBox(width: 6.w),
+                                  ],
+                                  if (partnerUid != null)
+                                    Row(
+                                      children: [
+                                        Icon(Icons.favorite_rounded, color: _danger, size: 11.r),
+                                        SizedBox(width: 3.w),
+                                        Text('Linked', style: GoogleFonts.outfit(color: _danger, fontSize: 10.sp)),
+                                      ],
+                                    ),
+                                  if (lastSeenStr != null) ...[
+                                    SizedBox(width: 8.w),
+                                    Icon(Icons.access_time_rounded, color: _textSecondary, size: 10.r),
+                                    SizedBox(width: 3.w),
+                                    Text(lastSeenStr, style: GoogleFonts.jetBrainsMono(color: _textSecondary, fontSize: 9.sp)),
+                                  ],
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete_outline_rounded, color: _danger, size: 20.r),
+                          onPressed: () => _confirmDelete(context, uid, email),
+                        ),
                       ],
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(Icons.delete_outline_rounded, color: _danger, size: 20.r),
-                    onPressed: () => _confirmDelete(context, uid, email),
-                  ),
+                  // FCM Token row
+                  if (fcmToken != null)
+                    Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 12.h),
+                      child: Row(
+                        children: [
+                          Icon(Icons.notifications_active_rounded, color: _success, size: 12.r),
+                          SizedBox(width: 6.w),
+                          Expanded(
+                            child: SelectableText(
+                              fcmToken,
+                              style: GoogleFonts.jetBrainsMono(color: _textSecondary, fontSize: 9.sp),
+                              maxLines: 1,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(14.w, 0, 14.w, 12.h),
+                      child: Row(
+                        children: [
+                          Icon(Icons.notifications_off_rounded, color: _textSecondary, size: 12.r),
+                          SizedBox(width: 6.w),
+                          Text('No FCM token', style: GoogleFonts.outfit(color: _textSecondary, fontSize: 10.sp)),
+                        ],
+                      ),
+                    ),
                 ],
               ),
             );
@@ -529,7 +594,6 @@ class _BroadcastTabState extends State<_BroadcastTab> {
   static const _accent = Color(0xFF58A6FF);
   static const _danger = Color(0xFFFF7B72);
   static const _success = Color(0xFF3FB950);
-  static const _warning = Color(0xFFD29922);
 
   final Map<String, Map<String, dynamic>> _types = {
     'info': {'label': 'Info', 'color': Color(0xFF58A6FF), 'icon': Icons.info_rounded},
