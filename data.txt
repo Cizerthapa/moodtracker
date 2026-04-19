@@ -1,0 +1,64 @@
+🧿
+ 1) 20th Dec : Windy hill
+2) 27th Dec :  Cafe Window pane - came to give flowers diuso
+3) 31st Dec : chiya chiya plus Baker's treat 
+4) 3rd January : The dragon's farm - td
+5) 10th January : Lele - td
+6) 11th January : Butwal ko fulki - td
+7) 15th January : kyampa 
+8) 18th January : chocolate dina ako thyo
+9) 19th January : HaoPin Hotpot - chicken station
+10) 20th January :organic - Baker's treat
+11) 22rd January :dalle - barbecue chulo
+12) 23rd January : buddhanilkantha
+13) 30th January : Mike's
+14) 31st January : Workshop eatery plus alleway
+15) 7th February : House of sushi
+16) 8th February : Cafe Jireh - td
+17) 14th February : Marathon - his home
+18)20th February : shrey courtyard - norvic - Car accident
+19)21th February : Mahadevsthan - Baker's treat
+20) 25th February : KGF restro
+21) 2nd March : holi yuv 0plus Baker's treat 
+22) 13th March : Butwal ko fulki plus chaya center (crime 101)
+23)  15th March : Baker's treat 2nd month Ann
+24)20th March : chiyaa
+25)27th March : jasmine fitness club and spa (swimming)  plus kalaiya sekuwa
+26) 28th March : Dari vai ko chiya plus Himalayan Java plus queen's eatery plus chiya
+27) 1st April : Baker's treat plus A one unisex hair saloon 
+28) 9th April : chiya spot durbarmarg
+29)11th April : Baker's treat plus yuv
+30)16th April : coloring date
+31)18th April : gujeshwori plus hangout reel
+32)19th April : fulki point plus Shandar 
+
+these below are the model attributes also add last update and deletedAt too
+also add the herFav and hisFav
+
+date
+"2026-03-07T00:41:03.057706"
+(string)
+
+
+description
+"7th February"
+(string)
+
+
+isUnique
+false
+(boolean)
+
+
+lat
+27.7872
+(double)
+
+
+lng
+85.39399999999999
+(double)
+
+
+title
+"House of sushi"

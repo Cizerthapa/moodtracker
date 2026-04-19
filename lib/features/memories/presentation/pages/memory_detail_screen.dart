@@ -6,13 +6,14 @@ import 'package:latlong2/latlong.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
-  final Map<String, dynamic> memoryData;
-  const MemoryDetailScreen({super.key, required this.memoryData});
+  final MemoryModel memory;
+  const MemoryDetailScreen({super.key, required this.memory});
 
   @override
   State<MemoryDetailScreen> createState() => _MemoryDetailScreenState();
@@ -25,6 +26,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   late TextEditingController _herFavController;
   late TextEditingController _hisFavController;
   late LatLng _location;
+  late MemoryModel _memory;
   bool _isEditing = false;
   late AnimationController _heartController;
   late AnimationController _fadeController;
@@ -36,12 +38,12 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   @override
   void initState() {
     super.initState();
-    final data = widget.memoryData;
-    _titleController = TextEditingController(text: data['title']);
-    _descController = TextEditingController(text: data['description']);
-    _herFavController = TextEditingController(text: data['herFavStory'] ?? '');
-    _hisFavController = TextEditingController(text: data['hisFavStory'] ?? '');
-    _location = LatLng(data['lat'] ?? 0.0, data['lng'] ?? 0.0);
+    _memory = widget.memory;
+    _titleController = TextEditingController(text: _memory.title);
+    _descController = TextEditingController(text: _memory.description);
+    _herFavController = TextEditingController(text: _memory.herFavStory ?? '');
+    _hisFavController = TextEditingController(text: _memory.hisFavStory ?? '');
+    _location = LatLng(_memory.lat, _memory.lng);
 
     _heartController = AnimationController(
       vsync: this,
@@ -60,15 +62,15 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   }
 
   Future<void> _loadLocalImages() async {
-    final int count = widget.memoryData['imageCount'] ?? 0;
-    if (count == 0 || widget.memoryData['id'] == null) {
+    final int count = _memory.imageCount;
+    if (count == 0 || _memory.id == null) {
       return;
     }
     try {
       final dir = await getApplicationDocumentsDirectory();
       final List<File> loaded = [];
       for (int i = 0; i < count; i++) {
-        final f = File('${dir.path}/memory_${widget.memoryData['id']}_img_$i.jpg');
+        final f = File('${dir.path}/memory_${_memory.id}_img_$i.jpg');
         if (await f.exists()) {
           loaded.add(f);
         }
@@ -96,20 +98,31 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
 
   Future<void> _pickImages() async {
     if (_additionalImages.length >= 25) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Maximum 25 images allowed')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Maximum 25 images allowed')));
       return;
     }
     final picker = ImagePicker();
     final picked = await picker.pickMultiImage(imageQuality: 70);
     if (picked.isNotEmpty) {
       int availableSlots = 25 - _additionalImages.length;
-      final toAdd = picked.take(availableSlots).map((x) => File(x.path)).toList();
+      final toAdd = picked
+          .take(availableSlots)
+          .map((x) => File(x.path))
+          .toList();
       setState(() {
         _additionalImages.addAll(toAdd);
       });
       if (picked.length > availableSlots) {
         if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Only $availableSlots more images could be added, max 25 reached.')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                'Only $availableSlots more images could be added, max 25 reached.',
+              ),
+            ),
+          );
         }
       }
     }
@@ -118,7 +131,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   Future<void> _updateMemory() async {
     try {
       final dir = await getApplicationDocumentsDirectory();
-      final memoryId = widget.memoryData['id'];
+      final memoryId = _memory.id;
+      if (memoryId == null) return;
+
       int count = 0;
       for (var file in _additionalImages) {
         final newPath = '${dir.path}/memory_${memoryId}_img_$count.jpg';
@@ -127,31 +142,35 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         }
         count++;
       }
-      int oldCount = widget.memoryData['imageCount'] ?? 0;
+      int oldCount = _memory.imageCount;
       for (int i = count; i < oldCount; i++) {
         final f = File('${dir.path}/memory_${memoryId}_img_$i.jpg');
         if (await f.exists()) await f.delete();
       }
 
-      await _repository.updateMemory(memoryId, {
-        'title': _titleController.text.trim(),
-        'description': _descController.text.trim(),
-        'herFavStory': _herFavController.text.trim().isEmpty ? null : _herFavController.text.trim(),
-        'hisFavStory': _hisFavController.text.trim().isEmpty ? null : _hisFavController.text.trim(),
-        'imageCount': count,
-      });
+      final updatedMemory = _memory.copyWith(
+        title: _titleController.text.trim(),
+        description: _descController.text.trim(),
+        herFavStory: _herFavController.text.trim().isEmpty
+            ? null
+            : _herFavController.text.trim(),
+        hisFavStory: _hisFavController.text.trim().isEmpty
+            ? null
+            : _hisFavController.text.trim(),
+        imageCount: count,
+      );
+
+      await _repository.updateMemory(updatedMemory);
 
       setState(() {
-         widget.memoryData['imageCount'] = count;
-         widget.memoryData['title'] = _titleController.text.trim();
-         widget.memoryData['description'] = _descController.text.trim();
-         widget.memoryData['herFavStory'] = _herFavController.text.trim().isEmpty ? null : _herFavController.text.trim();
-         widget.memoryData['hisFavStory'] = _hisFavController.text.trim().isEmpty ? null : _hisFavController.text.trim();
-         _isEditing = false;
+        _memory = updatedMemory;
+        _isEditing = false;
       });
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Failed to save memory: $e')));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save memory: $e')));
       }
     }
   }
@@ -166,7 +185,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         false;
 
     if (confirm) {
-      await _repository.deleteMemory(widget.memoryData['id']);
+      if (_memory.id != null) {
+        await _repository.deleteMemory(_memory.id!);
+      }
       if (mounted) Navigator.pop(context);
     }
   }
@@ -203,10 +224,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final data = widget.memoryData;
-    final bool isUnique = data['isUnique'] == true;
-    final String? herFav = data['herFavStory'];
-    final String? hisFav = data['hisFavStory'];
+    final bool isUnique = _memory.isUnique;
+    final String? herFav = _memory.herFavStory;
+    final String? hisFav = _memory.hisFavStory;
 
     return Scaffold(
       backgroundColor: AppColors.cream,
@@ -249,7 +269,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
               ],
               flexibleSpace: FlexibleSpaceBar(
                 background: _HeroSection(
-                  data: data,
+                  memory: _memory,
                   location: _location,
                   heartAnim: _heartAnim,
                   isUnique: isUnique,
@@ -274,7 +294,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                       onCancel: () => setState(() => _isEditing = false),
                     )
                   : _ViewPanel(
-                      data: data,
+                      memory: _memory,
                       isUnique: isUnique,
                       herFav: herFav,
                       hisFav: hisFav,
@@ -292,13 +312,13 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
 // ─── Hero Section ──────────────────────────────────────────────────────────
 
 class _HeroSection extends StatelessWidget {
-  final Map<String, dynamic> data;
+  final MemoryModel memory;
   final LatLng location;
   final Animation<double> heartAnim;
   final bool isUnique;
 
   const _HeroSection({
-    required this.data,
+    required this.memory,
     required this.location,
     required this.heartAnim,
     required this.isUnique,
@@ -306,14 +326,14 @@ class _HeroSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final hasImage = data['imageUrl'] != null;
+    final hasImage = memory.imageUrl != null;
 
     return Stack(
       fit: StackFit.expand,
       children: [
         // Background: photo or map
         if (hasImage)
-          _MemoryImage(url: data['imageUrl'])
+          _MemoryImage(url: memory.imageUrl!)
         else
           FlutterMap(
             options: MapOptions(
@@ -503,7 +523,7 @@ class _MapPip extends StatelessWidget {
 // ─── View Panel ─────────────────────────────────────────────────────────────
 
 class _ViewPanel extends StatelessWidget {
-  final Map<String, dynamic> data;
+  final MemoryModel memory;
   final bool isUnique;
   final String? herFav;
   final String? hisFav;
@@ -511,7 +531,7 @@ class _ViewPanel extends StatelessWidget {
   final String Function(dynamic) formatDate;
 
   const _ViewPanel({
-    required this.data,
+    required this.memory,
     required this.isUnique,
     required this.herFav,
     required this.hisFav,
@@ -533,7 +553,7 @@ class _ViewPanel extends StatelessWidget {
 
           // ── Title ────────────────────────────────────────────────────
           Text(
-            data['title'] ?? '',
+            memory.title,
             style: GoogleFonts.cormorantGaramond(
               fontSize: 38.sp,
               fontWeight: FontWeight.w700,
@@ -554,7 +574,7 @@ class _ViewPanel extends StatelessWidget {
               ),
               SizedBox(width: 6.w),
               Text(
-                formatDate(data['memoryDate'] ?? data['createdAt']),
+                formatDate(memory.memoryDate ?? memory.timestamp),
                 style: GoogleFonts.outfit(
                   fontSize: 12.sp,
                   color: AppColors.softBrown,
@@ -570,10 +590,9 @@ class _ViewPanel extends StatelessWidget {
           SizedBox(height: 24.h),
 
           // ── Description ──────────────────────────────────────────────
-          if (data['description'] != null &&
-              data['description'].toString().isNotEmpty) ...[
+          if (memory.description.isNotEmpty) ...[
             Text(
-              data['description'],
+              memory.description,
               style: GoogleFonts.lora(
                 fontSize: 15.sp,
                 color: AppColors.softBrown,
@@ -613,11 +632,20 @@ class _ViewPanel extends StatelessWidget {
                     width: 110.r,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(16.r),
-                      image: DecorationImage(image: FileImage(additionalImages[index]), fit: BoxFit.cover),
-                      boxShadow: [BoxShadow(color: Colors.black12, blurRadius: 8.r, offset: Offset(0, 4.h))],
+                      image: DecorationImage(
+                        image: FileImage(additionalImages[index]),
+                        fit: BoxFit.cover,
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black12,
+                          blurRadius: 8.r,
+                          offset: Offset(0, 4.h),
+                        ),
+                      ],
                     ),
                   );
-                }
+                },
               ),
             ),
             SizedBox(height: 28.h),
@@ -701,18 +729,32 @@ class _EditPanel extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-               Text(
-                 'Extra Memories (${additionalImages.length}/25)',
-                 style: GoogleFonts.outfit(fontSize: 14.sp, fontWeight: FontWeight.w600, color: AppColors.warmBrown),
-               ),
-               TextButton.icon(
-                 onPressed: onPickImages,
-                 icon: Icon(Icons.add_a_photo_rounded, size: 16.sp, color: AppColors.roseDeep),
-                 label: Text('Add Photos', style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold)),
-               )
+              Text(
+                'Extra Memories (${additionalImages.length}/25)',
+                style: GoogleFonts.outfit(
+                  fontSize: 14.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.warmBrown,
+                ),
+              ),
+              TextButton.icon(
+                onPressed: onPickImages,
+                icon: Icon(
+                  Icons.add_a_photo_rounded,
+                  size: 16.sp,
+                  color: AppColors.roseDeep,
+                ),
+                label: Text(
+                  'Add Photos',
+                  style: GoogleFonts.outfit(
+                    color: AppColors.roseDeep,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
             ],
           ),
-          if (additionalImages.isNotEmpty) 
+          if (additionalImages.isNotEmpty)
             SizedBox(
               height: 100.h,
               child: ListView.builder(
@@ -721,30 +763,43 @@ class _EditPanel extends StatelessWidget {
                 itemBuilder: (context, index) {
                   return Stack(
                     children: [
-                       Container(
-                         margin: EdgeInsets.only(right: 12.w, top: 8.h),
-                         width: 90.r,
-                         height: 90.r,
-                         decoration: BoxDecoration(
-                           borderRadius: BorderRadius.circular(12.r),
-                           image: DecorationImage(image: FileImage(additionalImages[index]), fit: BoxFit.cover),
-                         ),
-                       ),
-                       Positioned(
-                         top: 0,
-                         right: 4.w,
-                         child: GestureDetector(
-                           onTap: () => onRemoveImage(index),
-                           child: Container(
-                             padding: EdgeInsets.all(4.r),
-                             decoration: BoxDecoration(color: Colors.white, shape: BoxShape.circle, boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)]),
-                             child: Icon(Icons.close_rounded, size: 14.sp, color: AppColors.roseDust),
-                           )
-                         )
-                       )
-                    ]
+                      Container(
+                        margin: EdgeInsets.only(right: 12.w, top: 8.h),
+                        width: 90.r,
+                        height: 90.r,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12.r),
+                          image: DecorationImage(
+                            image: FileImage(additionalImages[index]),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        top: 0,
+                        right: 4.w,
+                        child: GestureDetector(
+                          onTap: () => onRemoveImage(index),
+                          child: Container(
+                            padding: EdgeInsets.all(4.r),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              boxShadow: [
+                                BoxShadow(color: Colors.black26, blurRadius: 4),
+                              ],
+                            ),
+                            child: Icon(
+                              Icons.close_rounded,
+                              size: 14.sp,
+                              color: AppColors.roseDust,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   );
-                }
+                },
               ),
             ),
           SizedBox(height: 28.h),

@@ -16,6 +16,9 @@ import 'package:moodtrack/core/managers/locale_manager.dart';
 import 'package:moodtrack/features/auth/presentation/pages/login_screen.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 import 'package:moodtrack/features/memories/presentation/pages/together_since_screen.dart';
+import 'package:moodtrack/features/admin/presentation/pages/admin_panel_screen.dart';
+import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -449,32 +452,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
 
             // ── Footer ──────────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.only(bottom: 32.0.h),
-              child: Column(
-                children: [
-                  Text(
-                    AppLocalizations.of(context)!.madeWithLoveBy,
-                    style: GoogleFonts.outfit(
-                      fontStyle: FontStyle.italic,
-                      color: AppColors.softBrown.withValues(alpha: 0.5),
-                      fontSize: 13.sp,
-                      fontWeight: FontWeight.w300,
-                    ),
-                  ),
-                  SizedBox(height: 4.h),
-                  Text(
-                    AppLocalizations.of(context)!.authorName,
-                    style: GoogleFonts.outfit(
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.warmBrown,
-                      fontSize: 18.sp,
-                      letterSpacing: -0.3,
-                    ),
-                  ),
-                ],
-              ),
-            ).animate().fadeIn(delay: 600.ms, duration: 500.ms),
+            _AdminFooter().animate().fadeIn(delay: 600.ms, duration: 500.ms),
           ],
         ),
       ),
@@ -673,5 +651,136 @@ class _SettingsScreenState extends State<SettingsScreen> {
           duration: 400.ms,
           curve: Curves.easeOutCubic,
         );
+  }
+}
+
+// ── Admin Footer (Easter Egg) ─────────────────────────────────────────────────
+
+class _AdminFooter extends StatefulWidget {
+  const _AdminFooter();
+
+  @override
+  State<_AdminFooter> createState() => _AdminFooterState();
+}
+
+class _AdminFooterState extends State<_AdminFooter>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _progressController;
+  bool _isHolding = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 10),
+    )..addStatusListener((status) {
+        if (status == AnimationStatus.completed) {
+          _onHoldComplete();
+        }
+      });
+  }
+
+  @override
+  void dispose() {
+    _progressController.dispose();
+    super.dispose();
+  }
+
+  void _onHoldComplete() {
+    HapticFeedback.heavyImpact();
+    final user = FirebaseAuth.instance.currentUser;
+    if (user?.email == AdminRepository.adminEmail) {
+      Navigator.push(
+        context,
+        PageRouteBuilder(
+          pageBuilder: (_, anim, __) => const AdminPanelScreen(),
+          transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+          transitionDuration: const Duration(milliseconds: 400),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🔒 Not authorized.',
+            style: GoogleFonts.outfit(),
+          ),
+          backgroundColor: const Color(0xFF21262D),
+        ),
+      );
+    }
+    _progressController.reset();
+    setState(() => _isHolding = false);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onLongPressStart: (_) {
+        setState(() => _isHolding = true);
+        HapticFeedback.lightImpact();
+        _progressController.forward(from: 0);
+      },
+      onLongPressEnd: (_) {
+        if (_progressController.status != AnimationStatus.completed) {
+          _progressController.reset();
+          setState(() => _isHolding = false);
+        }
+      },
+      onLongPressCancel: () {
+        _progressController.reset();
+        setState(() => _isHolding = false);
+      },
+      child: Padding(
+        padding: EdgeInsets.only(bottom: 32.h),
+        child: Column(
+          children: [
+            // Progress ring — only visible while holding
+            AnimatedBuilder(
+              animation: _progressController,
+              builder: (context, child) {
+                return AnimatedOpacity(
+                  opacity: _isHolding ? 1.0 : 0.0,
+                  duration: const Duration(milliseconds: 200),
+                  child: Padding(
+                    padding: EdgeInsets.only(bottom: 8.h),
+                    child: SizedBox(
+                      width: 28.r,
+                      height: 28.r,
+                      child: CircularProgressIndicator(
+                        value: _progressController.value,
+                        strokeWidth: 2.5,
+                        backgroundColor: AppColors.champagne,
+                        color: AppColors.roseDeep,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+            Text(
+              AppLocalizations.of(context)!.madeWithLoveBy,
+              style: GoogleFonts.outfit(
+                fontStyle: FontStyle.italic,
+                color: AppColors.softBrown.withValues(alpha: 0.5),
+                fontSize: 13.sp,
+                fontWeight: FontWeight.w300,
+              ),
+            ),
+            SizedBox(height: 4.h),
+            Text(
+              AppLocalizations.of(context)!.authorName,
+              style: GoogleFonts.outfit(
+                fontWeight: FontWeight.w700,
+                color: AppColors.warmBrown,
+                fontSize: 18.sp,
+                letterSpacing: -0.3,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

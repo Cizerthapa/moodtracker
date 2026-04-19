@@ -7,6 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 
 class AddMemoryScreen extends StatefulWidget {
   const AddMemoryScreen({super.key});
@@ -66,8 +67,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       _selectedTime.minute,
     );
 
-    HapticFeedback.lightImpact();
-    await _repository.addMemory(
+    final newMemory = MemoryModel(
       title: _titleController.text.trim(),
       description: _descController.text.trim(),
       lat: 27.7172, // TODO: Location picker
@@ -78,6 +78,9 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
       hisFavStory: _hisFavController.text.isEmpty ? null : _hisFavController.text.trim(),
       memoryDate: combinedDateTime,
     );
+
+    HapticFeedback.lightImpact();
+    await _repository.addMemory(newMemory);
 
     if (mounted) {
       Navigator.pop(context);

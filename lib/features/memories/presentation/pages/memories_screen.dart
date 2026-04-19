@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
@@ -25,7 +26,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
     with SingleTickerProviderStateMixin {
   final MemoriesRepository _repository = MemoriesRepository();
   bool _isLoading = true;
-  List<Map<String, dynamic>> _memories = [];
+  List<MemoryModel> _memories = [];
   String _searchQuery = "";
   late TextEditingController _searchController;
   late AnimationController _fadeController;
@@ -78,37 +79,37 @@ class _MemoriesScreenState extends State<MemoriesScreen>
     final memories = await _repository.getMemoriesStream().first;
     if (memories.isNotEmpty) return;
 
-    final List<Map<String, dynamic>> seeds = [
-      {
-        'title': 'Dinner at the Cliffside',
-        'description': 'October 14, 2025',
-        'lat': 40.7128,
-        'lng': -74.0060,
-        'isUnique': false,
-      },
-      {
-        'title': 'The First Sunset Together',
-        'description': 'September 12, 2025',
-        'lat': 34.0522,
-        'lng': -118.2437,
-        'isUnique': true,
-      },
-      {
-        'title': 'Stroll through Central Park',
-        'description': 'August 28, 2025',
-        'lat': 40.7829,
-        'lng': -73.9654,
-        'isUnique': false,
-      },
-      {
-        'title': 'Coffee & Rainy Days',
-        'description': 'That small cafe in Patan where we talked for hours',
-        'lat': 27.6744,
-        'lng': 85.3240,
-        'isUnique': false,
-        'herFavStory': 'I loved how you wiped the rain off my nose.',
-        'hisFavStory': 'Watching you smile while sipping mocha was everything.',
-      },
+    final List<MemoryModel> seeds = [
+      const MemoryModel(
+        title: 'Dinner at the Cliffside',
+        description: 'October 14, 2025',
+        lat: 40.7128,
+        lng: -74.0060,
+        isUnique: false,
+      ),
+      const MemoryModel(
+        title: 'The First Sunset Together',
+        description: 'September 12, 2025',
+        lat: 34.0522,
+        lng: -118.2437,
+        isUnique: true,
+      ),
+      const MemoryModel(
+        title: 'Stroll through Central Park',
+        description: 'August 28, 2025',
+        lat: 40.7829,
+        lng: -73.9654,
+        isUnique: false,
+      ),
+      const MemoryModel(
+        title: 'Coffee & Rainy Days',
+        description: 'That small cafe in Patan where we talked for hours',
+        lat: 27.6744,
+        lng: 85.3240,
+        isUnique: false,
+        herFavStory: 'I loved how you wiped the rain off my nose.',
+        hisFavStory: 'Watching you smile while sipping mocha was everything.',
+      ),
     ];
 
     // Only seed if user is sangyaa3@gmail.com
@@ -193,7 +194,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                       )
                     : FadeTransition(
                         opacity: _fadeAnim,
-                        child: StreamBuilder<List<Map<String, dynamic>>>(
+                        child: StreamBuilder<List<MemoryModel>>(
                           stream: _repository.getMemoriesStream(),
                           builder: (context, snapshot) {
                             if (!snapshot.hasData && _memories.isEmpty) {
@@ -220,19 +221,15 @@ class _MemoriesScreenState extends State<MemoriesScreen>
 
                             final docs = snapshot.hasData
                                 ? snapshot.data!
-                                : <Map<String, dynamic>>[];
+                                : <MemoryModel>[];
                             var listToDisplay = docs.isNotEmpty
                                 ? docs
                                 : _memories;
 
                             if (_searchQuery.isNotEmpty) {
                               listToDisplay = listToDisplay.where((m) {
-                                final title = (m['title'] ?? "")
-                                    .toString()
-                                    .toLowerCase();
-                                final desc = (m['description'] ?? "")
-                                    .toString()
-                                    .toLowerCase();
+                                final title = m.title.toLowerCase();
+                                final desc = m.description.toLowerCase();
                                 return title.contains(
                                       _searchQuery.toLowerCase(),
                                     ) ||
@@ -269,7 +266,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                                             PageRouteBuilder(
                                               pageBuilder: (_, anim, _) =>
                                                   MemoryDetailScreen(
-                                                    memoryData: docs[index],
+                                                    memory: docs[index],
                                                   ),
                                               transitionsBuilder:
                                                   (_, anim, _, child) =>
@@ -427,7 +424,7 @@ class _HeartDivider extends StatelessWidget {
 // ─── Memory Card ────────────────────────────────────────────────────────────
 
 class _MemoryCard extends StatefulWidget {
-  final Map<String, dynamic> data;
+  final MemoryModel data;
   final int index;
   final VoidCallback onTap;
 
@@ -467,9 +464,9 @@ class _MemoryCardState extends State<_MemoryCard>
 
   @override
   Widget build(BuildContext context) {
-    final bool isUnique = widget.data['isUnique'] == true;
-    final String title = widget.data['title'] ?? '';
-    final String description = widget.data['description'] ?? '';
+    final bool isUnique = widget.data.isUnique;
+    final String title = widget.data.title;
+    final String description = widget.data.description;
 
     return GestureDetector(
           onTapDown: (_) => _pressController.forward(),

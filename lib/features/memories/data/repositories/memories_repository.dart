@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 
 class MemoriesRepository {
@@ -21,20 +22,19 @@ class MemoriesRepository {
       .doc(_uid)
       .collection(AppConstants.memoriesCollection);
 
-  Stream<List<Map<String, dynamic>>> getMemoriesStream() {
-    final controller = StreamController<List<Map<String, dynamic>>>.broadcast();
-    List<Map<String, dynamic>> myMemories = [];
-    List<Map<String, dynamic>> partnerMemories = [];
+  Stream<List<MemoryModel>> getMemoriesStream() {
+    final controller = StreamController<List<MemoryModel>>.broadcast();
+    List<MemoryModel> myMemories = [];
+    List<MemoryModel> partnerMemories = [];
 
     void updateAndEmit() {
       final combined = [...myMemories, ...partnerMemories];
       combined.sort((a, b) {
-        final tA = a['memoryDate'] ?? a['timestamp'];
-        final tB = b['memoryDate'] ?? b['timestamp'];
+        final tA = a.memoryDate ?? a.timestamp;
+        final tB = b.memoryDate ?? b.timestamp;
         if (tA == null && tB == null) return 0;
         if (tA == null) return 1;
         if (tB == null) return -1;
-        if (tB is! Timestamp || tA is! Timestamp) return 0;
         return tB.compareTo(tA);
       });
       controller.add(combined);
@@ -46,9 +46,7 @@ class MemoriesRepository {
         .snapshots()
         .listen((snap) {
           myMemories = snap.docs
-              .map(
-                (doc) => {'id': doc.id, ...doc.data() as Map<String, dynamic>},
-              )
+              .map((doc) => MemoryModel.fromFirestore(doc))
               .toList();
           updateAndEmit();
         });
@@ -64,7 +62,7 @@ class MemoriesRepository {
             .snapshots()
             .listen((snap) {
               partnerMemories = snap.docs
-                  .map((doc) => {'id': doc.id, ...doc.data()})
+                  .map((doc) => MemoryModel.fromFirestore(doc))
                   .toList();
               updateAndEmit();
             });
@@ -83,68 +81,39 @@ class MemoriesRepository {
     return controller.stream;
   }
 
-  Future<List<Map<String, dynamic>>> getCachedMemories() async {
+  Future<List<MemoryModel>> getCachedMemories() async {
     final prefs = await SharedPreferences.getInstance();
     final cached = prefs.getString(AppConstants.memoriesCacheKey);
     if (cached != null) {
       final List<dynamic> decoded = json.decode(cached);
-      return decoded.cast<Map<String, dynamic>>();
+      return decoded.map((m) => MemoryModel.fromMap(m as Map<String, dynamic>)).toList();
     }
     return [];
   }
 
-  Future<List<Map<String, dynamic>>> fetchAndCacheMemories() async {
+  Future<List<MemoryModel>> fetchAndCacheMemories() async {
     final snapshot = await _memoriesCollection
         .orderBy('timestamp', descending: true)
         .get();
 
-    final memories = snapshot.docs.map((doc) {
-      final data = doc.data() as Map<String, dynamic>;
-      return {
-        ...data,
-        'id': doc.id,
-        // Convert timestamp to string for JSON serialization
-        'timestamp': (data['timestamp'] as Timestamp?)
-            ?.toDate()
-            .toIso8601String(),
-      };
-    }).toList();
+    final memories = snapshot.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
 
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(AppConstants.memoriesCacheKey, json.encode(memories));
+    final memoriesJson = memories.map((m) => m.toMap()).toList();
+    await prefs.setString(AppConstants.memoriesCacheKey, json.encode(memoriesJson));
 
     return memories;
   }
 
-  Future<void> addMemory({
-    required String title,
-    required String description,
-    required double lat,
-    required double lng,
-    String? imageUrl,
-    String? herFavStory,
-    String? hisFavStory,
-    bool isUnique = false,
-    DateTime? memoryDate,
-  }) async {
-    await _memoriesCollection.add({
-      'title': title,
-      'description': description,
-      'lat': lat,
-      'lng': lng,
-      'imageUrl': imageUrl,
-      'herFavStory': herFavStory,
-      'hisFavStory': hisFavStory,
-      'isUnique': isUnique,
-      'memoryDate': memoryDate != null ? Timestamp.fromDate(memoryDate) : null,
-      'timestamp': FieldValue.serverTimestamp(),
-    });
+  Future<void> addMemory(MemoryModel memory) async {
+    await _memoriesCollection.add(memory.toFirestore());
     // Clear cache to force refresh on next load
     await _clearCache();
   }
 
-  Future<void> updateMemory(String id, Map<String, dynamic> data) async {
-    await _memoriesCollection.doc(id).update(data);
+  Future<void> updateMemory(MemoryModel memory) async {
+    if (memory.id == null) return;
+    await _memoriesCollection.doc(memory.id).update(memory.toFirestore());
     await _clearCache();
   }
 
@@ -158,14 +127,11 @@ class MemoriesRepository {
     await prefs.remove(AppConstants.memoriesCacheKey);
   }
 
-  Future<void> seedMemories(List<Map<String, dynamic>> seeds) async {
+  Future<void> seedMemories(List<MemoryModel> seeds) async {
     final batch = _firestore.batch();
-    for (int i = 0; i < seeds.length; i++) {
+    for (var memory in seeds) {
       final docRef = _memoriesCollection.doc();
-      batch.set(docRef, {
-        ...seeds[i],
-        'timestamp': FieldValue.serverTimestamp(),
-      });
+      batch.set(docRef, memory.toFirestore());
     }
     await batch.commit();
     await _clearCache();
