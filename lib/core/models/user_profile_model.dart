@@ -1,4 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
+import 'package:moodtrack/models/journal_entry_model.dart';
 
 class UserProfile {
   final String uid;
@@ -13,6 +15,10 @@ class UserProfile {
   final String? platform; // 'android' | 'ios' | 'web'
   final String? appVersion;
 
+  // Sub-collection data — populated on demand (e.g. admin reads)
+  final List<JournalEntry>? journals;
+  final List<MemoryModel>? memories;
+
   UserProfile({
     required this.uid,
     required this.email,
@@ -25,6 +31,8 @@ class UserProfile {
     this.lastSeen,
     this.platform,
     this.appVersion,
+    this.journals,
+    this.memories,
   });
 
   factory UserProfile.fromMap(Map<String, dynamic> map, String docId) {
@@ -40,6 +48,27 @@ class UserProfile {
       lastSeen: (map['lastSeen'] as Timestamp?)?.toDate(),
       platform: map['platform'] as String?,
       appVersion: map['appVersion'] as String?,
+    );
+  }
+
+  UserProfile withCollections({
+    List<JournalEntry>? journals,
+    List<MemoryModel>? memories,
+  }) {
+    return UserProfile(
+      uid: uid,
+      email: email,
+      displayName: displayName,
+      photoUrl: photoUrl,
+      partnerUid: partnerUid,
+      partnerEmail: partnerEmail,
+      relationshipStartDate: relationshipStartDate,
+      fcmToken: fcmToken,
+      lastSeen: lastSeen,
+      platform: platform,
+      appVersion: appVersion,
+      journals: journals ?? this.journals,
+      memories: memories ?? this.memories,
     );
   }
 
@@ -69,6 +98,8 @@ class UserProfile {
     DateTime? lastSeen,
     String? platform,
     String? appVersion,
+    List<JournalEntry>? journals,
+    List<MemoryModel>? memories,
   }) {
     return UserProfile(
       uid: uid,
@@ -82,6 +113,8 @@ class UserProfile {
       lastSeen: lastSeen ?? this.lastSeen,
       platform: platform ?? this.platform,
       appVersion: appVersion ?? this.appVersion,
+      journals: journals ?? this.journals,
+      memories: memories ?? this.memories,
     );
   }
 }

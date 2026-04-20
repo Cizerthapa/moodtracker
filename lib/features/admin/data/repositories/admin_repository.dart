@@ -1,5 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:moodtrack/core/models/user_profile_model.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
+import 'package:moodtrack/models/journal_entry_model.dart';
 
 class AdminRepository {
   AdminRepository._internal();
@@ -12,16 +14,6 @@ class AdminRepository {
 
   // ── Users ────────────────────────────────────────────────────────────────
 
-  Stream<List<Map<String, dynamic>>> getAllUsersStream() {
-    return _firestore.collection('users').snapshots().map((snap) {
-      return snap.docs.map((doc) {
-        final data = doc.data();
-        data['uid'] = doc.id;
-        return data;
-      }).toList();
-    });
-  }
-
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
     final doc = await _firestore.collection('users').doc(uid).get();
     if (!doc.exists) return null;
@@ -32,9 +24,19 @@ class AdminRepository {
 
   Future<void> deleteUserData(String uid) async {
     // Delete all sub-collections
-    final collections = ['memories', 'journal', 'waterIntake', 'notes', 'moodEntries'];
+    final collections = [
+      'memories',
+      'journal',
+      'waterIntake',
+      'notes',
+      'moodEntries',
+    ];
     for (final col in collections) {
-      final snap = await _firestore.collection('users').doc(uid).collection(col).get();
+      final snap = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection(col)
+          .get();
       final batch = _firestore.batch();
       for (final doc in snap.docs) {
         batch.delete(doc.reference);
@@ -45,6 +47,49 @@ class AdminRepository {
     await _firestore.collection('users').doc(uid).delete();
   }
 
+  // ── Full Profile ─────────────────────────────────────────────────────────
+
+  /// Returns a [UserProfile] populated with both journals and memories.
+  Future<UserProfile?> getUserFullProfile(String uid) async {
+    final profileData = await getUserProfile(uid);
+    if (profileData == null) return null;
+    final profile = UserProfile.fromMap(profileData, uid);
+    final journals = await getUserJournals(uid);
+    final memories = await getUserMemories(uid);
+    return profile.withCollections(journals: journals, memories: memories);
+  }
+  // ── Fix: return Stream<List<UserProfile>> instead of raw maps ──────────────
+
+  Stream<List<UserProfile>> getAllUsersStream() {
+    return _firestore.collection('users').snapshots().map((snap) {
+      return snap.docs.map((doc) {
+        final data = doc.data();
+        data['uid'] = doc.id;
+        return UserProfile.fromMap(data, doc.id);
+      }).toList();
+    });
+  }
+
+  // ── Journals ──────────────────────────────────────────────────────────────
+
+  Future<List<JournalEntry>> getUserJournals(String uid) async {
+    final snap = await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('journals')
+        .orderBy('timestamp', descending: true)
+        .get();
+    return snap.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList();
+  }
+
+  Future<void> deleteJournal(String uid, String journalId) async {
+    await _firestore
+        .collection('users')
+        .doc(uid)
+        .collection('journals')
+        .doc(journalId)
+        .delete();
+  }
   // ── Memories ─────────────────────────────────────────────────────────────
 
   Future<List<MemoryModel>> getUserMemories(String uid) async {
@@ -66,7 +111,11 @@ class AdminRepository {
         .delete();
   }
 
-  Future<void> updateMemory(String uid, String memoryId, Map<String, dynamic> data) async {
+  Future<void> updateMemory(
+    String uid,
+    String memoryId,
+    Map<String, dynamic> data,
+  ) async {
     await _firestore
         .collection('users')
         .doc(uid)
@@ -112,7 +161,7 @@ class AdminRepository {
       final jSnap = await _firestore
           .collection('users')
           .doc(userDoc.id)
-          .collection('journal')
+          .collection('journals')
           .get();
       totalJournals += jSnap.size;
     }
