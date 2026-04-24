@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
@@ -75,7 +77,7 @@ class _SplashScreenState extends State<SplashScreen>
         // Authentication failed or cancelled - retry trigger placeholder
       }
     } on PlatformException catch (e) {
-      debugPrint("Biometric Error: $e");
+      log("Biometric Error: $e");
       setState(() => _isAuthenticating = false);
       // Fallback or Alert user if permanent failure
     }

@@ -1,13 +1,13 @@
 import 'dart:async';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 import 'package:timezone/data/latest.dart' as tz;
 import 'package:flutter_timezone/flutter_timezone.dart';
-import 'dart:math';
 import 'package:flutter/services.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'dart:developer';
+import 'dart:math' as m;
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._internal();
@@ -16,8 +16,10 @@ class NotificationService {
 
   final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
-  
-  static const MethodChannel _channel = MethodChannel(AppConstants.notificationMethodChannel);
+
+  static const MethodChannel _channel = MethodChannel(
+    AppConstants.notificationMethodChannel,
+  );
   Timer? _periodicTimer;
 
   Future<void> init() async {
@@ -48,8 +50,10 @@ class NotificationService {
 
     // Request permissions for Android 13+ and exact alarms
     final AndroidFlutterLocalNotificationsPlugin? androidImplementation =
-        _notificationsPlugin.resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin>();
+        _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin
+            >();
 
     if (androidImplementation != null) {
       await androidImplementation.requestNotificationsPermission();
@@ -146,8 +150,8 @@ class NotificationService {
     try {
       await _channel.invokeMethod('startBackground');
     } on PlatformException catch (e) {
-      debugPrint("Failed to start background service: '${e.message}'.");
-      
+      log("Failed to start background service: '${e.message}'.");
+
       // Fallback for iOS or if native fails
       _periodicTimer?.cancel();
       int count = 0;
@@ -155,12 +159,14 @@ class NotificationService {
 
       final List<String> messages = AppStrings.periodicMessages;
 
-      _periodicTimer = Timer.periodic(const Duration(seconds: 30), (timer) async {
+      _periodicTimer = Timer.periodic(const Duration(seconds: 30), (
+        timer,
+      ) async {
         if (count >= maxCount) {
           timer.cancel();
           return;
         }
-        final message = messages[Random().nextInt(messages.length)];
+        final message = messages[m.Random().nextInt(messages.length)];
         await showInstantNotification(AppStrings.periodicHeader, message);
         count++;
       });
@@ -171,7 +177,7 @@ class NotificationService {
     try {
       await _channel.invokeMethod('stopBackground');
     } catch (e) {
-      debugPrint("Failed to stop background service: $e");
+      log("Failed to stop background service: $e");
     }
     _periodicTimer?.cancel();
   }
