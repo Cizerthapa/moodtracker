@@ -19,6 +19,7 @@ class AppConstants {
 
   // Firebase
   static const String memoriesCollection = 'memories';
+  static const String periodsCollection = 'periods';
   static const String moodNotesPrefsKey = 'mood_notes';
   static const String drinkHistoryPrefsKey = 'drink_history';
   static const String notesCollection = 'notes';

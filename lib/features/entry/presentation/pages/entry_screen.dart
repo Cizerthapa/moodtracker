@@ -9,6 +9,7 @@ import 'package:moodtrack/features/memories/presentation/pages/memories_screen.d
 import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_screen.dart';
 import 'package:moodtrack/features/journal/presentation/pages/journal_screen.dart';
 import 'package:moodtrack/features/settings/presentation/pages/settings_screen.dart';
+import 'package:moodtrack/features/period/presentation/pages/period_tracking_screen.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
@@ -139,6 +140,16 @@ class EntryScreen extends StatelessWidget {
                         color: const Color(0xFFD4A832),
                         destination: const JournalScreen(),
                         index: 2,
+                      ),
+                      SizedBox(height: 20.h),
+                      _buildFeatureCard(
+                        context,
+                        title: 'Cycle Tracker',
+                        subtitle: 'Track, predict & share your cycle.',
+                        icon: Icons.favorite_rounded,
+                        color: const Color(0xFF9B7EC8),
+                        destination: const PeriodTrackingScreen(),
+                        index: 3,
                       ),
                     ],
                   ),
