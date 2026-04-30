@@ -207,7 +207,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 color: AppColors.roseDust.withValues(alpha: 0.25),
                 thickness: 1,
               ),
-            ),
+            )
+                .animate()
+                .fadeIn(delay: 300.ms, duration: 400.ms)
+                .scaleX(
+                  begin: 0.4,
+                  end: 1,
+                  delay: 300.ms,
+                  duration: 500.ms,
+                  curve: Curves.easeOutCubic,
+                ),
 
             // ── Content ──────────────────────────────────────────────
             Expanded(
@@ -222,7 +231,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontWeight: FontWeight.w700,
                       color: AppColors.warmBrown,
                     ),
-                  ).animate().fadeIn(delay: 100.ms, duration: 400.ms),
+                  ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideX(begin: -0.1, end: 0, delay: 100.ms, duration: 400.ms, curve: Curves.easeOutCubic),
                   SizedBox(height: 16.h),
                   _buildThemeSelector(),
                   SizedBox(height: 36.h),
@@ -235,7 +244,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontWeight: FontWeight.w700,
                       color: AppColors.warmBrown,
                     ),
-                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideX(begin: -0.1, end: 0, delay: 200.ms, duration: 400.ms, curve: Curves.easeOutCubic),
                   SizedBox(height: 16.h),
                   _buildSettingTile(
                     title: AppLocalizations.of(context)!.enableNotifications,
@@ -389,7 +398,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       fontWeight: FontWeight.w700,
                       color: AppColors.warmBrown,
                     ),
-                  ).animate().fadeIn(delay: 250.ms, duration: 400.ms),
+                  ).animate().fadeIn(delay: 650.ms, duration: 400.ms).slideX(begin: -0.1, end: 0, delay: 650.ms, duration: 400.ms, curve: Curves.easeOutCubic),
                   SizedBox(height: 16.h),
                   _buildSettingTile(
                     title: 'Link Partner',
@@ -403,7 +412,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () {
                       _showLinkPartnerDialog();
                     },
-                    index: 4,
+                    index: 5,
                   ),
                   SizedBox(height: 14.h),
                   _buildSettingTile(
@@ -423,7 +432,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         ),
                       );
                     },
-                    index: 5,
+                    index: 6,
                   ),
                   SizedBox(height: 24.h),
 
@@ -445,7 +454,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         (_) => false,
                       );
                     },
-                    index: 2,
+                    index: 7,
                   ),
                 ],
               ),

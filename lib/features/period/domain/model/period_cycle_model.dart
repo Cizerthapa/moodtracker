@@ -94,3 +94,40 @@ class PeriodCycle {
   @override
   int get hashCode => id.hashCode;
 }
+
+enum CyclePhase {
+  menstrual,
+  follicular,
+  ovulatory,
+  luteal,
+}
+
+extension CyclePhaseHelper on PeriodCycle {
+  CyclePhase getCurrentPhase(DateTime date, int avgCycleLength) {
+    final d = DateTime(date.year, date.month, date.day);
+    final start = DateTime(startDate.year, startDate.month, startDate.day);
+    final dayOfCycle = d.difference(start).inDays + 1;
+
+    // Menstrual Phase is active during bleeding days (durationDays)
+    // or fallback to 5 days if duration is 1 but it's not ongoing?
+    // Let's rely on isActiveOn if we can, but dayOfCycle <= durationDays is good if it's over.
+    // Wait, durationDays is accurate if it has ended. If it hasn't, we can just say if it's ongoing, it's menstrual.
+    if (dayOfCycle >= 1 && (isOngoing || dayOfCycle <= durationDays)) {
+      // If it's a very long cycle where they haven't stopped it, let's cap Menstrual to something reasonable like 10 days max to prevent indefinite menstrual phase if user forgets to log end.
+      if (dayOfCycle <= 10) {
+        return CyclePhase.menstrual;
+      }
+    }
+
+    final lutealPhaseStart = avgCycleLength - 13;
+    final ovulationWindowStart = avgCycleLength - 18;
+
+    if (dayOfCycle >= lutealPhaseStart) {
+      return CyclePhase.luteal;
+    } else if (dayOfCycle >= ovulationWindowStart) {
+      return CyclePhase.ovulatory;
+    } else {
+      return CyclePhase.follicular;
+    }
+  }
+}

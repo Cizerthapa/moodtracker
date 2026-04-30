@@ -13,6 +13,7 @@ import 'package:moodtrack/features/period/presentation/pages/period_tracking_scr
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/features/audio/presentation/ambient_sound_widget.dart';
 
 class EntryScreen extends StatelessWidget {
   const EntryScreen({super.key});
@@ -158,6 +159,8 @@ class EntryScreen extends StatelessWidget {
             ),
           ),
         ),
+        floatingActionButton: const AmbientSoundWidget(),
+        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
     );
   }

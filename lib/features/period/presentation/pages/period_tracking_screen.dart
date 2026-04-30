@@ -56,17 +56,19 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     );
   }
 
-  /// Returns the predicted next start date based on the user's own cycle history.
-  DateTime? _predictNext(List<PeriodCycle> cycles) {
+  PeriodCycle? _getMostRecentCycle(List<PeriodCycle> cycles) {
+    final mine = cycles.where((c) => c.ownerUid == _uid).toList()
+      ..sort((a, b) => b.startDate.compareTo(a.startDate));
+    return mine.isEmpty ? null : mine.first;
+  }
+
+  int _getAverageCycleLength(List<PeriodCycle> cycles) {
     final mine = cycles
         .where((c) => c.ownerUid == _uid)
         .toList()
       ..sort((a, b) => b.startDate.compareTo(a.startDate));
 
-    if (mine.isEmpty) return null;
-    if (mine.length == 1) {
-      return mine[0].startDate.add(const Duration(days: 28));
-    }
+    if (mine.isEmpty || mine.length == 1) return 28;
 
     int totalDays = 0;
     int count = 0;
@@ -78,8 +80,16 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         count++;
       }
     }
-    final avgCycle = count > 0 ? (totalDays / count).round() : 28;
-    return mine[0].startDate.add(Duration(days: avgCycle));
+    return count > 0 ? (totalDays / count).round() : 28;
+  }
+
+  /// Returns the predicted next start date based on the user's own cycle history.
+  DateTime? _predictNext(List<PeriodCycle> cycles) {
+    final mostRecent = _getMostRecentCycle(cycles);
+    if (mostRecent == null) return null;
+    
+    final avgCycle = _getAverageCycleLength(cycles);
+    return mostRecent.startDate.add(Duration(days: avgCycle));
   }
 
   @override
@@ -242,6 +252,9 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
   Widget _buildCalendarTab(List<PeriodCycle> cycles) {
     final nextPeriod = _predictNext(cycles);
+    final mostRecent = _getMostRecentCycle(cycles);
+    final avgLength = _getAverageCycleLength(cycles);
+
     return SingleChildScrollView(
       padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 100.h),
       physics: const BouncingScrollPhysics(),
@@ -249,11 +262,148 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         children: [
           _buildMonthNav(),
           SizedBox(height: 12.h),
-          _buildCalendarGrid(cycles),
+          _buildCalendarGrid(cycles, mostRecent, avgLength),
           SizedBox(height: 14.h),
           _buildLegend(cycles),
           SizedBox(height: 14.h),
+          if (mostRecent != null) _buildPhaseCard(mostRecent, avgLength),
+          if (mostRecent != null && nextPeriod != null) SizedBox(height: 14.h),
           if (nextPeriod != null) _buildPredictionCard(nextPeriod),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPhaseCard(PeriodCycle recentCycle, int avgCycleLength) {
+    final today = DateTime.now();
+    // Only show current phase if the last cycle isn't extremely old (e.g. within 60 days)
+    final diff = today.difference(recentCycle.startDate).inDays;
+    if (diff > 60) return const SizedBox();
+
+    final phase = recentCycle.getCurrentPhase(today, avgCycleLength);
+    
+    String title;
+    String focus;
+    String insight;
+    IconData icon;
+    Color color;
+
+    switch (phase) {
+      case CyclePhase.menstrual:
+        title = 'Menstrual Phase';
+        focus = 'Focus on rest, hydration, and pain management (cramps).';
+        insight = 'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.';
+        icon = Icons.water_drop_rounded;
+        color = _kUserColor;
+        break;
+      case CyclePhase.follicular:
+        title = 'Follicular Phase';
+        focus = 'Focus on rising energy, creativity, and new beginnings.';
+        insight = 'Did you know? You might feel extra energetic today due to rising estrogen levels.';
+        icon = Icons.spa_rounded;
+        color = Colors.teal;
+        break;
+      case CyclePhase.ovulatory:
+        title = 'Ovulatory Phase (Fertility Window)';
+        focus = 'The "high energy" window. Highest chance of conception.';
+        insight = 'Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!';
+        icon = Icons.favorite_rounded;
+        color = Colors.orangeAccent;
+        break;
+      case CyclePhase.luteal:
+        title = 'Luteal Phase';
+        focus = 'Focus on PMS tracking, skin changes (breakouts), and cravings.';
+        insight = 'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.';
+        icon = Icons.nightlight_round;
+        color = _kCycleColor;
+        break;
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(20.r),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            color.withValues(alpha: 0.1),
+            color.withValues(alpha: 0.05),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: EdgeInsets.all(12.r),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.13),
+              borderRadius: BorderRadius.circular(14.r),
+            ),
+            child: Icon(icon, color: color, size: 22.r),
+          ),
+          SizedBox(width: 16.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Current Phase',
+                  style: GoogleFonts.outfit(
+                      fontSize: 12.sp, color: AppColors.softBrown),
+                ),
+                SizedBox(height: 2.h),
+                Text(
+                  title,
+                  style: GoogleFonts.outfit(
+                    fontSize: 16.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.warmBrown,
+                  ),
+                ),
+                SizedBox(height: 4.h),
+                Text(
+                  focus,
+                  style: GoogleFonts.outfit(
+                    fontSize: 13.sp,
+                    color: AppColors.softBrown,
+                    height: 1.3,
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                Container(
+                  padding: EdgeInsets.all(10.r),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.6),
+                    borderRadius: BorderRadius.circular(12.r),
+                    border: Border.all(color: color.withValues(alpha: 0.15)),
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Icon(Icons.lightbulb_outline_rounded,
+                          size: 16.r, color: color),
+                      SizedBox(width: 8.w),
+                      Expanded(
+                        child: Text(
+                          insight,
+                          style: GoogleFonts.outfit(
+                            fontSize: 12.sp,
+                            color: AppColors.softBrown.withValues(alpha: 0.9),
+                            fontStyle: FontStyle.italic,
+                            height: 1.3,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -285,7 +435,22 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     );
   }
 
-  Widget _buildCalendarGrid(List<PeriodCycle> cycles) {
+  bool _isFertileWindow(DateTime date, PeriodCycle? mostRecent, int avgCycleLength) {
+    if (mostRecent == null) return false;
+    final diff = date.difference(mostRecent.startDate).inDays;
+    
+    // (-5 % 28) in Dart is 23, which correctly maps past dates.
+    // However, if the date is way in the past (> 60 days), we skip it to save confusion.
+    if (diff > -60) {
+      final dayOfCycle = (diff % avgCycleLength) + 1;
+      final ovulationWindowStart = avgCycleLength - 18;
+      final lutealPhaseStart = avgCycleLength - 13;
+      return dayOfCycle >= ovulationWindowStart && dayOfCycle < lutealPhaseStart;
+    }
+    return false;
+  }
+
+  Widget _buildCalendarGrid(List<PeriodCycle> cycles, PeriodCycle? mostRecent, int avgCycleLength) {
     final firstDay =
         DateTime(_focusedMonth.year, _focusedMonth.month, 1);
     final lastDay =
@@ -358,10 +523,13 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     }
                   }
 
+                  final isFertile = _isFertileWindow(date, mostRecent, avgCycleLength);
+
                   return _DayCell(
                     day: dayNum,
                     isToday: isToday,
                     periodColor: periodColor,
+                    isFertileWindow: isFertile,
                   );
                 }),
               ),
@@ -375,14 +543,15 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   Widget _buildLegend(List<PeriodCycle> cycles) {
     final hasPartnerData =
         cycles.any((c) => c.ownerUid != _uid);
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 16.w,
+      runSpacing: 8.h,
       children: [
         _legendDot(_kUserColor, 'Your period'),
-        if (hasPartnerData) ...[
-          SizedBox(width: 20.w),
+        _legendDot(Colors.orangeAccent, 'Fertile Window'),
+        if (hasPartnerData)
           _legendDot(_kPartnerColor, 'Partner\'s period'),
-        ],
       ],
     );
   }
@@ -626,11 +795,13 @@ class _DayCell extends StatelessWidget {
   final int day;
   final bool isToday;
   final Color? periodColor;
+  final bool isFertileWindow;
 
   const _DayCell({
     required this.day,
     required this.isToday,
     this.periodColor,
+    this.isFertileWindow = false,
   });
 
   @override
@@ -643,14 +814,21 @@ class _DayCell extends StatelessWidget {
         decoration: BoxDecoration(
           color: periodColor != null
               ? periodColor!.withValues(alpha: 0.85)
-              : Colors.transparent,
+              : isFertileWindow
+                  ? Colors.orangeAccent.withValues(alpha: 0.15)
+                  : Colors.transparent,
           shape: BoxShape.circle,
           border: isToday && periodColor == null
               ? Border.all(
                   color: _kCycleColor.withValues(alpha: 0.5),
                   width: 1.5,
                 )
-              : null,
+              : isFertileWindow && periodColor == null
+                  ? Border.all(
+                      color: Colors.orangeAccent.withValues(alpha: 0.3),
+                      width: 1,
+                    )
+                  : null,
         ),
         child: Center(
           child: Text(
@@ -662,7 +840,9 @@ class _DayCell extends StatelessWidget {
                   ? Colors.white
                   : isToday
                       ? _kCycleColor
-                      : AppColors.warmBrown,
+                      : isFertileWindow
+                          ? Colors.orange.shade300
+                          : AppColors.warmBrown,
             ),
           ),
         ),

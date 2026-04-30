@@ -369,6 +369,54 @@ class _HeroSection extends StatelessWidget {
                   ),
                 ],
               ),
+              if (!hasImage)
+                Positioned(
+                  bottom: 40.h,
+                  left: 24.w,
+                  right: 24.w,
+                  child: Container(
+                    padding: EdgeInsets.all(16.r),
+                    decoration: BoxDecoration(
+                      color: AppColors.ivoryCard.withValues(alpha: 0.9),
+                      borderRadius: BorderRadius.circular(20.r),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.warmBrown.withValues(alpha: 0.1),
+                          blurRadius: 16.r,
+                          offset: Offset(0, 8.h),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Icon(Icons.location_on_rounded, color: AppColors.roseDeep, size: 20.r),
+                            SizedBox(width: 8.w),
+                            Text(
+                              "Location Data",
+                              style: GoogleFonts.outfit(
+                                fontSize: 16.sp,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.warmBrown,
+                              ),
+                            ),
+                          ],
+                        ),
+                        SizedBox(height: 8.h),
+                        Text(
+                          "Lat: ${location.latitude.toStringAsFixed(4)}\nLng: ${location.longitude.toStringAsFixed(4)}",
+                          style: GoogleFonts.outfit(
+                            fontSize: 14.sp,
+                            color: AppColors.softBrown,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
             ],
           ),
 
@@ -552,15 +600,31 @@ class _ViewPanel extends StatelessWidget {
           if (isUnique) ...[_UniqueBadge(), SizedBox(height: 14.h)],
 
           // ── Title ────────────────────────────────────────────────────
-          Text(
-            memory.title,
-            style: GoogleFonts.cormorantGaramond(
-              fontSize: 38.sp,
-              fontWeight: FontWeight.w700,
-              color: AppColors.warmBrown,
-              height: 1.15,
-              letterSpacing: -0.5,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  memory.title,
+                  style: GoogleFonts.cormorantGaramond(
+                    fontSize: 38.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.warmBrown,
+                    height: 1.15,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () {
+                  // Find the nearest ancestor state of MemoryDetailScreen to toggle editing
+                  context.findAncestorStateOfType<_MemoryDetailScreenState>()?.setState(() {
+                    context.findAncestorStateOfType<_MemoryDetailScreenState>()?._isEditing = true;
+                  });
+                },
+                icon: Icon(Icons.edit_rounded, color: AppColors.roseDust, size: 24.sp),
+              ),
+            ],
           ),
           SizedBox(height: 10.h),
 

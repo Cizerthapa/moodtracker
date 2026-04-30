@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -23,10 +24,32 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   bool _isAuthenticating = false;
+  late String _randomCuteMessage;
+
+  final List<String> _cuteMessages = [
+    "you look beautiful today 💕",
+    "I'm so lucky to have you ✨",
+    "my favorite person in the world 🌸",
+    "can't stop thinking about you 🦋",
+    "you make my heart smile 😊",
+    "you're my safe place 🏡",
+    "I love you more than words ❤️",
+  ];
+
+  final List<String> _cuteMessages = [
+    "I love you more today than yesterday. 💕",
+    "You make every day brighter. ☀️",
+    "Every memory with you is a treasure. 💎",
+    "I'm so lucky to have you. 🍀",
+    "You are my favorite notification. 📱",
+    "Smile, you are beautiful! 😊",
+  ];
+  late String _randomMessage;
 
   @override
   void initState() {
     super.initState();
+    _randomMessage = _cuteMessages[Random().nextInt(_cuteMessages.length)];
     _setupAnimation();
     _startAppFlow();
   }
@@ -142,12 +165,26 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
                 SizedBox(height: 28.h),
                 Text(
-                  "Every memory matters 💫",
+                  "Welcome baby,",
                   style: GoogleFonts.outfit(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 28.sp,
+                    fontWeight: FontWeight.w800,
                     color: AppColors.warmBrown,
-                    letterSpacing: -0.3,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                SizedBox(height: 8.h),
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 40.w),
+                  child: Text(
+                    _randomMessage,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.outfit(
+                      fontSize: 16.sp,
+                      fontWeight: FontWeight.w500,
+                      color: AppColors.softBrown,
+                      height: 1.4,
+                    ),
                   ),
                 ),
 
