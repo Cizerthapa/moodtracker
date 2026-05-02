@@ -1,3 +1,4 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -90,20 +91,23 @@ class UIStateWrapper extends StatelessWidget {
                     ),
               ),
 
+
             // ── Loading Overlay ──────────────────────────────────────
             if (uiState.isLoading)
-              Container(
-                color: Colors.black.withValues(alpha: 0.3),
-                child: Center(
-                  child:
-                      Container(
+              Positioned.fill(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                  child: Container(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    child: Center(
+                      child: Container(
                         padding: EdgeInsets.all(24.r),
                         decoration: BoxDecoration(
-                          color: Colors.white,
+                          color: Colors.white.withValues(alpha: 0.8),
                           borderRadius: BorderRadius.circular(20.r),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
+                              color: Colors.black.withValues(alpha: 0.1),
                               blurRadius: 20,
                             ),
                           ],
@@ -113,9 +117,11 @@ class UIStateWrapper extends StatelessWidget {
                           strokeWidth: 3,
                         ),
                       ).animate().scale(
-                        duration: 300.ms,
-                        curve: Curves.easeOutBack,
-                      ),
+                            duration: 300.ms,
+                            curve: Curves.easeOutBack,
+                          ),
+                    ),
+                  ),
                 ),
               ),
           ],
