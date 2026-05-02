@@ -1,66 +1,81 @@
-import 'dart:convert';
-import 'dart:developer';
-import 'package:shared_preferences/shared_preferences.dart';
-
-import 'package:moodtrack/core/constants/app_constants.dart';
+import 'dart:developer' as dev;
+import 'package:moodtrack/core/database/local_database.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
 
 class NotesRepository {
+  final AppDatabase _db = sl<AppDatabase>();
+
   NotesRepository();
+
   Future<Result<List<Map<String, dynamic>>>> getNotes() async {
-    log('Preferences: Getting notes', name: 'Preferences');
+    dev.log('LocalDB: Fetching all notes', name: 'NotesRepository');
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final List<String> notesJson = prefs.getStringList(AppConstants.moodNotesPrefsKey) ?? [];
-      log('Preferences: Retrieved ${notesJson.length} notes', name: 'Preferences');
-      final notes = notesJson
-          .map((n) => jsonDecode(n) as Map<String, dynamic>)
+      final List<Note> driftNotes = await _db.getAllNotes();
+
+      // Sort by date descending (newest first) while they are still Note objects
+      driftNotes.sort((a, b) => b.date.compareTo(a.date));
+
+      // Convert Drift models back to Maps for UI compatibility
+      final notes = driftNotes
+          .map(
+            (n) => {
+              'id': n.id,
+              'title': n.title,
+              'text': n.textContent,
+              'mood': n.mood,
+              'imageUrl': n.imageUrl,
+              'date': n.date.toIso8601String(),
+              'pendingSync': n.pendingSync,
+            },
+          )
           .toList();
+
+      dev.log(
+        'LocalDB: Retrieved ${notes.length} notes',
+        name: 'NotesRepository',
+      );
       return Success(notes);
     } catch (e) {
-      log('Preferences: Error getting notes: $e', name: 'Preferences');
-      return Failure('Failed to load notes', error: e);
+      dev.log('LocalDB: Error getting notes: $e', name: 'NotesRepository');
+      return Failure('Failed to load notes from local storage', error: e);
     }
   }
 
-  Future<Result<void>> saveNote(Map<String, dynamic> note) async {
-    log('Preferences: Saving note ${note['id']}', name: 'Preferences');
+  Future<Result<void>> saveNote(Map<String, dynamic> noteData) async {
+    final id =
+        noteData['id'] ?? DateTime.now().millisecondsSinceEpoch.toString();
+    dev.log('LocalDB: Saving note $id', name: 'NotesRepository');
+
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final List<String> notesJson = prefs.getStringList(AppConstants.moodNotesPrefsKey) ?? [];
-      notesJson.insert(0, jsonEncode(note));
-      await prefs.setStringList(AppConstants.moodNotesPrefsKey, notesJson);
-      log('Preferences: Note saved successfully', name: 'Preferences');
+      final note = Note(
+        id: id,
+        title: noteData['title'],
+        textContent: noteData['text'] ?? '',
+        mood: noteData['mood'] ?? '😐',
+        imageUrl: noteData['imageUrl'],
+        date: DateTime.tryParse(noteData['date'] ?? '') ?? DateTime.now(),
+        pendingSync: noteData['pendingSync'] ?? false,
+      );
+
+      await _db.insertNote(note);
+      dev.log('LocalDB: Note saved successfully', name: 'NotesRepository');
       return const Success(null);
     } catch (e) {
-      log('Preferences: Error saving note: $e', name: 'Preferences');
-      return Failure('Failed to save note', error: e);
+      dev.log('LocalDB: Error saving note: $e', name: 'NotesRepository');
+      return Failure('Failed to save note locally', error: e);
     }
   }
 
   Future<Result<void>> deleteNote(String id) async {
-    log('Preferences: Deleting note $id', name: 'Preferences');
+    dev.log('LocalDB: Deleting note $id', name: 'NotesRepository');
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final List<String> notesJson = prefs.getStringList(AppConstants.moodNotesPrefsKey) ?? [];
-      
-      final index = notesJson.indexWhere((n) {
-        final note = jsonDecode(n);
-        return note['id'] == id || note['date'] == id; // Fallback to date if id missing
-      });
-
-      if (index != -1) {
-        notesJson.removeAt(index);
-        await prefs.setStringList(AppConstants.moodNotesPrefsKey, notesJson);
-        log('Preferences: Note deleted successfully', name: 'Preferences');
-        return const Success(null);
-      } else {
-        log('Preferences: Note $id not found', name: 'Preferences');
-        return const Failure('Note not found');
-      }
+      await _db.deleteNoteLocal(id);
+      dev.log('LocalDB: Note deleted successfully', name: 'NotesRepository');
+      return const Success(null);
     } catch (e) {
-      log('Preferences: Error deleting note: $e', name: 'Preferences');
-      return Failure('Failed to delete note', error: e);
+      dev.log('LocalDB: Error deleting note: $e', name: 'NotesRepository');
+      return Failure('Failed to delete note locally', error: e);
     }
   }
 }

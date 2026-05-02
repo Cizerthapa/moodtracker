@@ -109,18 +109,18 @@ class _JournalScreenState extends State<JournalScreen>
       encrypt: _encryptionEnabled,
     );
     if (result is Failure && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text((result as Failure).message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text((result).message)));
     }
   }
 
   Future<void> _deleteJournal(String id) async {
     final result = await _repository.deleteJournal(id);
     if (result is Failure && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text((result as Failure).message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text((result).message)));
     }
   }
 
@@ -759,8 +759,9 @@ class _JournalEntryCard extends StatelessWidget {
                       decoration: BoxDecoration(
                         color: accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(50.r),
-                        border:
-                            Border.all(color: accent.withValues(alpha: 0.25)),
+                        border: Border.all(
+                          color: accent.withValues(alpha: 0.25),
+                        ),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,

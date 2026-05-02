@@ -15,10 +15,13 @@ import 'package:moodtrack/features/journal/data/repositories/journal_repository.
 import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
+import 'package:moodtrack/core/database/local_database.dart';
 
 final sl = GetIt.instance;
 
 Future<void> initServiceLocator() async {
+  // ── Database ──────────────────────────────────────────────────────────────
+  sl.registerLazySingleton(() => AppDatabase());
   // ── Firebase ──────────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
   sl.registerLazySingleton(() => FirebaseAuth.instance);

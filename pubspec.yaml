@@ -64,6 +64,9 @@ dependencies:
   audioplayers: ^6.6.0
   connectivity_plus: ^7.1.1
   get_it: ^9.2.1
+  drift: ^2.32.1
+  sqlite3_flutter_libs: ^0.6.0+eol
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:
@@ -76,6 +79,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+  drift_dev: ^2.32.1
+  build_runner: ^2.15.0
 
 flutter_launcher_icons:
   android: true

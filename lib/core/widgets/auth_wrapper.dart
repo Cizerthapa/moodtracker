@@ -3,8 +3,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
-import 'package:moodtrack/core/models/user_profile_model.dart';
-import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/auth/presentation/pages/login_screen.dart';
 import 'package:moodtrack/features/entry/presentation/pages/entry_screen.dart';
 

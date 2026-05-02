@@ -98,6 +98,12 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     super.dispose();
   }
 
+  void setEditing(bool value) {
+    if (mounted) {
+      setState(() => _isEditing = value);
+    }
+  }
+
   Future<void> _pickImages() async {
     if (_additionalImages.length >= 25) {
       ScaffoldMessenger.of(
@@ -629,10 +635,7 @@ class _ViewPanel extends StatelessWidget {
               ),
               IconButton(
                 onPressed: () {
-                  // Find the nearest ancestor state of MemoryDetailScreen to toggle editing
-                  context.findAncestorStateOfType<_MemoryDetailScreenState>()?.setState(() {
-                    context.findAncestorStateOfType<_MemoryDetailScreenState>()?._isEditing = true;
-                  });
+                  context.findAncestorStateOfType<_MemoryDetailScreenState>()?.setEditing(true);
                 },
                 icon: Icon(Icons.edit_rounded, color: AppColors.roseDust, size: 24.sp),
               ),
