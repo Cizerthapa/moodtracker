@@ -11,13 +11,18 @@ import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/managers/locale_manager.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moodtrack/features/splash/presentation/pages/splash_screen.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
+  // Initialize DI
+  await initServiceLocator();
+
   // Initialize Notifications
-  final notificationService = NotificationService();
+  final notificationService = sl<NotificationService>();
   await notificationService.init();
 
   runApp(

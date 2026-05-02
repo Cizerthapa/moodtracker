@@ -1,5 +1,5 @@
 import 'dart:developer';
-import 'dart:math';
+import 'dart:math' hide log;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -24,8 +24,6 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   bool _isAuthenticating = false;
-  late String _randomCuteMessage;
-
   final List<String> _cuteMessages = [
     "you look beautiful today 💕",
     "I'm so lucky to have you ✨",
@@ -34,13 +32,9 @@ class _SplashScreenState extends State<SplashScreen>
     "you make my heart smile 😊",
     "you're my safe place 🏡",
     "I love you more than words ❤️",
-  ];
-
-  final List<String> _cuteMessages = [
     "I love you more today than yesterday. 💕",
     "You make every day brighter. ☀️",
     "Every memory with you is a treasure. 💎",
-    "I'm so lucky to have you. 🍀",
     "You are my favorite notification. 📱",
     "Smile, you are beautiful! 😊",
   ];

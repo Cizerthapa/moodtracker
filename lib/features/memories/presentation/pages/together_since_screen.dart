@@ -4,6 +4,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
+import 'package:moodtrack/core/models/user_profile_model.dart';
 
 class TogetherSinceScreen extends StatefulWidget {
   const TogetherSinceScreen({super.key});
@@ -25,12 +28,22 @@ class _TogetherSinceScreenState extends State<TogetherSinceScreen> {
   }
 
   Future<void> _loadDate() async {
-    final profile = await UserRepository().getUserProfile();
-    if (profile?.relationshipStartDate != null) {
-      _startDate = profile!.relationshipStartDate;
-      _startTimer();
+    final result = await sl<UserRepository>().getUserProfile();
+    
+    if (result is Success<UserProfile?>) {
+      final profile = result.data;
+      if (profile?.relationshipStartDate != null) {
+        _startDate = profile!.relationshipStartDate;
+        _startTimer();
+      }
+    } else if (result is Failure) {
+      // Optionally show a snackbar or error message
+      debugPrint((result as Failure).message);
     }
-    setState(() => _isLoading = false);
+    
+    if (mounted) {
+      setState(() => _isLoading = false);
+    }
   }
 
   void _startTimer() {

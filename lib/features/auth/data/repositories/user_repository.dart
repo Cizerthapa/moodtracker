@@ -5,13 +5,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/models/user_profile_model.dart';
 import 'package:moodtrack/core/services/fcm_service.dart';
 
-class UserRepository {
-  UserRepository._internal();
-  static final UserRepository _instance = UserRepository._internal();
-  factory UserRepository() => _instance;
+import 'package:moodtrack/core/error/result.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class UserRepository {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  UserRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? sl<FirebaseFirestore>(),
+        _auth = auth ?? sl<FirebaseAuth>();
 
   CollectionReference get _usersCollection => _firestore.collection('users');
 
@@ -84,25 +89,35 @@ class UserRepository {
     });
   }
 
-  Future<UserProfile?> getUserProfile() async {
+  Future<Result<UserProfile?>> getUserProfile({bool forceRefresh = false}) async {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return null;
-    log('Firestore: Getting profile for $uid', name: 'Firebase');
-    final doc = await _usersCollection.doc(uid).get();
-    if (!doc.exists || doc.data() == null) {
-      log('Firestore: Profile not found for $uid', name: 'Firebase');
-      return null;
+    if (uid == null) return const Failure('User not authenticated');
+    
+    log('Firestore: Getting profile for $uid (forceRefresh: $forceRefresh)', name: 'Firebase');
+    try {
+      final source = forceRefresh ? Source.server : Source.serverAndCache;
+      final doc = await _usersCollection.doc(uid).get(GetOptions(source: source));
+      
+      if (!doc.exists || doc.data() == null) {
+        log('Firestore: Profile not found for $uid', name: 'Firebase');
+        return const Success(null);
+      }
+      log('Firestore: Profile retrieved successfully from ${doc.metadata.isFromCache ? "cache" : "server"}', name: 'Firebase');
+      return Success(UserProfile.fromMap(doc.data() as Map<String, dynamic>, doc.id));
+    } catch (e) {
+      log('Firestore: Error getting profile: $e', name: 'Firebase');
+      return Failure('Failed to get profile', error: e);
     }
-    log('Firestore: Profile retrieved successfully', name: 'Firebase');
-    return UserProfile.fromMap(doc.data() as Map<String, dynamic>, doc.id);
   }
 
   // ── Linking ───────────────────────────────────────────────────────────────
 
-  Future<bool> linkPartnerByEmail(String partnerEmail) async {
+  Future<Result<bool>> linkPartnerByEmail(String partnerEmail) async {
     final currentUser = _auth.currentUser;
-    if (currentUser == null) return false;
-    if (currentUser.email?.toLowerCase() == partnerEmail.toLowerCase()) return false;
+    if (currentUser == null) return const Failure('User not authenticated');
+    if (currentUser.email?.toLowerCase() == partnerEmail.toLowerCase()) {
+      return const Failure('You cannot link with yourself');
+    }
 
     log('Firestore: Searching for partner with email $partnerEmail', name: 'Firebase');
     // Find partner
@@ -113,7 +128,7 @@ class UserRepository {
 
     if (query.docs.isEmpty) {
       log('Firestore: Partner with email $partnerEmail not found', name: 'Firebase');
-      return false;
+      return const Failure('Partner not found');
     }
 
     final partnerDoc = query.docs.first;
@@ -134,16 +149,16 @@ class UserRepository {
       });
 
       log('Firestore: Mutual link established successfully', name: 'Firebase');
-      return true;
+      return const Success(true);
     } catch (e) {
       log('Firestore: Error during partner linking: $e', name: 'Firebase');
-      return false;
+      return Failure('Failed to link partner', error: e);
     }
   }
 
-  Future<void> setRelationshipStartDate(DateTime date) async {
+  Future<Result<void>> setRelationshipStartDate(DateTime date) async {
     final uid = _auth.currentUser?.uid;
-    if (uid == null) return;
+    if (uid == null) return const Failure('User not authenticated');
 
     log('Firestore: Setting relationship start date for $uid', name: 'Firebase');
     try {
@@ -152,18 +167,21 @@ class UserRepository {
       });
 
       // Try update partner too if linked
-      final profile = await getUserProfile();
-      final partnerUid = profile?.partnerUid;
-      if (partnerUid != null) {
-        log('Firestore: Setting relationship start date for partner $partnerUid', name: 'Firebase');
-        await _usersCollection.doc(partnerUid).update({
-          'relationshipStartDate': Timestamp.fromDate(date),
-        });
+      final result = await getUserProfile();
+      if (result is Success<UserProfile?>) {
+        final partnerUid = result.data?.partnerUid;
+        if (partnerUid != null) {
+          log('Firestore: Setting relationship start date for partner $partnerUid', name: 'Firebase');
+          await _usersCollection.doc(partnerUid).update({
+            'relationshipStartDate': Timestamp.fromDate(date),
+          });
+        }
       }
       log('Firestore: Relationship start date updated successfully', name: 'Firebase');
+      return const Success(null);
     } catch (e) {
       log('Firestore: Error updating relationship start date: $e', name: 'Firebase');
-      rethrow;
+      return Failure('Failed to update relationship date', error: e);
     }
   }
 

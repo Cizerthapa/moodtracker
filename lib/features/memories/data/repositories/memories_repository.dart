@@ -8,13 +8,18 @@ import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 
-class MemoriesRepository {
-  MemoriesRepository._internal();
-  static final MemoriesRepository _instance = MemoriesRepository._internal();
-  factory MemoriesRepository() => _instance;
+import 'package:moodtrack/core/error/result.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
 
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+class MemoriesRepository {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+
+  MemoriesRepository({
+    FirebaseFirestore? firestore,
+    FirebaseAuth? auth,
+  })  : _firestore = firestore ?? sl<FirebaseFirestore>(),
+        _auth = auth ?? sl<FirebaseAuth>();
 
   String get _uid => _auth.currentUser?.uid ?? 'anonymous';
 
@@ -97,56 +102,67 @@ class MemoriesRepository {
     return [];
   }
 
-  Future<List<MemoryModel>> fetchAndCacheMemories() async {
-    log('Firestore: Fetching memories for $_uid', name: 'Firebase');
-    final snapshot = await _memoriesCollection
-        .orderBy('timestamp', descending: true)
-        .get();
+  Future<Result<List<MemoryModel>>> fetchAndCacheMemories({bool forceRefresh = false}) async {
+    log('Firestore: Fetching memories for $_uid (forceRefresh: $forceRefresh)', name: 'Firebase');
+    try {
+      // Use cache first unless forced refresh
+      final source = forceRefresh ? Source.server : Source.serverAndCache;
+      
+      final snapshot = await _memoriesCollection
+          .orderBy('timestamp', descending: true)
+          .get(GetOptions(source: source));
 
-    log('Firestore: Fetched ${snapshot.docs.length} memories', name: 'Firebase');
-    final memories = snapshot.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
+      log('Firestore: Fetched ${snapshot.docs.length} memories from ${snapshot.metadata.isFromCache ? "cache" : "server"}', name: 'Firebase');
+      final memories = snapshot.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
 
-    final prefs = await SharedPreferences.getInstance();
-    final memoriesJson = memories.map((m) => m.toMap()).toList();
-    await prefs.setString(AppConstants.memoriesCacheKey, json.encode(memoriesJson));
+      final prefs = await SharedPreferences.getInstance();
+      final memoriesJson = memories.map((m) => m.toMap()).toList();
+      await prefs.setString(AppConstants.memoriesCacheKey, json.encode(memoriesJson));
 
-    return memories;
+      return Success(memories);
+    } catch (e) {
+      log('Firestore: Error fetching memories: $e', name: 'Firebase');
+      return Failure('Failed to fetch memories', error: e);
+    }
   }
 
-  Future<void> addMemory(MemoryModel memory) async {
+  Future<Result<void>> addMemory(MemoryModel memory) async {
     log('Firestore: Adding memory for $_uid', name: 'Firebase');
     try {
       await _memoriesCollection.add(memory.toFirestore());
       log('Firestore: Memory added successfully', name: 'Firebase');
       await _clearCache();
+      return const Success(null);
     } catch (e) {
       log('Firestore: Error adding memory: $e', name: 'Firebase');
-      rethrow;
+      return Failure('Failed to add memory', error: e);
     }
   }
 
-  Future<void> updateMemory(MemoryModel memory) async {
-    if (memory.id == null) return;
+  Future<Result<void>> updateMemory(MemoryModel memory) async {
+    if (memory.id == null) return const Failure('Memory ID is required for update');
     log('Firestore: Updating memory ${memory.id} for $_uid', name: 'Firebase');
     try {
       await _memoriesCollection.doc(memory.id).update(memory.toFirestore());
       log('Firestore: Memory updated successfully', name: 'Firebase');
       await _clearCache();
+      return const Success(null);
     } catch (e) {
       log('Firestore: Error updating memory: $e', name: 'Firebase');
-      rethrow;
+      return Failure('Failed to update memory', error: e);
     }
   }
 
-  Future<void> deleteMemory(String id) async {
+  Future<Result<void>> deleteMemory(String id) async {
     log('Firestore: Deleting memory $id for $_uid', name: 'Firebase');
     try {
       await _memoriesCollection.doc(id).delete();
       log('Firestore: Memory deleted successfully', name: 'Firebase');
       await _clearCache();
+      return const Success(null);
     } catch (e) {
       log('Firestore: Error deleting memory: $e', name: 'Firebase');
-      rethrow;
+      return Failure('Failed to delete memory', error: e);
     }
   }
 

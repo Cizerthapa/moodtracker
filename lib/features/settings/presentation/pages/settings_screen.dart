@@ -15,6 +15,8 @@ import 'package:moodtrack/features/journal/data/repositories/journal_repository.
 import 'package:moodtrack/core/managers/locale_manager.dart';
 import 'package:moodtrack/features/auth/presentation/pages/login_screen.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/memories/presentation/pages/together_since_screen.dart';
 import 'package:moodtrack/features/admin/presentation/pages/admin_panel_screen.dart';
 import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
@@ -116,19 +118,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
             onPressed: () async {
               final email = emailController.text.trim();
               if (email.isNotEmpty) {
-                final success = await UserRepository().linkPartnerByEmail(
+                final result = await sl<UserRepository>().linkPartnerByEmail(
                   email,
                 );
                 if (mounted) {
                   Navigator.pop(context);
+                  String message;
+                  if (result is Success<bool>) {
+                    message = "Linked successfully!";
+                  } else {
+                    message = (result as Failure).message;
+                  }
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(
-                        success
-                            ? "Linked successfully!"
-                            : "Failed to link. Check email.",
-                      ),
-                    ),
+                    SnackBar(content: Text(message)),
                   );
                 }
               }

@@ -8,8 +8,7 @@ import 'package:crypto/crypto.dart';
 /// AES-256-CBC encryption service.
 /// The key is derived from the user's UID by hashing it with SHA-256.
 class EncryptionService {
-  EncryptionService._();
-  static final EncryptionService instance = EncryptionService._();
+  EncryptionService();
 
   enc.Key _keyFromUid(String uid) {
     final bytes = sha256.convert(utf8.encode(uid)).bytes;
