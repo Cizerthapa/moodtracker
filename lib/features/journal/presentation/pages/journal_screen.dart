@@ -797,7 +797,7 @@ class _JournalEntryCard extends StatelessWidget {
                   text,
                   style: GoogleFonts.outfit(
                     fontSize: 14.sp,
-                    color: AppColors.warmBrown.withOpacity(0.8),
+                    color: AppColors.warmBrown.withValues(alpha: 0.8),
                     height: 1.55,
                   ),
                   maxLines: 4,

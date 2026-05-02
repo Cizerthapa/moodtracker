@@ -65,15 +65,15 @@ class MemoryCardState extends State<MemoryCard>
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: isUnique
-                  ? AppColors.roseDeep.withOpacity(0.35)
+                  ? AppColors.roseDeep.withValues(alpha: 0.35)
                   : AppColors.champagne,
               width: isUnique ? 1.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
                 color: isUnique
-                    ? AppColors.roseDeep.withOpacity(0.07)
-                    : AppColors.warmBrown.withOpacity(0.05),
+                    ? AppColors.roseDeep.withValues(alpha: 0.07)
+                    : AppColors.warmBrown.withValues(alpha: 0.05),
                 blurRadius: 12,
                 offset: const Offset(0, 3),
               ),
@@ -89,7 +89,7 @@ class MemoryCardState extends State<MemoryCard>
                   height: 38,
                   decoration: BoxDecoration(
                     color: isUnique
-                        ? AppColors.roseDeep.withOpacity(0.12)
+                        ? AppColors.roseDeep.withValues(alpha: 0.12)
                         : AppColors.champagne,
                     shape: BoxShape.circle,
                   ),

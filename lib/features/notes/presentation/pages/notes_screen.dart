@@ -485,7 +485,7 @@ class _NoteCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.outfit(
                   fontSize: 15.sp,
-                  color: AppColors.warmBrown.withOpacity(0.85),
+                  color: AppColors.warmBrown.withValues(alpha: 0.85),
                   height: 1.55,
                 ),
               ),

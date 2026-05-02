@@ -17,7 +17,7 @@ class EmptyState extends StatelessWidget {
             Icon(
               Icons.favorite_border_rounded,
               size: 52.sp,
-              color: AppColors.roseDust.withOpacity(0.5),
+              color: AppColors.roseDust.withValues(alpha: 0.5),
             ),
             SizedBox(height: 18.h),
             Text(
@@ -51,7 +51,7 @@ class EmptyState extends StatelessWidget {
                   borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.roseDeep.withOpacity(0.3),
+                      color: AppColors.roseDeep.withValues(alpha: 0.3),
                       blurRadius: 16.r,
                       offset: Offset(0, 4.h),
                     ),

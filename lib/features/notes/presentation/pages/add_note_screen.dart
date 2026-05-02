@@ -147,7 +147,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     decoration: InputDecoration(
                       hintText: 'Title',
                       hintStyle: GoogleFonts.outfit(
-                        color: AppColors.softBrown.withOpacity(0.3),
+                        color: AppColors.softBrown.withValues(alpha: 0.3),
                       ),
                       border: InputBorder.none,
                       contentPadding: EdgeInsets.zero,
@@ -169,7 +169,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     decoration: InputDecoration(
                       hintText: 'Start writing...',
                       hintStyle: GoogleFonts.outfit(
-                        color: AppColors.softBrown.withOpacity(0.35),
+                        color: AppColors.softBrown.withValues(alpha: 0.35),
                         fontStyle: FontStyle.italic,
                       ),
                       border: InputBorder.none,
@@ -227,7 +227,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
               color: Colors.white,
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 10,
                   offset: const Offset(0, -2),
                 ),
@@ -255,10 +255,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                           margin: EdgeInsets.symmetric(horizontal: 6.w),
                           padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                           decoration: BoxDecoration(
-                            color: isSelected ? mAccent.withOpacity(0.12) : Colors.transparent,
+                            color: isSelected ? mAccent.withValues(alpha: 0.12) : Colors.transparent,
                             borderRadius: BorderRadius.circular(16.r),
                             border: Border.all(
-                              color: isSelected ? mAccent.withOpacity(0.4) : Colors.transparent,
+                              color: isSelected ? mAccent.withValues(alpha: 0.4) : Colors.transparent,
                               width: 1.5,
                             ),
                           ),
@@ -271,7 +271,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     }).toList(),
                   ),
                 ),
-                Divider(height: 16.h, color: AppColors.champagne.withOpacity(0.5)),
+                Divider(height: 16.h, color: AppColors.champagne.withValues(alpha: 0.5)),
                 Row(
                   children: [
                     // Bullet button
