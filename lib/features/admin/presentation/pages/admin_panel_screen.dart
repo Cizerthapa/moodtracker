@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/models/user_profile_model.dart';
@@ -38,7 +39,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 4, vsync: this);
+    _tabController = TabController(length: 5, vsync: this);
     _loadStats();
   }
 
@@ -151,6 +152,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 icon: Icon(Icons.campaign_rounded, size: 18),
                 text: 'Broadcast',
               ),
+              Tab(
+                icon: Icon(Icons.system_update_rounded, size: 18),
+                text: 'Version',
+              ),
             ],
           ),
         ),
@@ -167,6 +172,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   _MemoriesTab(repo: _repo),
                   _JournalsTab(repo: _repo),
                   _BroadcastTab(repo: _repo),
+                  _VersionTab(repo: _repo),
                 ],
               ),
             ),
@@ -1623,5 +1629,296 @@ class _BroadcastTabState extends State<_BroadcastTab> {
         );
       }
     }
+  }
+}
+
+// ── VERSION TAB ─────────────────────────────────────────────────────────────
+
+class _VersionTab extends StatefulWidget {
+  final AdminRepository repo;
+  const _VersionTab({required this.repo});
+
+  @override
+  State<_VersionTab> createState() => _VersionTabState();
+}
+
+class _VersionTabState extends State<_VersionTab> {
+  final _minVersionController = TextEditingController();
+  final _latestVersionController = TextEditingController();
+  final _messageController = TextEditingController();
+  bool _forceUpdate = false;
+  bool _saving = false;
+  String _currentAppVersion = 'Loading...';
+
+  // Palette (inherited or matching AdminPanelScreen)
+  static const _accent = Color(0xFF58A6FF);
+  static const _surface = Color(0xFF161B22);
+  static const _card = Color(0xFF21262D);
+  static const _border = Color(0xFF30363D);
+  static const _textPrimary = Color(0xFFC9D1D9);
+  static const _textSecondary = Color(0xFF8B949E);
+  static const _danger = Color(0xFFF85149);
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCurrentVersion();
+  }
+
+  Future<void> _loadCurrentVersion() async {
+    final info = await PackageInfo.fromPlatform();
+    if (mounted) {
+      setState(() {
+        _currentAppVersion = '${info.version}+${info.buildNumber}';
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _minVersionController.dispose();
+    _latestVersionController.dispose();
+    _messageController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _saveConfig() async {
+    if (_minVersionController.text.isEmpty ||
+        _latestVersionController.text.isEmpty ||
+        _messageController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('All fields are required', style: GoogleFonts.outfit()),
+          backgroundColor: _danger,
+        ),
+      );
+      return;
+    }
+
+    setState(() => _saving = true);
+    final result = await widget.repo.updateVersionConfig(
+      minVersion: _minVersionController.text.trim(),
+      latestVersion: _latestVersionController.text.trim(),
+      updateMessage: _messageController.text.trim(),
+      forceUpdate: _forceUpdate,
+    );
+
+    if (mounted) {
+      setState(() => _saving = false);
+      if (result is Success) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Version config updated!', style: GoogleFonts.outfit()),
+            backgroundColor: _accent,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text((result as Failure).message, style: GoogleFonts.outfit()),
+            backgroundColor: _danger,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<DocumentSnapshot>(
+      stream: widget.repo.getVersionConfigStream(),
+      builder: (context, snapshot) {
+        if (snapshot.hasData && snapshot.data!.exists) {
+          final data = snapshot.data!.data() as Map<String, dynamic>;
+          // Update controllers only if they are empty (to allow editing) or user hasn't typed yet
+          // Actually, in an admin panel, it's better to load once or use a separate state
+          // For simplicity, we'll just set them once when data arrives
+          if (_minVersionController.text.isEmpty) {
+            _minVersionController.text = data['minVersion'] ?? '';
+            _latestVersionController.text = data['latestVersion'] ?? '';
+            _messageController.text = data['updateMessage'] ?? '';
+            _forceUpdate = data['forceUpdate'] ?? false;
+          }
+        }
+
+        return SingleChildScrollView(
+          padding: EdgeInsets.all(20.r),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Status Info ──────────────────────────────────────
+              Container(
+                padding: EdgeInsets.all(16.r),
+                decoration: BoxDecoration(
+                  color: _card,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: _border),
+                ),
+                child: Row(
+                  children: [
+                    Icon(Icons.info_outline_rounded, color: _accent, size: 20),
+                    12.horizontalSpace,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Current Build Version',
+                            style: GoogleFonts.outfit(
+                              color: _textSecondary,
+                              fontSize: 12.sp,
+                            ),
+                          ),
+                          Text(
+                            _currentAppVersion,
+                            style: GoogleFonts.outfit(
+                              color: _textPrimary,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 15.sp,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              24.verticalSpace,
+
+              // ── Form ─────────────────────────────────────────────
+              _buildLabel('Minimum Required Version'),
+              _buildTextField(
+                controller: _minVersionController,
+                hint: 'e.g. 1.0.0',
+              ),
+              16.verticalSpace,
+
+              _buildLabel('Latest Store Version'),
+              _buildTextField(
+                controller: _latestVersionController,
+                hint: 'e.g. 1.1.0',
+              ),
+              16.verticalSpace,
+
+              _buildLabel('Update Message'),
+              _buildTextField(
+                controller: _messageController,
+                hint: 'Tell users why they should update...',
+                maxLines: 3,
+              ),
+              16.verticalSpace,
+
+              // ── Force Update Toggle ──────────────────────────────
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: _card,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: _border),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Force Update',
+                          style: GoogleFonts.outfit(
+                            color: _textPrimary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Text(
+                          'Prevents app use until updated',
+                          style: GoogleFonts.outfit(
+                            color: _textSecondary,
+                            fontSize: 11.sp,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Switch(
+                      value: _forceUpdate,
+                      onChanged: (v) => setState(() => _forceUpdate = v),
+                      activeColor: _accent,
+                    ),
+                  ],
+                ),
+              ),
+              32.verticalSpace,
+
+              // ── Save Button ──────────────────────────────────────
+              SizedBox(
+                width: double.infinity,
+                height: 50.h,
+                child: ElevatedButton(
+                  onPressed: _saving ? null : _saveConfig,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _accent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12.r),
+                    ),
+                    elevation: 0,
+                  ),
+                  child: Text(
+                    _saving ? 'Saving...' : 'Save Configuration',
+                    style: GoogleFonts.outfit(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15.sp,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLabel(String text) {
+    return Padding(
+      padding: EdgeInsets.only(bottom: 8.h, left: 4.w),
+      child: Text(
+        text,
+        style: GoogleFonts.outfit(
+          color: _textSecondary,
+          fontWeight: FontWeight.w600,
+          fontSize: 13.sp,
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String hint,
+    int maxLines = 1,
+  }) {
+    return TextField(
+      controller: controller,
+      maxLines: maxLines,
+      style: GoogleFonts.outfit(color: _textPrimary),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: GoogleFonts.outfit(color: _textSecondary.withValues(alpha: 0.5)),
+        filled: true,
+        fillColor: _surface,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: _border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: _border),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12.r),
+          borderSide: BorderSide(color: _accent),
+        ),
+      ),
+    );
   }
 }

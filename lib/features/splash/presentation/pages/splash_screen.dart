@@ -14,6 +14,8 @@ import 'package:moodtrack/features/settings/data/repositories/settings_repositor
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class SplashScreen extends StatefulWidget {
@@ -69,7 +71,12 @@ class _SplashScreenState extends State<SplashScreen>
     // 1. Mandatory Delay for visual Splash Screen effect
     await Future.delayed(const Duration(seconds: 2));
 
-    // 2. Check Biometric Requirement
+    // 2. Version Check
+    await _checkVersion();
+
+    if (!mounted) return;
+
+    // 3. Check Biometric Requirement
     final bioResult = await _repository.getBiometricEnabled();
     bool isEnabled = false;
     if (bioResult is Success<bool>) {
@@ -108,6 +115,84 @@ class _SplashScreenState extends State<SplashScreen>
       setState(() => _isAuthenticating = false);
       // Fallback or Alert user if permanent failure
     }
+  }
+
+  Future<void> _checkVersion() async {
+    try {
+      final configSnap = await sl<FirebaseFirestore>()
+          .collection('system_config')
+          .doc('app_version')
+          .get();
+
+      if (!configSnap.exists) return;
+
+      final data = configSnap.data() as Map<String, dynamic>;
+      final minVersion = data['minVersion'] as String;
+      final latestVersion = data['latestVersion'] as String;
+      final message = data['updateMessage'] as String;
+      final forceUpdate = data['forceUpdate'] as bool;
+
+      final info = await PackageInfo.fromPlatform();
+      final currentVersion = info.version;
+
+      if (_isVersionOlder(currentVersion, minVersion)) {
+        await _showUpdateDialog(message, forceUpdate);
+      } else if (_isVersionOlder(currentVersion, latestVersion)) {
+        await _showUpdateDialog(message, false);
+      }
+    } catch (e) {
+      log("Version Check Error: $e");
+    }
+  }
+
+  bool _isVersionOlder(String current, String target) {
+    try {
+      List<int> c = current.split('+')[0].split('.').map(int.parse).toList();
+      List<int> t = target.split('+')[0].split('.').map(int.parse).toList();
+      for (int i = 0; i < 3; i++) {
+        if (c[i] < t[i]) return true;
+        if (c[i] > t[i]) return false;
+      }
+    } catch (_) {}
+    return false;
+  }
+
+  Future<void> _showUpdateDialog(String message, bool force) async {
+    if (!mounted) return;
+    await showDialog(
+      context: context,
+      barrierDismissible: !force,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        backgroundColor: AppColors.cream,
+        title: Text(
+          force ? 'Update Required' : 'New Version Available',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
+        content: Text(
+          message,
+          style: GoogleFonts.outfit(),
+        ),
+        actions: [
+          if (!force)
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Later', style: GoogleFonts.outfit(color: AppColors.softBrown)),
+            ),
+          TextButton(
+            onPressed: () {
+              // Usually link to App Store / Play Store
+              // For now just Pop if not forced
+              if (!force) Navigator.pop(context);
+            },
+            child: Text(
+              'Update Now',
+              style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   void _navigateToHome() {

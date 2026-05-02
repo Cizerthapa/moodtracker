@@ -272,6 +272,40 @@ class AdminRepository {
     }
   }
 
+  // ── Version Management ───────────────────────────────────────────────────
+
+  Future<Result<void>> updateVersionConfig({
+    required String minVersion,
+    required String latestVersion,
+    required String updateMessage,
+    required bool forceUpdate,
+  }) async {
+    log('Firestore [Admin]: Updating version config', name: 'Firebase');
+    try {
+      await _firestore.collection('system_config').doc('app_version').set({
+        'minVersion': minVersion,
+        'latestVersion': latestVersion,
+        'updateMessage': updateMessage,
+        'forceUpdate': forceUpdate,
+        'updatedAt': FieldValue.serverTimestamp(),
+        'updatedBy': adminEmail,
+      });
+      log('Firestore [Admin]: Version config updated', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error updating version config: $e', name: 'Firebase');
+      return Failure('Failed to update version config', error: e);
+    }
+  }
+
+  Stream<DocumentSnapshot> getVersionConfigStream() {
+    log('Firestore [Admin]: Listening to version config', name: 'Firebase');
+    return _firestore
+        .collection('system_config')
+        .doc('app_version')
+        .snapshots();
+  }
+
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   Future<Result<Map<String, int>>> getStats() async {
