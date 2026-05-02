@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
@@ -275,7 +276,7 @@ class _NotesScreenState extends State<NotesScreen>
                   controller: _searchController,
                   onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
-                    hintText: "Search your journal...",
+                    hintText: AppLocalizations.of(context)!.searchJournalHint,
                     hintStyle: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: AppColors.softBrown.withValues(alpha: 0.5),

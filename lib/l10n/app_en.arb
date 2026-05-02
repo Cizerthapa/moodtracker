@@ -78,5 +78,15 @@
   "periodicMessage3": "Just a little reminder that you are special.",
   "periodicMessage4": "How is your mood today? Hope it is great!",
   "periodicMessage5": "Drink some water! 🥤",
-  "periodicMessage6": "Take a deep breath. 😌"
+  "periodicMessage6": "Take a deep breath. 😌",
+  "searchJournalHint": "Search your journal...",
+  "noNotesMatch": "No notes match your search",
+  "pleaseWriteSomething": "Please write something before saving.",
+  "titleHint": "Title",
+  "startWritingHint": "Start writing...",
+  "saveButton": "Save",
+  "editMemory": "Edit Memory",
+  "shortNoteDesc": "Short Note / Description",
+  "herFavStory": "Her Favorite Story",
+  "hisFavStory": "His Favorite Story"
 }

@@ -533,6 +533,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Take a deep breath. 😌'**
   String get periodicMessage6;
+
+  /// No description provided for @searchJournalHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search your journal...'**
+  String get searchJournalHint;
+
+  /// No description provided for @noNotesMatch.
+  ///
+  /// In en, this message translates to:
+  /// **'No notes match your search'**
+  String get noNotesMatch;
+
+  /// No description provided for @pleaseWriteSomething.
+  ///
+  /// In en, this message translates to:
+  /// **'Please write something before saving.'**
+  String get pleaseWriteSomething;
+
+  /// No description provided for @titleHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get titleHint;
+
+  /// No description provided for @startWritingHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Start writing...'**
+  String get startWritingHint;
+
+  /// No description provided for @saveButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveButton;
+
+  /// No description provided for @editMemory.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Memory'**
+  String get editMemory;
+
+  /// No description provided for @shortNoteDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Short Note / Description'**
+  String get shortNoteDesc;
+
+  /// No description provided for @herFavStory.
+  ///
+  /// In en, this message translates to:
+  /// **'Her Favorite Story'**
+  String get herFavStory;
+
+  /// No description provided for @hisFavStory.
+  ///
+  /// In en, this message translates to:
+  /// **'His Favorite Story'**
+  String get hisFavStory;
 }
 
 class _AppLocalizationsDelegate

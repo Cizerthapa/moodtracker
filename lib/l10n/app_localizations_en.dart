@@ -233,4 +233,34 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get periodicMessage6 => 'Take a deep breath. 😌';
+
+  @override
+  String get searchJournalHint => 'Search your journal...';
+
+  @override
+  String get noNotesMatch => 'No notes match your search';
+
+  @override
+  String get pleaseWriteSomething => 'Please write something before saving.';
+
+  @override
+  String get titleHint => 'Title';
+
+  @override
+  String get startWritingHint => 'Start writing...';
+
+  @override
+  String get saveButton => 'Save';
+
+  @override
+  String get editMemory => 'Edit Memory';
+
+  @override
+  String get shortNoteDesc => 'Short Note / Description';
+
+  @override
+  String get herFavStory => 'Her Favorite Story';
+
+  @override
+  String get hisFavStory => 'His Favorite Story';
 }

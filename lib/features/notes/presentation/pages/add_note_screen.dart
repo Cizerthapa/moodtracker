@@ -3,27 +3,55 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 import 'dart:io';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
 
 // Mood metadata: emoji, label, card tint, accent color (matching NotesScreen)
 final _moods = [
-  {'emoji': '😊', 'label': AppStrings.moodHappy, 'tint': const Color(0xFFFFF8EC), 'accent': const Color(0xFFD4A832)},
-  {'emoji': '😌', 'label': AppStrings.moodPeaceful, 'tint': const Color(0xFFEEF7F0), 'accent': const Color(0xFF6DAA7A)},
-  {'emoji': '😐', 'label': AppStrings.moodNeutral, 'tint': const Color(0xFFF5F2ED), 'accent': const Color(0xFF9C8878)},
-  {'emoji': '😔', 'label': AppStrings.moodSad, 'tint': const Color(0xFFEFF3FA), 'accent': const Color(0xFF7A8FBB)},
-  {'emoji': '😡', 'label': AppStrings.moodUpset, 'tint': const Color(0xFFFFF0EC), 'accent': const Color(0xFFC4635A)},
-  {'emoji': '😭', 'label': AppStrings.moodCrying, 'tint': const Color(0xFFEFF3FA), 'accent': const Color(0xFF6B8CB8)},
+  {
+    'emoji': '😊',
+    'label': AppStrings.moodHappy,
+    'tint': const Color(0xFFFFF8EC),
+    'accent': const Color(0xFFD4A832),
+  },
+  {
+    'emoji': '😌',
+    'label': AppStrings.moodPeaceful,
+    'tint': const Color(0xFFEEF7F0),
+    'accent': const Color(0xFF6DAA7A),
+  },
+  {
+    'emoji': '😐',
+    'label': AppStrings.moodNeutral,
+    'tint': const Color(0xFFF5F2ED),
+    'accent': const Color(0xFF9C8878),
+  },
+  {
+    'emoji': '😔',
+    'label': AppStrings.moodSad,
+    'tint': const Color(0xFFEFF3FA),
+    'accent': const Color(0xFF7A8FBB),
+  },
+  {
+    'emoji': '😡',
+    'label': AppStrings.moodUpset,
+    'tint': const Color(0xFFFFF0EC),
+    'accent': const Color(0xFFC4635A),
+  },
+  {
+    'emoji': '😭',
+    'label': AppStrings.moodCrying,
+    'tint': const Color(0xFFEFF3FA),
+    'accent': const Color(0xFF6B8CB8),
+  },
 ];
 
 class AddNoteScreen extends StatefulWidget {
   final Function(String title, String text, String emoji, File? image) onSave;
 
-  const AddNoteScreen({
-    super.key,
-    required this.onSave,
-  });
+  const AddNoteScreen({super.key, required this.onSave});
 
   @override
   State<AddNoteScreen> createState() => _AddNoteScreenState();
@@ -50,7 +78,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final pickedFile = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
     if (pickedFile != null) {
       HapticFeedback.lightImpact();
       setState(() => _selectedImage = File(pickedFile.path));
@@ -60,10 +91,16 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   void _insertText(String insertion) {
     final text = _contentController.text;
     final selection = _contentController.selection;
-    final newText = text.replaceRange(selection.start, selection.end, insertion);
+    final newText = text.replaceRange(
+      selection.start,
+      selection.end,
+      insertion,
+    );
     _contentController.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(offset: selection.start + insertion.length),
+      selection: TextSelection.collapsed(
+        offset: selection.start + insertion.length,
+      ),
     );
     _contentFocusNode.requestFocus();
     HapticFeedback.lightImpact();
@@ -110,7 +147,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.roseDeep),
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: AppColors.roseDeep,
+                  ),
                 ),
               ),
             )
@@ -169,7 +209,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                       height: 1.6,
                     ),
                     decoration: InputDecoration(
-                      hintText: 'Start writing...',
+                      hintText: AppLocalizations.of(context)!.startWritingHint,
                       hintStyle: GoogleFonts.outfit(
                         color: AppColors.softBrown.withValues(alpha: 0.35),
                         fontStyle: FontStyle.italic,
@@ -203,7 +243,11 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                 color: Colors.black54,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.close, color: Colors.white, size: 20),
+                              child: const Icon(
+                                Icons.close,
+                                color: Colors.white,
+                                size: 20,
+                              ),
                             ),
                           ),
                         ),
@@ -211,7 +255,9 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     ),
                   ],
 
-                  SizedBox(height: 100.h), // Extra space to scroll above keyboard
+                  SizedBox(
+                    height: 100.h,
+                  ), // Extra space to scroll above keyboard
                 ],
               ),
             ),
@@ -255,40 +301,56 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         },
                         child: Container(
                           margin: EdgeInsets.symmetric(horizontal: 6.w),
-                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 12.w,
+                            vertical: 8.h,
+                          ),
                           decoration: BoxDecoration(
-                            color: isSelected ? mAccent.withValues(alpha: 0.12) : Colors.transparent,
+                            color: isSelected
+                                ? mAccent.withValues(alpha: 0.12)
+                                : Colors.transparent,
                             borderRadius: BorderRadius.circular(16.r),
                             border: Border.all(
-                              color: isSelected ? mAccent.withValues(alpha: 0.4) : Colors.transparent,
+                              color: isSelected
+                                  ? mAccent.withValues(alpha: 0.4)
+                                  : Colors.transparent,
                               width: 1.5,
                             ),
                           ),
-                          child: Text(
-                            emoji,
-                            style: TextStyle(fontSize: 22.sp),
-                          ),
+                          child: Text(emoji, style: TextStyle(fontSize: 22.sp)),
                         ),
                       );
                     }).toList(),
                   ),
                 ),
-                Divider(height: 16.h, color: AppColors.champagne.withValues(alpha: 0.5)),
+                Divider(
+                  height: 16.h,
+                  color: AppColors.champagne.withValues(alpha: 0.5),
+                ),
                 Row(
                   children: [
                     // Bullet button
                     IconButton(
-                      icon: Icon(Icons.format_list_bulleted_rounded, color: AppColors.softBrown),
+                      icon: Icon(
+                        Icons.format_list_bulleted_rounded,
+                        color: AppColors.softBrown,
+                      ),
                       onPressed: () => _insertText('• '),
                     ),
                     // Checklist button
                     IconButton(
-                      icon: Icon(Icons.checklist_rounded, color: AppColors.softBrown),
+                      icon: Icon(
+                        Icons.checklist_rounded,
+                        color: AppColors.softBrown,
+                      ),
                       onPressed: () => _insertText('- [ ] '),
                     ),
                     // Image button
                     IconButton(
-                      icon: Icon(Icons.add_a_photo_rounded, color: AppColors.softBrown),
+                      icon: Icon(
+                        Icons.add_a_photo_rounded,
+                        color: AppColors.softBrown,
+                      ),
                       onPressed: _pickImage,
                     ),
                     const Spacer(),
