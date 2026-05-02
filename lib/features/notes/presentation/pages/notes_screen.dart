@@ -13,15 +13,47 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/error/result.dart';
 import 'add_note_screen.dart';
+import 'package:moodtrack/core/widgets/unified_refresh_indicator.dart';
+import 'package:moodtrack/core/services/ui_state_manager.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
 final _moods = [
-  {'emoji': '😊', 'label': AppStrings.moodHappy, 'tint': const Color(0xFFFFF8EC), 'accent': const Color(0xFFD4A832)},
-  {'emoji': '😌', 'label': AppStrings.moodPeaceful, 'tint': const Color(0xFFEEF7F0), 'accent': const Color(0xFF6DAA7A)},
-  {'emoji': '😐', 'label': AppStrings.moodNeutral, 'tint': const Color(0xFFF5F2ED), 'accent': const Color(0xFF9C8878)},
-  {'emoji': '😔', 'label': AppStrings.moodSad, 'tint': const Color(0xFFEFF3FA), 'accent': const Color(0xFF7A8FBB)},
-  {'emoji': '😡', 'label': AppStrings.moodUpset, 'tint': const Color(0xFFFFF0EC), 'accent': const Color(0xFFC4635A)},
-  {'emoji': '😭', 'label': AppStrings.moodCrying, 'tint': const Color(0xFFEFF3FA), 'accent': const Color(0xFF6B8CB8)},
+  {
+    'emoji': '😊',
+    'label': AppStrings.moodHappy,
+    'tint': const Color(0xFFFFF8EC),
+    'accent': const Color(0xFFD4A832),
+  },
+  {
+    'emoji': '😌',
+    'label': AppStrings.moodPeaceful,
+    'tint': const Color(0xFFEEF7F0),
+    'accent': const Color(0xFF6DAA7A),
+  },
+  {
+    'emoji': '😐',
+    'label': AppStrings.moodNeutral,
+    'tint': const Color(0xFFF5F2ED),
+    'accent': const Color(0xFF9C8878),
+  },
+  {
+    'emoji': '😔',
+    'label': AppStrings.moodSad,
+    'tint': const Color(0xFFEFF3FA),
+    'accent': const Color(0xFF7A8FBB),
+  },
+  {
+    'emoji': '😡',
+    'label': AppStrings.moodUpset,
+    'tint': const Color(0xFFFFF0EC),
+    'accent': const Color(0xFFC4635A),
+  },
+  {
+    'emoji': '😭',
+    'label': AppStrings.moodCrying,
+    'tint': const Color(0xFFEFF3FA),
+    'accent': const Color(0xFF6B8CB8),
+  },
 ];
 
 class NotesScreen extends StatefulWidget {
@@ -47,7 +79,9 @@ class _NotesScreenState extends State<NotesScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
+      duration: const Duration(
+        milliseconds: AppConstants.fadeTransitionDurationMs,
+      ),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _searchController = TextEditingController();
@@ -62,9 +96,8 @@ class _NotesScreenState extends State<NotesScreen>
   }
 
   Future<void> _loadNotes() async {
-    setState(() => _isLoading = true);
     final result = await _repository.getNotes();
-    
+
     if (result is Success<List<Map<String, dynamic>>>) {
       if (mounted) {
         setState(() {
@@ -73,15 +106,18 @@ class _NotesScreenState extends State<NotesScreen>
         });
         _fadeController.forward();
       }
-    } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text((result as Failure).message)),
-      );
-      setState(() => _isLoading = false);
+    } else {
+      sl<UIStateManager>().handleResult(result, retryTask: _loadNotes);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
-  Future<void> _saveNote(String title, String text, String emoji, String? imageUrl) async {
+  Future<void> _saveNote(
+    String title,
+    String text,
+    String emoji,
+    String? imageUrl,
+  ) async {
     final newNote = {
       'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'title': title,
@@ -95,9 +131,9 @@ class _NotesScreenState extends State<NotesScreen>
     if (result is Success) {
       _loadNotes();
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text((result as Failure).message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text((result as Failure).message)));
     }
   }
 
@@ -106,9 +142,9 @@ class _NotesScreenState extends State<NotesScreen>
     if (result is Success) {
       _loadNotes();
     } else if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text((result as Failure).message)),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text((result as Failure).message)));
       // Reload to restore the item if needed, though Dismissible might need manual refresh
       _loadNotes();
     }
@@ -126,7 +162,10 @@ class _NotesScreenState extends State<NotesScreen>
             String? imageUrl;
             if (image != null) {
               final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
-              final uploadResult = await _storageService.uploadFile(file: image, path: path);
+              final uploadResult = await _storageService.uploadFile(
+                file: image,
+                path: path,
+              );
               if (uploadResult is Success<String>) {
                 imageUrl = uploadResult.data;
               } else if (mounted) {
@@ -148,202 +187,242 @@ class _NotesScreenState extends State<NotesScreen>
   Widget build(BuildContext context) {
     return Consumer<ThemeManager>(
       builder: (context, themeManager, _) => Scaffold(
-      backgroundColor: AppColors.cream,
-      body: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // ── Header ────────────────────────────────────────────────
-            Padding(
-              padding: const EdgeInsets.fromLTRB(28, 24, 24, 8),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          AppStrings.journalHeader,
-                          style: TextStyle(
-            
-                            fontSize: 34.sp,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.warmBrown,
-                            height: 1.1,
+        backgroundColor: AppColors.cream,
+        body: SafeArea(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // ── Header ────────────────────────────────────────────────
+              Padding(
+                padding: const EdgeInsets.fromLTRB(28, 24, 24, 8),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            AppStrings.journalHeader,
+                            style: TextStyle(
+                              fontSize: 34.sp,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.warmBrown,
+                              height: 1.1,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 4.h),
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.auto_awesome_rounded,
-                              size: 12.r,
-                              color: AppColors.roseDust,
-                            ),
-                            SizedBox(width: 6.w),
-                            Text(
-                              AppStrings.journalSubHeader,
-                              style: TextStyle(
-                
-                                fontStyle: FontStyle.italic,
-                                fontSize: 13.sp,
-                                color: AppColors.softBrown,
+                          SizedBox(height: 4.h),
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome_rounded,
+                                size: 12.r,
+                                color: AppColors.roseDust,
                               ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  GestureDetector(
-                    onTap: _showAddNoteScreen,
-                    child: Container(
-                      width: 46.r,
-                      height: 46.r,
-                      decoration: BoxDecoration(
-                        color: AppColors.roseDeep,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.roseDeep.withValues(alpha: 0.3),
-                            blurRadius: 14.r,
-                            offset: Offset(0, 4.h),
+                              SizedBox(width: 6.w),
+                              Text(
+                                AppStrings.journalSubHeader,
+                                style: TextStyle(
+                                  fontStyle: FontStyle.italic,
+                                  fontSize: 13.sp,
+                                  color: AppColors.softBrown,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
-                      child: Icon(
-                        Icons.edit_rounded,
-                        color: Colors.white,
-                        size: 20.r,
+                    ),
+                    GestureDetector(
+                      onTap: _showAddNoteScreen,
+                      child: Container(
+                        width: 46.r,
+                        height: 46.r,
+                        decoration: BoxDecoration(
+                          color: AppColors.roseDeep,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.roseDeep.withValues(alpha: 0.3),
+                              blurRadius: 14.r,
+                              offset: Offset(0, 4.h),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.edit_rounded,
+                          color: Colors.white,
+                          size: 20.r,
+                        ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
 
-            // Search Bar
-            Padding(
-              padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 12.h),
-              child: TextField(
-                controller: _searchController,
-                onChanged: (val) => setState(() => _searchQuery = val),
-                decoration: InputDecoration(
-                  hintText: "Search your journal...",
-                  hintStyle: TextStyle(
-    
-                    fontStyle: FontStyle.italic,
-                    color: AppColors.softBrown.withValues(alpha: 0.5),
-                    fontSize: 14.sp,
-                  ),
-                  prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust, size: 20.r),
-                  suffixIcon: _searchQuery.isNotEmpty 
-                    ? IconButton(
-                        icon: Icon(Icons.clear_rounded, size: 18.r),
-                        onPressed: () {
-                          _searchController.clear();
-                          setState(() => _searchQuery = "");
-                        },
-                      )
-                    : null,
-                  filled: true,
-                  fillColor: AppColors.ivoryCard,
-                  contentPadding: EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                    borderSide: BorderSide(color: AppColors.champagne),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(16.r),
-                    borderSide: BorderSide(color: AppColors.champagne),
+              // Search Bar
+              Padding(
+                padding: EdgeInsets.fromLTRB(28.w, 8.h, 28.w, 12.h),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (val) => setState(() => _searchQuery = val),
+                  decoration: InputDecoration(
+                    hintText: "Search your journal...",
+                    hintStyle: TextStyle(
+                      fontStyle: FontStyle.italic,
+                      color: AppColors.softBrown.withValues(alpha: 0.5),
+                      fontSize: 14.sp,
+                    ),
+                    prefixIcon: Icon(
+                      Icons.search_rounded,
+                      color: AppColors.roseDust,
+                      size: 20.r,
+                    ),
+                    suffixIcon: _searchQuery.isNotEmpty
+                        ? IconButton(
+                            icon: Icon(Icons.clear_rounded, size: 18.r),
+                            onPressed: () {
+                              _searchController.clear();
+                              setState(() => _searchQuery = "");
+                            },
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: AppColors.ivoryCard,
+                    contentPadding: EdgeInsets.symmetric(vertical: 0),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                      borderSide: BorderSide(color: AppColors.champagne),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(16.r),
+                      borderSide: BorderSide(color: AppColors.champagne),
+                    ),
                   ),
                 ),
               ),
-            ),
 
-            // ── Divider ───────────────────────────────────────────────
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Divider(
-                      color: AppColors.roseDust.withValues(alpha: 0.4),
-                      thickness: 1,
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w),
-                    child: Icon(
-                      Icons.favorite,
-                      size: 10.r,
-                      color: AppColors.roseDust.withValues(alpha: 0.7),
-                    ),
-                  ),
-                  Expanded(
-                    child: Divider(
-                      color: AppColors.roseDust.withValues(alpha: 0.4),
-                      thickness: 1,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-            // ── Notes list ────────────────────────────────────────────
-            Expanded(
-              child: _isLoading
-                  ? ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                      itemCount: 4,
-                      itemBuilder: (context, index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 12),
-                        child: ShimmerLoading(
-                          isLoading: true,
-                          child: ShimmerSkeleton(
-                            height: 120,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                        ),
+              // ── Divider ───────────────────────────────────────────────
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.roseDust.withValues(alpha: 0.4),
+                        thickness: 1,
                       ),
-                    )
-                  : _notes.isEmpty
-                      ? _EmptyState(onAdd: _showAddNoteScreen)
+                    ),
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w),
+                      child: Icon(
+                        Icons.favorite,
+                        size: 10.r,
+                        color: AppColors.roseDust.withValues(alpha: 0.7),
+                      ),
+                    ),
+                    Expanded(
+                      child: Divider(
+                        color: AppColors.roseDust.withValues(alpha: 0.4),
+                        thickness: 1,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
+              // ── Notes list ────────────────────────────────────────────
+              Expanded(
+                child: UnifiedRefreshIndicator(
+                  onRefresh: _loadNotes,
+                  child: _isLoading
+                      ? ListView.builder(
+                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                          itemCount: 4,
+                          itemBuilder: (context, index) => Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: ShimmerLoading(
+                              isLoading: true,
+                              child: ShimmerSkeleton(
+                                height: 120,
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                            ),
+                          ),
+                        )
+                      : _notes.isEmpty
+                      ? SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: SizedBox(
+                            height: 0.6.sh,
+                            child: _EmptyState(onAdd: _showAddNoteScreen),
+                          ),
+                        )
                       : FadeTransition(
                           opacity: _fadeAnim,
                           child: RepaintBoundary(
                             child: Builder(
                               builder: (context) {
-                                final filteredNotes = _searchQuery.isEmpty 
-                                  ? _notes 
-                                  : _notes.where((n) => 
-                                      (n['text'] ?? "").toString().toLowerCase().contains(_searchQuery.toLowerCase()) ||
-                                      (n['mood'] ?? "").toString().toLowerCase().contains(_searchQuery.toLowerCase())
-                                    ).toList();
-                                
-                                 if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
-                                  return Center(
-                                    child: Text(
-                                      "No notes match your search",
-                                      style: TextStyle(
-                        
-                                        color: AppColors.softBrown,
-                                        fontSize: 14.sp,
+                                final filteredNotes = _searchQuery.isEmpty
+                                    ? _notes
+                                    : _notes
+                                          .where(
+                                            (n) =>
+                                                (n['text'] ?? "")
+                                                    .toString()
+                                                    .toLowerCase()
+                                                    .contains(
+                                                      _searchQuery
+                                                          .toLowerCase(),
+                                                    ) ||
+                                                (n['mood'] ?? "")
+                                                    .toString()
+                                                    .toLowerCase()
+                                                    .contains(
+                                                      _searchQuery
+                                                          .toLowerCase(),
+                                                    ),
+                                          )
+                                          .toList();
+
+                                if (filteredNotes.isEmpty &&
+                                    _searchQuery.isNotEmpty) {
+                                  return SingleChildScrollView(
+                                    physics:
+                                        const AlwaysScrollableScrollPhysics(),
+                                    child: SizedBox(
+                                      height: 0.5.sh,
+                                      child: Center(
+                                        child: Text(
+                                          "No notes match your search",
+                                          style: TextStyle(
+                                            color: AppColors.softBrown,
+                                            fontSize: 14.sp,
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   );
                                 }
 
                                 return ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
+                                  padding: EdgeInsets.fromLTRB(
+                                    20.w,
+                                    4.h,
+                                    20.w,
+                                    100.h,
+                                  ),
                                   itemCount: filteredNotes.length,
+                                  physics:
+                                      const AlwaysScrollableScrollPhysics(),
                                   itemBuilder: (context, index) {
                                     final note = filteredNotes[index];
                                     return _NoteCard(
                                       note: note,
                                       moodMeta: _moodMeta(note['mood'] ?? '😐'),
-                                      onDelete: () => _deleteNote(note['id'] ?? note['date']),
+                                      onDelete: () => _deleteNote(
+                                        note['id'] ?? note['date'],
+                                      ),
                                     );
                                   },
                                 );
@@ -351,11 +430,13 @@ class _NotesScreenState extends State<NotesScreen>
                             ),
                           ),
                         ),
-            ),
-          ],
+                ),
+              ),
+            ],
+          ),
         ),
       ),
-    ));
+    );
   }
 }
 
@@ -425,7 +506,6 @@ class _NoteCard extends StatelessWidget {
                   Text(
                     formattedDate,
                     style: TextStyle(
-      
                       fontStyle: FontStyle.italic,
                       fontSize: 11.sp,
                       color: AppColors.softBrown,
@@ -452,7 +532,6 @@ class _NoteCard extends StatelessWidget {
                         Text(
                           label,
                           style: TextStyle(
-            
                             fontSize: 11.sp,
                             color: accent,
                             fontWeight: FontWeight.bold,
@@ -466,7 +545,8 @@ class _NoteCard extends StatelessWidget {
               SizedBox(height: 12.h),
 
               // Note Title
-              if (note['title'] != null && note['title'].toString().isNotEmpty) ...[
+              if (note['title'] != null &&
+                  note['title'].toString().isNotEmpty) ...[
                 Text(
                   note['title'],
                   style: GoogleFonts.outfit(
@@ -514,7 +594,10 @@ class _NoteCard extends StatelessWidget {
                         color: Colors.white24,
                         borderRadius: BorderRadius.circular(16.r),
                       ),
-                      child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+                      child: const Icon(
+                        Icons.broken_image_outlined,
+                        color: Colors.grey,
+                      ),
                     ),
                   ),
                 ),
