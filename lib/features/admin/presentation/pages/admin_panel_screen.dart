@@ -383,9 +383,12 @@ class _UsersTab extends StatelessWidget {
                                 ),
                               ),
                               4.verticalSpace,
-                              Row(
+                              Wrap(
+                                spacing: 8.w,
+                                runSpacing: 4.h,
+                                crossAxisAlignment: WrapCrossAlignment.center,
                                 children: [
-                                  if (platform != null) ...[
+                                  if (platform != null)
                                     Container(
                                       padding: EdgeInsets.symmetric(
                                         horizontal: 6.w,
@@ -405,10 +408,9 @@ class _UsersTab extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    6.horizontalSpace,
-                                  ],
                                   if (partnerUid != null)
                                     Row(
+                                      mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Icon(
                                           Icons.favorite_rounded,
@@ -425,38 +427,44 @@ class _UsersTab extends StatelessWidget {
                                         ),
                                       ],
                                     ),
-                                  if (lastSeenStr != null) ...[
-                                    8.horizontalSpace,
-                                    Icon(
-                                      Icons.access_time_rounded,
-                                      color: _textSecondary,
-                                      size: 10.r,
+                                  if (lastSeenStr != null)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.access_time_rounded,
+                                          color: _textSecondary,
+                                          size: 11.r,
+                                        ),
+                                        3.horizontalSpace,
+                                        Text(
+                                          lastSeenStr,
+                                          style: GoogleFonts.outfit(
+                                            color: _textSecondary,
+                                            fontSize: 10.sp,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    3.horizontalSpace,
-                                    Text(
-                                      lastSeenStr,
-                                      style: GoogleFonts.jetBrainsMono(
-                                        color: _textSecondary,
-                                        fontSize: 9.sp,
-                                      ),
+                                  if (relDateStr != null)
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Icon(
+                                          Icons.calendar_today_rounded,
+                                          color: _success,
+                                          size: 10.r,
+                                        ),
+                                        3.horizontalSpace,
+                                        Text(
+                                          relDateStr,
+                                          style: GoogleFonts.jetBrainsMono(
+                                            color: _success,
+                                            fontSize: 9.sp,
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                  if (relDateStr != null) ...[
-                                    8.horizontalSpace,
-                                    Icon(
-                                      Icons.calendar_today_rounded,
-                                      color: _success,
-                                      size: 10.r,
-                                    ),
-                                    3.horizontalSpace,
-                                    Text(
-                                      relDateStr,
-                                      style: GoogleFonts.jetBrainsMono(
-                                        color: _success,
-                                        fontSize: 9.sp,
-                                      ),
-                                    ),
-                                  ],
                                 ],
                               ),
                             ],
