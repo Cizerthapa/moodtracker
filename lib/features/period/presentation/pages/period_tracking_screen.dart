@@ -100,26 +100,130 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       builder: (_, __, ___) => Scaffold(
         backgroundColor: AppColors.cream,
         body: SafeArea(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(),
-              _buildTabs(),
-              Expanded(
-                child: StreamBuilder<List<PeriodCycle>>(
-                  stream: _repo.getPeriodsStream(),
-                  builder: (context, snapshot) {
-                    if (!snapshot.hasData) return _buildShimmer();
-                    final cycles = snapshot.data!;
-                    return _selectedTab == 0
-                        ? _buildCalendarTab(cycles)
-                        : _buildHistoryTab(cycles);
-                  },
-                ),
-              ),
-            ],
+          child: StreamBuilder<List<PeriodCycle>>(
+            stream: _repo.getPeriodsStream(),
+            builder: (context, snapshot) {
+              final cycles = snapshot.data ?? [];
+              final nextPeriod = _predictNext(cycles);
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildHeader(),
+                  _buildTabs(),
+                  if (snapshot.hasData && nextPeriod != null)
+                    _buildNextPeriodBanner(nextPeriod),
+                  Expanded(
+                    child: !snapshot.hasData
+                        ? _buildShimmer()
+                        : _selectedTab == 0
+                            ? _buildCalendarTab(cycles)
+                            : _buildHistoryTab(cycles),
+                  ),
+                ],
+              );
+            },
           ),
         ),
+      ),
+    );
+  }
+
+  // ── Next Period Banner ─────────────────────────────────────────────────────
+
+  Widget _buildNextPeriodBanner(DateTime nextPeriod) {
+    final daysUntil = nextPeriod.difference(
+      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
+    ).inDays;
+    final isPast = daysUntil < 0;
+    final isToday = daysUntil == 0;
+    final isSoon = daysUntil > 0 && daysUntil <= 3;
+
+    final Color bannerColor = isPast
+        ? const Color(0xFFE8789A)
+        : isToday
+            ? const Color(0xFFE8789A)
+            : isSoon
+                ? const Color(0xFF9B7EC8)
+                : const Color(0xFF9B7EC8);
+
+    String label;
+    String sublabel;
+    if (isToday) {
+      label = 'Period expected today';
+      sublabel = 'Based on your cycle history';
+    } else if (isPast) {
+      label = 'Period was expected ${daysUntil.abs()} day${daysUntil.abs() == 1 ? '' : 's'} ago';
+      sublabel = 'Have you logged it?';
+    } else if (isSoon) {
+      label = 'Period in $daysUntil day${daysUntil == 1 ? '' : 's'}';
+      sublabel = 'Heads up — it\'s coming soon!';
+    } else {
+      label = 'Next period in $daysUntil days';
+      sublabel = DateFormat('MMMM d').format(nextPeriod) + ' · estimated';
+    }
+
+    return Container(
+      margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 12.h),
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [
+            bannerColor.withValues(alpha: 0.13),
+            bannerColor.withValues(alpha: 0.06),
+          ],
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+        ),
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: bannerColor.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: EdgeInsets.all(8.r),
+            decoration: BoxDecoration(
+              color: bannerColor.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              isPast ? Icons.warning_amber_rounded : Icons.calendar_today_rounded,
+              size: 18.r,
+              color: bannerColor,
+            ),
+          ),
+          SizedBox(width: 12.w),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: GoogleFonts.outfit(
+                    fontSize: 14.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppColors.warmBrown,
+                  ),
+                ),
+                Text(
+                  sublabel,
+                  style: GoogleFonts.outfit(
+                    fontSize: 11.sp,
+                    color: AppColors.softBrown,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Text(
+            DateFormat('MMM d').format(nextPeriod),
+            style: GoogleFonts.outfit(
+              fontSize: 15.sp,
+              fontWeight: FontWeight.w800,
+              color: bannerColor,
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -275,6 +379,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       ),
     );
   }
+
 
   Widget _buildPhaseCard(PeriodCycle recentCycle, int avgCycleLength) {
     final today = DateTime.now();
