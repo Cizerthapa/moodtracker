@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/core/models/user_profile_model.dart';
+import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/auth/presentation/pages/login_screen.dart';
 import 'package:moodtrack/features/entry/presentation/pages/entry_screen.dart';
 
@@ -11,7 +14,7 @@ class AuthWrapper extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<User?>(
-      stream: AuthRepository().authStateChanges,
+      stream: sl<AuthRepository>().authStateChanges,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -32,7 +35,7 @@ class AuthWrapper extends StatelessWidget {
   }
 
   Future<void> _onUserLoggedIn(User user) async {
-    final repo = UserRepository();
+    final repo = sl<UserRepository>();
     // Fire and forget — don't block the UI
     repo.updateLastSeen();
     repo.refreshFcmToken(user.uid);

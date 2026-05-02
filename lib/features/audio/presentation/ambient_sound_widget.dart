@@ -3,6 +3,8 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/audio/ambient_sound_service.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 
 class AmbientSoundWidget extends StatefulWidget {
   const AmbientSoundWidget({super.key});
@@ -12,7 +14,7 @@ class AmbientSoundWidget extends StatefulWidget {
 }
 
 class _AmbientSoundWidgetState extends State<AmbientSoundWidget> {
-  final AmbientSoundService _soundService = AmbientSoundService();
+  final AmbientSoundService _soundService = sl<AmbientSoundService>();
   bool _isExpanded = false;
 
   void _toggleTrack(String trackName) async {

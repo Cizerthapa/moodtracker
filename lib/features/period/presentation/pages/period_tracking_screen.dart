@@ -10,6 +10,8 @@ import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/period/domain/model/period_cycle_model.dart';
 import 'package:moodtrack/features/period/data/repositories/period_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 import 'package:moodtrack/features/period/presentation/pages/log_period_screen.dart';
 
 const Color _kCycleColor = Color(0xFF9B7EC8);
@@ -24,7 +26,7 @@ class PeriodTrackingScreen extends StatefulWidget {
 }
 
 class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
-  final PeriodRepository _repo = PeriodRepository();
+  final PeriodRepository _repo = sl<PeriodRepository>();
   final String _uid = FirebaseAuth.instance.currentUser?.uid ?? '';
   DateTime _focusedMonth =
       DateTime(DateTime.now().year, DateTime.now().month);

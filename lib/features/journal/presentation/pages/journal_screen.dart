@@ -11,6 +11,8 @@ import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/journal/presentation/pages/add_journal_entry_screen.dart';
 
 // Mood metadata matching the original NotesScreen style
@@ -68,7 +70,7 @@ class JournalScreen extends StatefulWidget {
 
 class _JournalScreenState extends State<JournalScreen>
     with SingleTickerProviderStateMixin {
-  final JournalRepository _repository = JournalRepository();
+  final JournalRepository _repository = sl<JournalRepository>();
   bool _isLoading = false;
   bool _encryptionEnabled = false;
   int _selectedTab = 0; // 0 = Entries, 1 = Graph
@@ -93,21 +95,33 @@ class _JournalScreenState extends State<JournalScreen>
   }
 
   Future<void> _loadEncryptionSetting() async {
-    final enabled = await _repository.getEncryptionEnabled();
-    if (mounted) setState(() => _encryptionEnabled = enabled);
+    final result = await _repository.getEncryptionEnabled();
+    if (result is Success<bool> && mounted) {
+      setState(() => _encryptionEnabled = result.data);
+    }
   }
 
   Future<void> _addJournal(String? title, String text, String emoji) async {
-    await _repository.addJournal(
+    final result = await _repository.addJournal(
       title: title,
       text: text,
       mood: emoji,
       encrypt: _encryptionEnabled,
     );
+    if (result is Failure && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+    }
   }
 
   Future<void> _deleteJournal(String id) async {
-    await _repository.deleteJournal(id);
+    final result = await _repository.deleteJournal(id);
+    if (result is Failure && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+    }
   }
 
   void _showAddEntryScreen() {

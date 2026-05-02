@@ -10,6 +10,9 @@ import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
+
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -92,7 +95,7 @@ class WaterIntakeScreen extends StatefulWidget {
 
 class _WaterIntakeScreenState extends State<WaterIntakeScreen>
     with SingleTickerProviderStateMixin {
-  final WaterRepository _repository = WaterRepository();
+  final WaterRepository _repository = sl<WaterRepository>();
   int _currentIntake = 0;
   final int _dailyGoal = AppConstants.defaultDailyWaterGoal;
   List<DrinkEntry> _history = [];
@@ -115,8 +118,14 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
 
   Future<void> _changeUnit(HydrationUnit newUnit) async {
     if (_selectedUnit == newUnit) return;
-    await _repository.setHydrationUnit(newUnit.name);
-    setState(() => _selectedUnit = newUnit);
+    final result = await _repository.setHydrationUnit(newUnit.name);
+    if (result is Success) {
+      setState(() => _selectedUnit = newUnit);
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+    }
   }
 
   List<double> get _quickAddOptions {
@@ -151,8 +160,24 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
 
   Future<void> _loadData() async {
     setState(() => _isLoading = true);
-    final historyJson = await _repository.getDrinkHistoryStrings();
-    final unitStr = await _repository.getHydrationUnit();
+    
+    final historyResult = await _repository.getDrinkHistoryStrings();
+    final unitResult = await _repository.getHydrationUnit();
+
+    if (historyResult is Failure || unitResult is Failure) {
+      if (mounted) {
+        final msg = historyResult is Failure 
+            ? (historyResult as Failure).message 
+            : (unitResult as Failure).message;
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+        setState(() => _isLoading = false);
+      }
+      return;
+    }
+
+    final historyJson = (historyResult as Success<List<String>>).data;
+    final unitStr = (unitResult as Success<String>).data;
+    
     HydrationUnit savedUnit = HydrationUnit.ml;
     try {
       savedUnit = HydrationUnit.values.firstWhere((e) => e.name == unitStr);
@@ -185,16 +210,38 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
       timestamp: DateTime.now(),
     );
 
-    await _repository.addDrink(json.encode(entry.toJson()));
-    await _loadData();
+    final result = await _repository.addDrink(json.encode(entry.toJson()));
+    if (result is Success) {
+      await _loadData();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+    }
   }
 
   Future<void> _deleteDrink(int index) async {
-    final historyJson = await _repository.getDrinkHistoryStrings();
+    final historyResult = await _repository.getDrinkHistoryStrings();
+    if (historyResult is Failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text((historyResult as Failure).message)),
+        );
+      }
+      return;
+    }
+
+    final historyJson = (historyResult as Success<List<String>>).data;
     final originalIndex = historyJson.length - 1 - index;
 
-    await _repository.deleteDrink(originalIndex);
-    await _loadData();
+    final result = await _repository.deleteDrink(originalIndex);
+    if (result is Success) {
+      await _loadData();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+    }
   }
 
   @override

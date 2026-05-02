@@ -4,8 +4,11 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/models/user_profile_model.dart';
 import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/models/journal_entry_model.dart';
+import 'package:moodtrack/core/error/result.dart';
 
 class AdminPanelScreen extends StatefulWidget {
   const AdminPanelScreen({super.key});
@@ -16,7 +19,7 @@ class AdminPanelScreen extends StatefulWidget {
 
 class _AdminPanelScreenState extends State<AdminPanelScreen>
     with SingleTickerProviderStateMixin {
-  final AdminRepository _repo = AdminRepository();
+  final AdminRepository _repo = sl<AdminRepository>();
   late TabController _tabController;
   Map<String, int> _stats = {};
   bool _loadingStats = true;
@@ -39,10 +42,16 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   }
 
   Future<void> _loadStats() async {
-    final stats = await _repo.getStats();
+    final result = await _repo.getStats();
     if (mounted) {
       setState(() {
-        _stats = stats;
+        if (result is Success<Map<String, int>>) {
+          _stats = result.data;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+          );
+        }
         _loadingStats = false;
       });
     }
@@ -561,15 +570,24 @@ class _UsersTab extends StatelessWidget {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await repo.deleteUserData(uid);
+              final result = await repo.deleteUserData(uid);
               if (context.mounted) {
-                HapticFeedback.heavyImpact();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('User $email deleted.'),
-                    backgroundColor: _danger,
-                  ),
-                );
+                if (result is Success) {
+                  HapticFeedback.heavyImpact();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('User $email and all their data deleted.'),
+                      backgroundColor: _danger,
+                    ),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text((result as Failure).message),
+                      backgroundColor: _danger,
+                    ),
+                  );
+                }
               }
             },
             style: ElevatedButton.styleFrom(
@@ -635,10 +653,16 @@ class _MemoriesTabState extends State<_MemoriesTab> {
       _loadingMemories = true;
       _memories = [];
     });
-    final mems = await widget.repo.getUserMemories(uid);
+    final result = await widget.repo.getUserMemories(uid);
     if (mounted) {
       setState(() {
-        _memories = mems;
+        if (result is Success<List<MemoryModel>>) {
+          _memories = result.data;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+          );
+        }
         _loadingMemories = false;
       });
     }
@@ -829,8 +853,14 @@ class _MemoriesTabState extends State<_MemoriesTab> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await widget.repo.deleteMemory(_selectedUid!, mem.id!);
-              _loadMemories(_selectedUid!);
+              final result = await widget.repo.deleteMemory(_selectedUid!, mem.id!);
+              if (result is Success) {
+                _loadMemories(_selectedUid!);
+              } else if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _danger,
@@ -892,10 +922,16 @@ class _JournalsTabState extends State<_JournalsTab> {
       _loadingJournals = true;
       _journals = [];
     });
-    final entries = await widget.repo.getUserJournals(uid);
+    final result = await widget.repo.getUserJournals(uid);
     if (mounted) {
       setState(() {
-        _journals = entries;
+        if (result is Success<List<JournalEntry>>) {
+          _journals = result.data;
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+          );
+        }
         _loadingJournals = false;
       });
     }
@@ -1099,8 +1135,14 @@ class _JournalsTabState extends State<_JournalsTab> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              await widget.repo.deleteJournal(_selectedUid!, entry.id);
-              _loadJournals(_selectedUid!);
+              final result = await widget.repo.deleteJournal(_selectedUid!, entry.id);
+              if (result is Success) {
+                _loadJournals(_selectedUid!);
+              } else if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+                );
+              }
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: _danger,
@@ -1238,7 +1280,14 @@ class _BroadcastTabState extends State<_BroadcastTab> {
                         color: _danger,
                         size: 18.r,
                       ),
-                      onPressed: () => widget.repo.clearBroadcast(),
+                      onPressed: () async {
+                        final result = await widget.repo.clearBroadcast();
+                        if (result is Failure && context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+                          );
+                        }
+                      },
                     ),
                   ],
                 ),
@@ -1378,19 +1427,26 @@ class _BroadcastTabState extends State<_BroadcastTab> {
       return;
     }
     setState(() => _sending = true);
-    await widget.repo.sendBroadcast(msg, type: _selectedType);
+    final result = await widget.repo.sendBroadcast(msg, type: _selectedType);
     if (mounted) {
-      setState(() {
-        _sending = false;
-        _messageController.clear();
-      });
-      HapticFeedback.lightImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Broadcast sent!', style: GoogleFonts.outfit()),
-          backgroundColor: _success,
-        ),
-      );
+      setState(() => _sending = false);
+      if (result is Success) {
+        setState(() => _messageController.clear());
+        HapticFeedback.lightImpact();
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Broadcast sent!', style: GoogleFonts.outfit()),
+            backgroundColor: _success,
+          ),
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text((result as Failure).message, style: GoogleFonts.outfit()),
+            backgroundColor: _danger,
+          ),
+        );
+      }
     }
   }
 }

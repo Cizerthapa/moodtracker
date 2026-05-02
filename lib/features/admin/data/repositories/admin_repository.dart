@@ -3,11 +3,10 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:moodtrack/core/models/user_profile_model.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/models/journal_entry_model.dart';
+import 'package:moodtrack/core/error/result.dart';
 
 class AdminRepository {
-  AdminRepository._internal();
-  static final AdminRepository _instance = AdminRepository._internal();
-  factory AdminRepository() => _instance;
+  AdminRepository();
 
   static const String adminEmail = 'cizerthapa@gmail.com';
 
@@ -15,59 +14,87 @@ class AdminRepository {
 
   // ── Users ────────────────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>?> getUserProfile(String uid) async {
+  Future<Result<Map<String, dynamic>?>> getUserProfile(String uid) async {
     log('Firestore [Admin]: Fetching profile for $uid', name: 'Firebase');
-    final doc = await _firestore.collection('users').doc(uid).get();
-    if (!doc.exists) {
-      log('Firestore [Admin]: Profile for $uid not found', name: 'Firebase');
-      return null;
+    try {
+      final doc = await _firestore.collection('users').doc(uid).get();
+      if (!doc.exists) {
+        log('Firestore [Admin]: Profile for $uid not found', name: 'Firebase');
+        return const Success(null);
+      }
+      final data = doc.data()!;
+      data['uid'] = doc.id;
+      log('Firestore [Admin]: Profile for $uid retrieved successfully', name: 'Firebase');
+      return Success(data);
+    } catch (e) {
+      log('Firestore [Admin]: Error fetching profile: $e', name: 'Firebase');
+      return Failure('Failed to fetch user profile', error: e);
     }
-    final data = doc.data()!;
-    data['uid'] = doc.id;
-    log('Firestore [Admin]: Profile for $uid retrieved successfully', name: 'Firebase');
-    return data;
   }
 
-  Future<void> deleteUserData(String uid) async {
+  Future<Result<void>> deleteUserData(String uid) async {
     log('Firestore [Admin]: Deleting all data for $uid', name: 'Firebase');
-    // Delete all sub-collections
-    final collections = [
-      'memories',
-      'journal',
-      'waterIntake',
-      'notes',
-      'moodEntries',
-    ];
-    for (final col in collections) {
-      log('Firestore [Admin]: Deleting sub-collection $col for $uid', name: 'Firebase');
-      final snap = await _firestore
-          .collection('users')
-          .doc(uid)
-          .collection(col)
-          .get();
-      final batch = _firestore.batch();
-      for (final doc in snap.docs) {
-        batch.delete(doc.reference);
+    try {
+      // Delete all sub-collections
+      final collections = [
+        'memories',
+        'journal',
+        'waterIntake',
+        'notes',
+        'moodEntries',
+      ];
+      for (final col in collections) {
+        log('Firestore [Admin]: Deleting sub-collection $col for $uid', name: 'Firebase');
+        final snap = await _firestore
+            .collection('users')
+            .doc(uid)
+            .collection(col)
+            .get();
+        final batch = _firestore.batch();
+        for (final doc in snap.docs) {
+          batch.delete(doc.reference);
+        }
+        await batch.commit();
+        log('Firestore [Admin]: Sub-collection $col deleted', name: 'Firebase');
       }
-      await batch.commit();
-      log('Firestore [Admin]: Sub-collection $col deleted', name: 'Firebase');
+      // Delete user document itself
+      log('Firestore [Admin]: Deleting user document $uid', name: 'Firebase');
+      await _firestore.collection('users').doc(uid).delete();
+      log('Firestore [Admin]: User $uid fully deleted', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error deleting user data: $e', name: 'Firebase');
+      return Failure('Failed to delete user data', error: e);
     }
-    // Delete user document itself
-    log('Firestore [Admin]: Deleting user document $uid', name: 'Firebase');
-    await _firestore.collection('users').doc(uid).delete();
-    log('Firestore [Admin]: User $uid fully deleted', name: 'Firebase');
   }
 
   // ── Full Profile ─────────────────────────────────────────────────────────
 
   /// Returns a [UserProfile] populated with both journals and memories.
-  Future<UserProfile?> getUserFullProfile(String uid) async {
-    final profileData = await getUserProfile(uid);
-    if (profileData == null) return null;
-    final profile = UserProfile.fromMap(profileData, uid);
-    final journals = await getUserJournals(uid);
-    final memories = await getUserMemories(uid);
-    return profile.withCollections(journals: journals, memories: memories);
+  Future<Result<UserProfile?>> getUserFullProfile(String uid) async {
+    try {
+      final profileResult = await getUserProfile(uid);
+      if (profileResult is Failure) return Failure((profileResult as Failure).message);
+      
+      final profileData = (profileResult as Success<Map<String, dynamic>?>).data;
+      if (profileData == null) return const Success(null);
+      
+      final profile = UserProfile.fromMap(profileData, uid);
+      
+      final journalsResult = await getUserJournals(uid);
+      if (journalsResult is Failure) return Failure((journalsResult as Failure).message);
+      
+      final memoriesResult = await getUserMemories(uid);
+      if (memoriesResult is Failure) return Failure((memoriesResult as Failure).message);
+      
+      return Success(profile.withCollections(
+        journals: (journalsResult as Success<List<JournalEntry>>).data,
+        memories: (memoriesResult as Success<List<MemoryModel>>).data,
+      ));
+    } catch (e) {
+      log('Firestore [Admin]: Error fetching full profile: $e', name: 'Firebase');
+      return Failure('Failed to fetch full user profile', error: e);
+    }
   }
   // ── Fix: return Stream<List<UserProfile>> instead of raw maps ──────────────
 
@@ -85,83 +112,125 @@ class AdminRepository {
 
   // ── Journals ──────────────────────────────────────────────────────────────
 
-  Future<List<JournalEntry>> getUserJournals(String uid) async {
+  Future<Result<List<JournalEntry>>> getUserJournals(String uid) async {
     log('Firestore [Admin]: Fetching journals for $uid', name: 'Firebase');
-    final snap = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('journals')
-        .orderBy('timestamp', descending: true)
-        .get();
-    log('Firestore [Admin]: Fetched ${snap.docs.length} journals for $uid', name: 'Firebase');
-    return snap.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList();
+    try {
+      final snap = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('journals')
+          .orderBy('timestamp', descending: true)
+          .get();
+      log('Firestore [Admin]: Fetched ${snap.docs.length} journals for $uid', name: 'Firebase');
+      final journals = snap.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList();
+      return Success(journals);
+    } catch (e) {
+      log('Firestore [Admin]: Error fetching journals: $e', name: 'Firebase');
+      return Failure('Failed to fetch user journals', error: e);
+    }
   }
 
-  Future<void> deleteJournal(String uid, String journalId) async {
+  Future<Result<void>> deleteJournal(String uid, String journalId) async {
     log('Firestore [Admin]: Deleting journal $journalId for $uid', name: 'Firebase');
-    await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('journals')
-        .doc(journalId)
-        .delete();
-    log('Firestore [Admin]: Journal $journalId deleted', name: 'Firebase');
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('journals')
+          .doc(journalId)
+          .delete();
+      log('Firestore [Admin]: Journal $journalId deleted', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error deleting journal: $e', name: 'Firebase');
+      return Failure('Failed to delete journal entry', error: e);
+    }
   }
   // ── Memories ─────────────────────────────────────────────────────────────
 
-  Future<List<MemoryModel>> getUserMemories(String uid) async {
+  Future<Result<List<MemoryModel>>> getUserMemories(String uid) async {
     log('Firestore [Admin]: Fetching memories for $uid', name: 'Firebase');
-    final snap = await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('memories')
-        .orderBy('timestamp', descending: true)
-        .get();
-    log('Firestore [Admin]: Fetched ${snap.docs.length} memories for $uid', name: 'Firebase');
-    return snap.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
+    try {
+      final snap = await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('memories')
+          .orderBy('timestamp', descending: true)
+          .get();
+      log('Firestore [Admin]: Fetched ${snap.docs.length} memories for $uid', name: 'Firebase');
+      final memories = snap.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
+      return Success(memories);
+    } catch (e) {
+      log('Firestore [Admin]: Error fetching memories: $e', name: 'Firebase');
+      return Failure('Failed to fetch user memories', error: e);
+    }
   }
 
-  Future<void> deleteMemory(String uid, String memoryId) async {
+  Future<Result<void>> deleteMemory(String uid, String memoryId) async {
     log('Firestore [Admin]: Deleting memory $memoryId for $uid', name: 'Firebase');
-    await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('memories')
-        .doc(memoryId)
-        .delete();
-    log('Firestore [Admin]: Memory $memoryId deleted', name: 'Firebase');
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('memories')
+          .doc(memoryId)
+          .delete();
+      log('Firestore [Admin]: Memory $memoryId deleted', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error deleting memory: $e', name: 'Firebase');
+      return Failure('Failed to delete memory entry', error: e);
+    }
   }
 
-  Future<void> updateMemory(
+  Future<Result<void>> updateMemory(
     String uid,
     String memoryId,
     Map<String, dynamic> data,
   ) async {
     log('Firestore [Admin]: Updating memory $memoryId for $uid', name: 'Firebase');
-    await _firestore
-        .collection('users')
-        .doc(uid)
-        .collection('memories')
-        .doc(memoryId)
-        .update(data);
-    log('Firestore [Admin]: Memory $memoryId updated', name: 'Firebase');
+    try {
+      await _firestore
+          .collection('users')
+          .doc(uid)
+          .collection('memories')
+          .doc(memoryId)
+          .update(data);
+      log('Firestore [Admin]: Memory $memoryId updated', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error updating memory: $e', name: 'Firebase');
+      return Failure('Failed to update memory', error: e);
+    }
   }
 
   // ── Broadcast ─────────────────────────────────────────────────────────────
 
-  Future<void> sendBroadcast(String message, {String type = 'info'}) async {
+  Future<Result<void>> sendBroadcast(String message, {String type = 'info'}) async {
     log('Firestore [Admin]: Sending broadcast', name: 'Firebase');
-    await _firestore.collection('broadcasts').doc('latest').set({
-      'message': message,
-      'type': type,
-      'sentAt': FieldValue.serverTimestamp(),
-      'sentBy': adminEmail,
-    });
-    log('Firestore [Admin]: Broadcast sent', name: 'Firebase');
+    try {
+      await _firestore.collection('broadcasts').doc('latest').set({
+        'message': message,
+        'type': type,
+        'sentAt': FieldValue.serverTimestamp(),
+        'sentBy': adminEmail,
+      });
+      log('Firestore [Admin]: Broadcast sent', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error sending broadcast: $e', name: 'Firebase');
+      return Failure('Failed to send broadcast', error: e);
+    }
   }
 
-  Future<void> clearBroadcast() async {
-    await _firestore.collection('broadcasts').doc('latest').delete();
+  Future<Result<void>> clearBroadcast() async {
+    try {
+      await _firestore.collection('broadcasts').doc('latest').delete();
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error clearing broadcast: $e', name: 'Firebase');
+      return Failure('Failed to clear broadcast', error: e);
+    }
   }
 
   Stream<DocumentSnapshot> getBroadcastStream() {
@@ -171,35 +240,40 @@ class AdminRepository {
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
-  Future<Map<String, int>> getStats() async {
+  Future<Result<Map<String, int>>> getStats() async {
     log('Firestore [Admin]: Fetching global stats', name: 'Firebase');
-    final usersSnap = await _firestore.collection('users').get();
-    log('Firestore [Admin]: Fetched ${usersSnap.size} users', name: 'Firebase');
-    int totalMemories = 0;
-    int totalJournals = 0;
+    try {
+      final usersSnap = await _firestore.collection('users').get();
+      log('Firestore [Admin]: Fetched ${usersSnap.size} users', name: 'Firebase');
+      int totalMemories = 0;
+      int totalJournals = 0;
 
-    for (final userDoc in usersSnap.docs) {
-      log('Firestore [Admin]: Fetching counts for user ${userDoc.id}', name: 'Firebase');
-      final memSnap = await _firestore
-          .collection('users')
-          .doc(userDoc.id)
-          .collection('memories')
-          .get();
-      totalMemories += memSnap.size;
+      for (final userDoc in usersSnap.docs) {
+        log('Firestore [Admin]: Fetching counts for user ${userDoc.id}', name: 'Firebase');
+        final memSnap = await _firestore
+            .collection('users')
+            .doc(userDoc.id)
+            .collection('memories')
+            .get();
+        totalMemories += memSnap.size;
 
-      final jSnap = await _firestore
-          .collection('users')
-          .doc(userDoc.id)
-          .collection('journals')
-          .get();
-      totalJournals += jSnap.size;
+        final jSnap = await _firestore
+            .collection('users')
+            .doc(userDoc.id)
+            .collection('journals')
+            .get();
+        totalJournals += jSnap.size;
+      }
+
+      log('Firestore [Admin]: Stats retrieved - Users: ${usersSnap.size}, Memories: $totalMemories, Journals: $totalJournals', name: 'Firebase');
+      return Success({
+        'users': usersSnap.size,
+        'memories': totalMemories,
+        'journals': totalJournals,
+      });
+    } catch (e) {
+      log('Firestore [Admin]: Error getting stats: $e', name: 'Firebase');
+      return Failure('Failed to fetch system statistics', error: e);
     }
-
-    log('Firestore [Admin]: Stats retrieved - Users: ${usersSnap.size}, Memories: $totalMemories, Journals: $totalJournals', name: 'Firebase');
-    return {
-      'users': usersSnap.size,
-      'memories': totalMemories,
-      'journals': totalJournals,
-    };
   }
 }

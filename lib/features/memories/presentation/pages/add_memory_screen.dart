@@ -7,6 +7,9 @@ import 'package:image_picker/image_picker.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
+
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 
 class AddMemoryScreen extends StatefulWidget {
@@ -17,7 +20,7 @@ class AddMemoryScreen extends StatefulWidget {
 }
 
 class _AddMemoryScreenState extends State<AddMemoryScreen> {
-  final MemoriesRepository _repository = MemoriesRepository();
+  final MemoriesRepository _repository = sl<MemoriesRepository>();
   
   final _titleController = TextEditingController();
   final _descController = TextEditingController();
@@ -80,10 +83,17 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
     );
 
     HapticFeedback.lightImpact();
-    await _repository.addMemory(newMemory);
+    final result = await _repository.addMemory(newMemory);
 
     if (mounted) {
-      Navigator.pop(context);
+      if (result is Success) {
+        Navigator.pop(context);
+      } else {
+        setState(() => _isUploading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text((result as Failure).message)),
+        );
+      }
     }
   }
 

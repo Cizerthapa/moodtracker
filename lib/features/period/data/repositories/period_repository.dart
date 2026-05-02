@@ -4,12 +4,12 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 import 'package:moodtrack/features/period/domain/model/period_cycle_model.dart';
 
 class PeriodRepository {
-  PeriodRepository._internal();
-  static final PeriodRepository _instance = PeriodRepository._internal();
-  factory PeriodRepository() => _instance;
+  PeriodRepository();
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -48,7 +48,7 @@ class PeriodRepository {
 
     StreamSubscription? partnerSub;
     final profileSub =
-        UserRepository().getUserProfileStream().listen((profile) {
+        sl<UserRepository>().getUserProfileStream().listen((profile) {
           if (profile?.partnerUid != null && partnerSub == null) {
             log('Firestore: Listening to partner periods for ${profile!.partnerUid}', name: 'Firebase');
             partnerSub = _firestore

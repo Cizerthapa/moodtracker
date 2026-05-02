@@ -12,6 +12,8 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
 import 'package:moodtrack/features/memories/presentation/pages/add_memory_screen.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
@@ -24,7 +26,7 @@ class MemoriesScreen extends StatefulWidget {
 
 class _MemoriesScreenState extends State<MemoriesScreen>
     with SingleTickerProviderStateMixin {
-  final MemoriesRepository _repository = MemoriesRepository();
+  final MemoriesRepository _repository = sl<MemoriesRepository>();
   bool _isLoading = true;
   List<MemoryModel> _memories = [];
   String _searchQuery = "";

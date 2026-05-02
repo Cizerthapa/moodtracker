@@ -9,6 +9,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/settings/data/repositories/settings_repository.dart';
 import 'package:moodtrack/core/widgets/auth_wrapper.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
+
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
@@ -20,7 +23,7 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen>
     with SingleTickerProviderStateMixin {
   final LocalAuthentication _auth = LocalAuthentication();
-  final SettingsRepository _repository = SettingsRepository();
+  final SettingsRepository _repository = sl<SettingsRepository>();
   late AnimationController _pulseController;
   late Animation<double> _pulseAnimation;
   bool _isAuthenticating = false;
@@ -64,7 +67,11 @@ class _SplashScreenState extends State<SplashScreen>
     await Future.delayed(const Duration(seconds: 2));
 
     // 2. Check Biometric Requirement
-    bool isEnabled = await _repository.getBiometricEnabled();
+    final bioResult = await _repository.getBiometricEnabled();
+    bool isEnabled = false;
+    if (bioResult is Success<bool>) {
+      isEnabled = bioResult.data;
+    }
 
     if (isEnabled) {
       bool canCheck = await _auth.canCheckBiometrics;

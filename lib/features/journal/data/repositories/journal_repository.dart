@@ -29,14 +29,25 @@ class JournalRepository {
 
   // ── Encryption preference ───────────────────────────────────────────────────
 
-  Future<bool> getEncryptionEnabled() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_encryptionPrefKey) ?? false;
+  Future<Result<bool>> getEncryptionEnabled() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return Success(prefs.getBool(_encryptionPrefKey) ?? false);
+    } catch (e) {
+      log('Preferences: Error getting encryption setting: $e', name: 'Preferences');
+      return Failure('Failed to load encryption setting', error: e);
+    }
   }
 
-  Future<void> setEncryptionEnabled(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(_encryptionPrefKey, value);
+  Future<Result<void>> setEncryptionEnabled(bool value) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_encryptionPrefKey, value);
+      return const Success(null);
+    } catch (e) {
+      log('Preferences: Error setting encryption: $e', name: 'Preferences');
+      return Failure('Failed to save encryption setting', error: e);
+    }
   }
 
   // ── CRUD ───────────────────────────────────────────────────────────────────

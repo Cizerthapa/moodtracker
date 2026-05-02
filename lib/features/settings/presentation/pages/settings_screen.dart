@@ -30,12 +30,12 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  final SettingsRepository _repository = SettingsRepository();
-  final JournalRepository _journalRepository = JournalRepository();
+  final SettingsRepository _repository = sl<SettingsRepository>();
+  final JournalRepository _journalRepository = sl<JournalRepository>();
   bool _notificationsEnabled = false;
   bool _journalEncryptionEnabled = false;
   bool _biometricEnabled = false;
-  final NotificationService _notificationService = NotificationService();
+  final NotificationService _notificationService = sl<NotificationService>();
 
   @override
   void initState() {
@@ -44,19 +44,30 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final enabled = await _repository.getNotificationsEnabled();
-    final encEnabled = await _journalRepository.getEncryptionEnabled();
-    final bioEnabled = await _repository.getBiometricEnabled();
+    final notifResult = await _repository.getNotificationsEnabled();
+    final encResult = await _journalRepository.getEncryptionEnabled();
+    final bioResult = await _repository.getBiometricEnabled();
+
     setState(() {
-      _notificationsEnabled = enabled;
-      _journalEncryptionEnabled = encEnabled;
-      _biometricEnabled = bioEnabled;
+      if (notifResult is Success<bool>) _notificationsEnabled = notifResult.data;
+      if (encResult is Success<bool>) _journalEncryptionEnabled = encResult.data;
+      if (bioResult is Success<bool>) _biometricEnabled = bioResult.data;
     });
   }
 
   Future<void> _toggleNotifications(bool value) async {
     HapticFeedback.selectionClick();
-    await _repository.setNotificationsEnabled(value);
+    final result = await _repository.setNotificationsEnabled(value);
+    
+    if (result is Failure) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text((result as Failure).message)),
+        );
+      }
+      return;
+    }
+
     setState(() {
       _notificationsEnabled = value;
     });
@@ -129,9 +140,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   } else {
                     message = (result as Failure).message;
                   }
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(message)),
-                  );
+                  ScaffoldMessenger.of(
+                    context,
+                  ).showSnackBar(SnackBar(content: Text(message)));
                 }
               }
             },
@@ -204,12 +215,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
             // ── Divider ────────────────────────────────────────────
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 28.w),
-              child: Divider(
-                color: AppColors.roseDust.withValues(alpha: 0.25),
-                thickness: 1,
-              ),
-            )
+                  padding: EdgeInsets.symmetric(horizontal: 28.w),
+                  child: Divider(
+                    color: AppColors.roseDust.withValues(alpha: 0.25),
+                    thickness: 1,
+                  ),
+                )
                 .animate()
                 .fadeIn(delay: 300.ms, duration: 400.ms)
                 .scaleX(
@@ -227,26 +238,44 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 children: [
                   // ── Theme Section ──────────────────────────────
                   Text(
-                    'Application Theme',
-                    style: GoogleFonts.outfit(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.warmBrown,
-                    ),
-                  ).animate().fadeIn(delay: 100.ms, duration: 400.ms).slideX(begin: -0.1, end: 0, delay: 100.ms, duration: 400.ms, curve: Curves.easeOutCubic),
+                        'Application Theme',
+                        style: GoogleFonts.outfit(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.warmBrown,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 100.ms, duration: 400.ms)
+                      .slideX(
+                        begin: -0.1,
+                        end: 0,
+                        delay: 100.ms,
+                        duration: 400.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
                   SizedBox(height: 16.h),
                   _buildThemeSelector(),
                   SizedBox(height: 36.h),
 
                   // ── Preferences Section ────────────────────────
                   Text(
-                    'Preferences',
-                    style: GoogleFonts.outfit(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.warmBrown,
-                    ),
-                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms).slideX(begin: -0.1, end: 0, delay: 200.ms, duration: 400.ms, curve: Curves.easeOutCubic),
+                        'Preferences',
+                        style: GoogleFonts.outfit(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.warmBrown,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 400.ms)
+                      .slideX(
+                        begin: -0.1,
+                        end: 0,
+                        delay: 200.ms,
+                        duration: 400.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
                   SizedBox(height: 16.h),
                   _buildSettingTile(
                     title: AppLocalizations.of(context)!.enableNotifications,
@@ -363,8 +392,26 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         );
                         try {
-                          await _journalRepository.migrateEncryption(value);
-                          await _journalRepository.setEncryptionEnabled(value);
+                          final migrationResult = await _journalRepository.migrateEncryption(value);
+                          if (migrationResult is Failure) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text((migrationResult as Failure).message)),
+                              );
+                            }
+                            return;
+                          }
+
+                          final setEncResult = await _journalRepository.setEncryptionEnabled(value);
+                          if (setEncResult is Failure) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text((setEncResult as Failure).message)),
+                              );
+                            }
+                            return;
+                          }
+
                           if (mounted) {
                             setState(() => _journalEncryptionEnabled = value);
                           }
@@ -394,13 +441,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SizedBox(height: 14.h),
                   // ── Couple Section ────────────────────────
                   Text(
-                    'Couple',
-                    style: GoogleFonts.outfit(
-                      fontSize: 20.sp,
-                      fontWeight: FontWeight.w700,
-                      color: AppColors.warmBrown,
-                    ),
-                  ).animate().fadeIn(delay: 650.ms, duration: 400.ms).slideX(begin: -0.1, end: 0, delay: 650.ms, duration: 400.ms, curve: Curves.easeOutCubic),
+                        'Couple',
+                        style: GoogleFonts.outfit(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.warmBrown,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(delay: 650.ms, duration: 400.ms)
+                      .slideX(
+                        begin: -0.1,
+                        end: 0,
+                        delay: 650.ms,
+                        duration: 400.ms,
+                        curve: Curves.easeOutCubic,
+                      ),
                   SizedBox(height: 16.h),
                   _buildSettingTile(
                     title: 'Link Partner',
@@ -449,7 +505,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     onTap: () async {
                       HapticFeedback.heavyImpact();
-                      await AuthRepository().signOut();
+                      await sl<AuthRepository>().signOut();
                       if (!context.mounted) return;
                       Navigator.of(context).pushAndRemoveUntil(
                         MaterialPageRoute(builder: (_) => const LoginScreen()),
@@ -682,14 +738,13 @@ class _AdminFooterState extends State<_AdminFooter>
   @override
   void initState() {
     super.initState();
-    _progressController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 10),
-    )..addStatusListener((status) {
-        if (status == AnimationStatus.completed) {
-          _onHoldComplete();
-        }
-      });
+    _progressController =
+        AnimationController(vsync: this, duration: const Duration(seconds: 10))
+          ..addStatusListener((status) {
+            if (status == AnimationStatus.completed) {
+              _onHoldComplete();
+            }
+          });
   }
 
   @override
@@ -706,17 +761,15 @@ class _AdminFooterState extends State<_AdminFooter>
         context,
         PageRouteBuilder(
           pageBuilder: (_, anim, __) => const AdminPanelScreen(),
-          transitionsBuilder: (_, anim, __, child) => FadeTransition(opacity: anim, child: child),
+          transitionsBuilder: (_, anim, __, child) =>
+              FadeTransition(opacity: anim, child: child),
           transitionDuration: const Duration(milliseconds: 400),
         ),
       );
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            '🔒 Not authorized.',
-            style: GoogleFonts.outfit(),
-          ),
+          content: Text('🔒 Not authorized.', style: GoogleFonts.outfit()),
           backgroundColor: const Color(0xFF21262D),
         ),
       );

@@ -81,7 +81,7 @@ class _TogetherSinceScreenState extends State<TogetherSinceScreen> {
     );
     if (picked != null) {
       setState(() => _isLoading = true);
-      await UserRepository().setRelationshipStartDate(picked);
+      await sl<UserRepository>().setRelationshipStartDate(picked);
       _startDate = picked;
       _startTimer();
       setState(() => _isLoading = false);

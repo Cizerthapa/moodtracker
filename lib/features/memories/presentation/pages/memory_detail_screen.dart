@@ -5,6 +5,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
@@ -32,7 +34,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
   late AnimationController _fadeController;
   late Animation<double> _heartAnim;
   late Animation<double> _fadeAnim;
-  final MemoriesRepository _repository = MemoriesRepository();
+  final MemoriesRepository _repository = sl<MemoriesRepository>();
   List<File> _additionalImages = [];
 
   @override
@@ -186,9 +188,19 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
 
     if (confirm) {
       if (_memory.id != null) {
-        await _repository.deleteMemory(_memory.id!);
+        final result = await _repository.deleteMemory(widget.memory.id!);
+        if (mounted) {
+          if (result is Success) {
+            Navigator.of(context).pop(); // Close dialog
+            Navigator.of(context).pop(); // Close detail screen
+          } else {
+            Navigator.of(context).pop(); // Close dialog
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(content: Text((result as Failure).message)),
+            );
+          }
+        }
       }
-      if (mounted) Navigator.pop(context);
     }
   }
 

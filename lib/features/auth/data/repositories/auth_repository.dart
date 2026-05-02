@@ -1,11 +1,11 @@
 import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+
 
 class AuthRepository {
-  AuthRepository._internal();
-  static final AuthRepository _instance = AuthRepository._internal();
-  factory AuthRepository() => _instance;
+  AuthRepository();
 
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
@@ -31,7 +31,7 @@ class AuthRepository {
     );
     log('FirebaseAuth: Signed up successfully for ${credential.user?.uid}', name: 'Firebase');
     if (credential.user != null) {
-      await UserRepository().createUserProfile(credential.user!);
+      await sl<UserRepository>().createUserProfile(credential.user!);
     }
     return credential;
   }

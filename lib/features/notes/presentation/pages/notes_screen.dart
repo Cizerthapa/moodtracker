@@ -6,10 +6,12 @@ import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
-import 'package:moodtrack/core/widgets/shimmer_loading.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
+import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:moodtrack/core/error/result.dart';
 import 'add_note_screen.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
@@ -31,8 +33,8 @@ class NotesScreen extends StatefulWidget {
 
 class _NotesScreenState extends State<NotesScreen>
     with SingleTickerProviderStateMixin {
-  final NotesRepository _repository = NotesRepository();
-  final StorageService _storageService = StorageService();
+  final NotesRepository _repository = sl<NotesRepository>();
+  final StorageService _storageService = sl<StorageService>();
   List<Map<String, dynamic>> _notes = [];
   bool _isLoading = true;
   String _searchQuery = "";
@@ -61,19 +63,27 @@ class _NotesScreenState extends State<NotesScreen>
 
   Future<void> _loadNotes() async {
     setState(() => _isLoading = true);
-    final notes = await _repository.getNotes();
-    if (mounted) {
-      setState(() {
-        _notes = notes;
-        _isLoading = false;
-      });
-      _fadeController.forward();
+    final result = await _repository.getNotes();
+    
+    if (result is Success<List<Map<String, dynamic>>>) {
+      if (mounted) {
+        setState(() {
+          _notes = result.data;
+          _isLoading = false;
+        });
+        _fadeController.forward();
+      }
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+      setState(() => _isLoading = false);
     }
   }
 
   Future<void> _saveNote(String title, String text, String emoji, String? imageUrl) async {
     final newNote = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(), // Add id for Dismissible
+      'id': DateTime.now().millisecondsSinceEpoch.toString(),
       'title': title,
       'text': text,
       'mood': emoji,
@@ -81,13 +91,27 @@ class _NotesScreenState extends State<NotesScreen>
       'date': DateTime.now().toIso8601String(),
     };
 
-    await _repository.saveNote(newNote);
-    _loadNotes();
+    final result = await _repository.saveNote(newNote);
+    if (result is Success) {
+      _loadNotes();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+    }
   }
 
   Future<void> _deleteNote(String id) async {
-    await _repository.deleteNote(id);
-    _loadNotes();
+    final result = await _repository.deleteNote(id);
+    if (result is Success) {
+      _loadNotes();
+    } else if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text((result as Failure).message)),
+      );
+      // Reload to restore the item if needed, though Dismissible might need manual refresh
+      _loadNotes();
+    }
   }
 
   Map<String, dynamic> _moodMeta(String emoji) =>
@@ -102,7 +126,15 @@ class _NotesScreenState extends State<NotesScreen>
             String? imageUrl;
             if (image != null) {
               final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
-              imageUrl = await _storageService.uploadFile(file: image, path: path);
+              final uploadResult = await _storageService.uploadFile(file: image, path: path);
+              if (uploadResult is Success<String>) {
+                imageUrl = uploadResult.data;
+              } else if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text((uploadResult as Failure).message)),
+                );
+                return;
+              }
             }
             await _saveNote(title, text, emoji, imageUrl);
           },

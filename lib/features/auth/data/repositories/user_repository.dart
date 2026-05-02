@@ -49,7 +49,7 @@ class UserRepository {
     final targetUid = uid ?? _auth.currentUser?.uid;
     if (targetUid == null) return;
 
-    final token = await FcmService().initAndGetToken();
+    final token = await sl<FcmService>().initAndGetToken();
     if (token == null) return;
 
     log('Firestore: Refreshing FCM token for $targetUid', name: 'Firebase');

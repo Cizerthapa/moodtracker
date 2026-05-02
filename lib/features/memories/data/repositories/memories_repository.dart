@@ -60,7 +60,7 @@ class MemoriesRepository {
         });
 
     StreamSubscription? partnerSub;
-    final userSub = UserRepository().getUserProfileStream().listen((profile) {
+    final userSub = sl<UserRepository>().getUserProfileStream().listen((profile) {
       final partnerUid = profile?.partnerUid;
       if (partnerUid != null && partnerSub == null) {
         log('Firestore: Listening to partner memories for $partnerUid', name: 'Firebase');
