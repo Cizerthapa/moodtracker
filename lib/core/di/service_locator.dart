@@ -11,6 +11,11 @@ import 'package:moodtrack/core/services/encryption_service.dart';
 import 'package:moodtrack/core/services/fcm_service.dart';
 import 'package:moodtrack/core/services/notification_service.dart';
 
+import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
+import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
+import 'package:moodtrack/core/services/storage_service.dart';
+import 'package:moodtrack/core/services/ui_state_manager.dart';
+
 final sl = GetIt.instance;
 
 Future<void> initServiceLocator() async {
@@ -23,6 +28,8 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => FcmService());
   sl.registerLazySingleton(() => NotificationService());
   sl.registerLazySingleton(() => AmbientSoundService());
+  sl.registerLazySingleton(() => StorageService());
+  sl.registerLazySingleton(() => UIStateManager());
 
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => UserRepository());
@@ -30,4 +37,6 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => SettingsRepository());
   sl.registerLazySingleton(() => WaterRepository());
   sl.registerLazySingleton(() => NotesRepository());
+  sl.registerLazySingleton(() => JournalRepository());
+  sl.registerLazySingleton(() => AdminRepository());
 }

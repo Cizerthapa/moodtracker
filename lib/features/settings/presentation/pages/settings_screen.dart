@@ -21,6 +21,7 @@ import 'package:moodtrack/features/memories/presentation/pages/together_since_sc
 import 'package:moodtrack/features/admin/presentation/pages/admin_panel_screen.dart';
 import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moodtrack/core/services/ui_state_manager.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -57,20 +58,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Future<void> _toggleNotifications(bool value) async {
     HapticFeedback.selectionClick();
-    final result = await _repository.setNotificationsEnabled(value);
     
-    if (result is Failure) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text((result as Failure).message)),
-        );
-      }
-      return;
-    }
+    final result = await _repository.setNotificationsEnabled(value);
+    if (!sl<UIStateManager>().handleResult(result)) return;
 
-    setState(() {
-      _notificationsEnabled = value;
-    });
+    setState(() => _notificationsEnabled = value);
 
     if (value) {
       await _notificationService.scheduleDailyNotifications();
