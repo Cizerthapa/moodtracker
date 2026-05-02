@@ -9,13 +9,25 @@ class UIStateManager extends ChangeNotifier {
   String? _errorMessage;
   bool _isOffline = false;
   late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
+  Future<void> Function()? _lastFailedTask;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
   bool get isOffline => _isOffline;
+  bool get canRetry => _lastFailedTask != null;
 
   UIStateManager() {
     _initConnectivity();
+  }
+
+  /// Retries the last task that failed.
+  Future<void> retryLastTask() async {
+    if (_lastFailedTask != null) {
+      final task = _lastFailedTask!;
+      _lastFailedTask = null; // Clear it before running
+      notifyListeners();
+      await runTask(task);
+    }
   }
 
   void _initConnectivity() {
