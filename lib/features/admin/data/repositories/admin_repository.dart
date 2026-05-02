@@ -209,13 +209,13 @@ class AdminRepository {
   Future<Result<void>> sendBroadcast(String message, {String type = 'info'}) async {
     log('Firestore [Admin]: Sending broadcast', name: 'Firebase');
     try {
-      await _firestore.collection('broadcasts').doc('latest').set({
+      await _firestore.collection('broadcasts').add({
         'message': message,
         'type': type,
         'sentAt': FieldValue.serverTimestamp(),
         'sentBy': adminEmail,
       });
-      log('Firestore [Admin]: Broadcast sent', name: 'Firebase');
+      log('Firestore [Admin]: Broadcast added to collection', name: 'Firebase');
       return const Success(null);
     } catch (e) {
       log('Firestore [Admin]: Error sending broadcast: $e', name: 'Firebase');
@@ -225,17 +225,27 @@ class AdminRepository {
 
   Future<Result<void>> clearBroadcast() async {
     try {
-      await _firestore.collection('broadcasts').doc('latest').delete();
+      final snap = await _firestore.collection('broadcasts').get();
+      final batch = _firestore.batch();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
       return const Success(null);
     } catch (e) {
-      log('Firestore [Admin]: Error clearing broadcast: $e', name: 'Firebase');
-      return Failure('Failed to clear broadcast', error: e);
+      log('Firestore [Admin]: Error clearing broadcasts: $e', name: 'Firebase');
+      return Failure('Failed to clear broadcasts', error: e);
     }
   }
 
-  Stream<DocumentSnapshot> getBroadcastStream() {
+  Stream<DocumentSnapshot?> getBroadcastStream() {
     log('Firestore [Admin]: Listening to broadcasts', name: 'Firebase');
-    return _firestore.collection('broadcasts').doc('latest').snapshots();
+    return _firestore
+        .collection('broadcasts')
+        .orderBy('sentAt', descending: true)
+        .limit(1)
+        .snapshots()
+        .map((snap) => snap.docs.isNotEmpty ? snap.docs.first : null);
   }
 
   // ── Push Notifications ───────────────────────────────────────────────────

@@ -97,7 +97,7 @@ class EntryScreen extends StatelessWidget {
                     .fadeIn(duration: 600.ms)
                     .slideY(begin: -0.2, end: 0, duration: 600.ms),
 
-                SizedBox(height: 48.h),
+                48.verticalSpace,
 
                 // ── Feature Cards ───────────────────────────────────────
                 Expanded(
@@ -113,7 +113,7 @@ class EntryScreen extends StatelessWidget {
                         routeName: AppRoutes.memories,
                         index: 0,
                       ),
-                      SizedBox(height: 20.h),
+                      20.verticalSpace,
                       _buildFeatureCard(
                         context,
                         title: l10n.hydrationTitle,
@@ -123,7 +123,7 @@ class EntryScreen extends StatelessWidget {
                         routeName: AppRoutes.water,
                         index: 1,
                       ),
-                      SizedBox(height: 20.h),
+                      20.verticalSpace,
                       _buildFeatureCard(
                         context,
                         title: l10n.journalTitle,
@@ -133,7 +133,7 @@ class EntryScreen extends StatelessWidget {
                         routeName: AppRoutes.journal,
                         index: 2,
                       ),
-                      SizedBox(height: 20.h),
+                      20.verticalSpace,
                       _buildFeatureCard(
                         context,
                         title: 'Cycle Tracker',
@@ -221,7 +221,7 @@ class EntryScreen extends StatelessWidget {
                   ),
                   child: Icon(icon, color: color, size: 28.r),
                 ),
-                SizedBox(width: 20.w),
+                20.horizontalSpace,
 
                 // ── Text ──────────────────────────────────────────────
                 Expanded(
@@ -236,7 +236,7 @@ class EntryScreen extends StatelessWidget {
                           color: AppColors.warmBrown,
                         ),
                       ),
-                      SizedBox(height: 6.h),
+                      6.verticalSpace,
                       Text(
                         subtitle,
                         style: GoogleFonts.outfit(

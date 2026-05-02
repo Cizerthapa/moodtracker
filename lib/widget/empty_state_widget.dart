@@ -19,7 +19,7 @@ class EmptyState extends StatelessWidget {
               size: 52.sp,
               color: AppColors.roseDust.withValues(alpha: 0.5),
             ),
-            SizedBox(height: 18.h),
+            18.verticalSpace,
             Text(
               'No memories yet',
               style: TextStyle(
@@ -29,7 +29,7 @@ class EmptyState extends StatelessWidget {
                 color: AppColors.warmBrown,
               ),
             ),
-            SizedBox(height: 10.h),
+            10.verticalSpace,
             Text(
               'Every adventure starts with a first step.\nAdd your first memory together.',
               textAlign: TextAlign.center,
@@ -41,7 +41,7 @@ class EmptyState extends StatelessWidget {
                 height: 1.6.h,
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
             GestureDetector(
               onTap: onAdd,
               child: Container(

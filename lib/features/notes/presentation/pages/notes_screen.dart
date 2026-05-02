@@ -200,7 +200,7 @@ class _NotesScreenState extends State<NotesScreen>
                               height: 1.1,
                             ),
                           ),
-                          SizedBox(height: 4.h),
+                          4.verticalSpace,
                           Row(
                             children: [
                               Icon(
@@ -208,7 +208,7 @@ class _NotesScreenState extends State<NotesScreen>
                                 size: 12.r,
                                 color: AppColors.roseDust,
                               ),
-                              SizedBox(width: 6.w),
+                              6.horizontalSpace,
                               Text(
                                 AppStrings.journalSubHeader,
                                 style: TextStyle(
@@ -511,7 +511,7 @@ class _NoteCard extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Text(emoji, style: TextStyle(fontSize: 14.sp)),
-                        SizedBox(width: 5.w),
+                        5.horizontalSpace,
                         Text(
                           label,
                           style: TextStyle(
@@ -525,7 +525,7 @@ class _NoteCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 12.h),
+              12.verticalSpace,
 
               // Note Title
               if (note.title != null &&
@@ -538,7 +538,7 @@ class _NoteCard extends StatelessWidget {
                     color: AppColors.warmBrown,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                8.verticalSpace,
               ],
 
               // Note text
@@ -555,7 +555,7 @@ class _NoteCard extends StatelessWidget {
 
               // Note Image
               if (note.imageUrl != null) ...[
-                SizedBox(height: 16.h),
+                16.verticalSpace,
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.r),
                   child: Image.network(
@@ -609,7 +609,7 @@ class _EmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('📖', style: TextStyle(fontSize: 48.sp)),
-            SizedBox(height: 18.h),
+            18.verticalSpace,
             Text(
               AppStrings.journalEmptyTitle,
               style: GoogleFonts.outfit(
@@ -618,7 +618,7 @@ class _EmptyState extends StatelessWidget {
                 color: AppColors.warmBrown,
               ),
             ),
-            const SizedBox(height: 10),
+            10.verticalSpace,
             Text(
               AppStrings.journalEmptySubtitle,
               textAlign: TextAlign.center,
@@ -629,7 +629,7 @@ class _EmptyState extends StatelessWidget {
                 height: 1.6,
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
             GestureDetector(
               onTap: onAdd,
               child: Container(

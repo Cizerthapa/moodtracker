@@ -21,6 +21,8 @@ import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
+import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
+import 'package:moodtrack/core/constants/app_constants.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -32,9 +34,11 @@ class SettingsScreen extends StatefulWidget {
 class _SettingsScreenState extends State<SettingsScreen> {
   final SettingsRepository _repository = sl<SettingsRepository>();
   final JournalRepository _journalRepository = sl<JournalRepository>();
+  final WaterRepository _waterRepository = sl<WaterRepository>();
   bool _notificationsEnabled = false;
   bool _journalEncryptionEnabled = false;
   bool _biometricEnabled = false;
+  int _waterGoal = AppConstants.defaultDailyWaterGoal;
   final NotificationService _notificationService = sl<NotificationService>();
 
   @override
@@ -47,6 +51,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final notifResult = await _repository.getNotificationsEnabled();
     final encResult = await _journalRepository.getEncryptionEnabled();
     final bioResult = await _repository.getBiometricEnabled();
+    final waterResult = await _waterRepository.getDailyWaterGoal();
 
     setState(() {
       if (notifResult is Success<bool>)
@@ -54,6 +59,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (encResult is Success<bool>)
         _journalEncryptionEnabled = encResult.data;
       if (bioResult is Success<bool>) _biometricEnabled = bioResult.data;
+      if (waterResult is Success<int>) _waterGoal = waterResult.data;
     });
   }
 
@@ -149,6 +155,146 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
+  void _showUnlinkPartnerDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.ivoryCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Text(
+          "Unlink Partner?",
+          style: GoogleFonts.outfit(
+            color: AppColors.warmBrown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          "This will remove the connection between you and your partner. You will no longer be able to see each other's data.",
+          style: GoogleFonts.outfit(color: AppColors.softBrown),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final result = await sl<UserRepository>().unlinkPartner();
+              if (mounted) {
+                Navigator.pop(context);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      result is Success
+                          ? "Unlinked successfully"
+                          : (result as Failure).message,
+                    ),
+                  ),
+                );
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
+            child: const Text("Unlink", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.ivoryCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Text(
+          "Delete Account?",
+          style: GoogleFonts.outfit(
+            color: AppColors.roseDeep,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: Text(
+          "This action is permanent and will delete all your data, including journal entries and memories. If you are linked with a partner, the link will also be removed.",
+          style: GoogleFonts.outfit(color: AppColors.softBrown),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final result = await sl<UserRepository>().deleteAccount();
+              if (mounted) {
+                if (result is Success) {
+                  context.go('/login');
+                } else {
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text((result as Failure).message)),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
+            child: const Text("Delete", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showWaterGoalDialog() {
+    final TextEditingController controller =
+        TextEditingController(text: _waterGoal.toString());
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.ivoryCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        title: Text(
+          "Daily Water Goal",
+          style: GoogleFonts.outfit(
+            color: AppColors.warmBrown,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            hintText: "Enter amount in ml",
+            filled: true,
+            fillColor: AppColors.cream,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: BorderSide(color: AppColors.champagne),
+            ),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              final goal = int.tryParse(controller.text) ?? 2000;
+              await _waterRepository.setDailyWaterGoal(goal);
+              setState(() => _waterGoal = goal);
+              if (mounted) Navigator.pop(context);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.roseDeep,
+            ),
+            child: const Text("Save", style: TextStyle(color: Colors.white)),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -189,7 +335,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         ),
                       ),
-                      SizedBox(width: 20.w),
+                      20.horizontalSpace,
                       Text(
                         AppLocalizations.of(context)!.settingsTitle,
                         style: GoogleFonts.outfit(
@@ -247,9 +393,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         duration: 400.ms,
                         curve: Curves.easeOutCubic,
                       ),
-                  SizedBox(height: 16.h),
+                  16.verticalSpace,
                   _buildThemeSelector(),
-                  SizedBox(height: 36.h),
+                  36.verticalSpace,
 
                   // ── Preferences Section ────────────────────────
                   Text(
@@ -269,7 +415,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         duration: 400.ms,
                         curve: Curves.easeOutCubic,
                       ),
-                  SizedBox(height: 16.h),
+                  16.verticalSpace,
                   _buildSettingTile(
                     title: AppLocalizations.of(context)!.enableNotifications,
                     subtitle: AppLocalizations.of(
@@ -283,7 +429,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     index: 0,
                   ),
-                  SizedBox(height: 14.h),
+                  14.verticalSpace,
                   _buildSettingTile(
                     title: AppLocalizations.of(context)!.testNotification,
                     subtitle: AppLocalizations.of(
@@ -304,7 +450,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                     index: 1,
                   ),
-                  SizedBox(height: 14.h),
+                  14.verticalSpace,
                   _buildSettingTile(
                     title: 'Language',
                     subtitle: 'Choose your preferred language',
@@ -346,7 +492,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     index: 2,
                   ),
-                  SizedBox(height: 14.h),
+                  14.verticalSpace,
+                  _buildSettingTile(
+                    title: 'Water Goal',
+                    subtitle: 'Set your daily hydration target',
+                    icon: Icons.water_drop_rounded,
+                    trailing: Text(
+                      '${_waterGoal}ml',
+                      style: GoogleFonts.outfit(
+                        color: AppColors.roseDeep,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onTap: _showWaterGoalDialog,
+                    index: 3,
+                  ),
+                  14.verticalSpace,
                   _buildSettingTile(
                     title: 'Encrypt Journal',
                     subtitle: 'AES-256 encrypt your journal entries',
@@ -371,7 +532,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                                 CircularProgressIndicator(
                                   color: AppColors.roseDeep,
                                 ),
-                                SizedBox(height: 16.h),
+                                16.verticalSpace,
                                 Text(
                                   value
                                       ? 'Encrypting entries...'
@@ -419,7 +580,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     index: 3,
                   ),
-                  SizedBox(height: 14.h),
+                  14.verticalSpace,
                   _buildSettingTile(
                     title: 'Biometric Lock',
                     subtitle: 'Secure your app with Fingerprint/FaceID',
@@ -435,7 +596,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                     index: 4,
                   ),
-                  SizedBox(height: 14.h),
+                  14.verticalSpace,
                   // ── Couple Section ────────────────────────
                   Text(
                         'Couple',
@@ -454,7 +615,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         duration: 400.ms,
                         curve: Curves.easeOutCubic,
                       ),
-                  SizedBox(height: 16.h),
+                  16.verticalSpace,
                   _buildSettingTile(
                     title: 'Link Partner',
                     subtitle: 'Link accounts via email',
@@ -469,7 +630,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                     index: 5,
                   ),
-                  SizedBox(height: 14.h),
+                  14.verticalSpace,
                   _buildSettingTile(
                     title: 'Together Timeline',
                     subtitle: 'See how long you have been together',
@@ -484,7 +645,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     },
                     index: 6,
                   ),
-                  SizedBox(height: 24.h),
+                  14.verticalSpace,
+                  _buildSettingTile(
+                    title: 'Unlink Partner',
+                    subtitle: 'Remove connection with partner',
+                    icon: Icons.link_off_rounded,
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.roseDust,
+                      size: 22.r,
+                    ),
+                    onTap: _showUnlinkPartnerDialog,
+                    index: 7,
+                  ),
+                  24.verticalSpace,
 
                   _buildSettingTile(
                     title: 'Logout',
@@ -501,7 +675,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       if (!context.mounted) return;
                       context.go('/login');
                     },
-                    index: 7,
+                    index: 8,
+                  ),
+                  14.verticalSpace,
+                  _buildSettingTile(
+                    title: 'Delete Account',
+                    subtitle: 'Permanently remove your account',
+                    icon: Icons.delete_forever_rounded,
+                    trailing: Icon(
+                      Icons.chevron_right_rounded,
+                      color: AppColors.roseDust,
+                      size: 22.r,
+                    ),
+                    onTap: _showDeleteAccountDialog,
+                    index: 9,
                   ),
                 ],
               ),
@@ -523,7 +710,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: MoodPalette.all.length,
-            separatorBuilder: (context, index) => SizedBox(width: 16.w),
+            separatorBuilder: (context, index) => 16.horizontalSpace,
             itemBuilder: (context, index) {
               final palette = MoodPalette.all[index];
               final isSelected = themeManager.palette.name == palette.name;
@@ -596,7 +783,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               ),
                             ),
                           ),
-                          SizedBox(height: 10.h),
+                          10.verticalSpace,
                           Text(
                             palette.name,
                             style: GoogleFonts.outfit(
@@ -665,7 +852,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   child: Icon(icon, color: AppColors.roseDeep, size: 22.r),
                 ),
-                SizedBox(width: 16.w),
+                16.horizontalSpace,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -678,7 +865,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           color: AppColors.warmBrown,
                         ),
                       ),
-                      SizedBox(height: 3.h),
+                      3.verticalSpace,
                       Text(
                         subtitle,
                         style: GoogleFonts.outfit(
@@ -813,7 +1000,7 @@ class _AdminFooterState extends State<_AdminFooter>
                 fontWeight: FontWeight.w300,
               ),
             ),
-            SizedBox(height: 4.h),
+            4.verticalSpace,
             Text(
               AppLocalizations.of(context)!.authorName,
               style: GoogleFonts.outfit(

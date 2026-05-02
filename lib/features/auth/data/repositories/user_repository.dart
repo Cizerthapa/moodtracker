@@ -156,6 +156,59 @@ class UserRepository {
     }
   }
 
+  Future<Result<void>> unlinkPartner() async {
+    final uid = _auth.currentUser?.uid;
+    if (uid == null) return const Failure('User not authenticated');
+
+    log('Firestore: Unlinking partner for $uid', name: 'Firebase');
+    try {
+      final doc = await _usersCollection.doc(uid).get();
+      final data = doc.data() as Map<String, dynamic>?;
+      final partnerUid = data?['partnerUid'] as String?;
+
+      final batch = _firestore.batch();
+      batch.update(_usersCollection.doc(uid), {
+        'partnerUid': FieldValue.delete(),
+        'partnerEmail': FieldValue.delete(),
+      });
+
+      if (partnerUid != null) {
+        batch.update(_usersCollection.doc(partnerUid), {
+          'partnerUid': FieldValue.delete(),
+          'partnerEmail': FieldValue.delete(),
+        });
+      }
+
+      await batch.commit();
+      log('Firestore: Unlink successful', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore: Error unlinking partner: $e', name: 'Firebase');
+      return Failure('Failed to unlink partner', error: e);
+    }
+  }
+
+  Future<Result<void>> deleteAccount() async {
+    final user = _auth.currentUser;
+    if (user == null) return const Failure('User not authenticated');
+
+    log('Firestore: Deleting account for ${user.uid}', name: 'Firebase');
+    try {
+      final uid = user.uid;
+      await unlinkPartner();
+      await _usersCollection.doc(uid).delete();
+      await user.delete();
+      log('Firestore: Account deleted successfully', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore: Error deleting account: $e', name: 'Firebase');
+      if (e is FirebaseAuthException && e.code == 'requires-recent-login') {
+        return const Failure('Please log in again to delete your account.');
+      }
+      return Failure('Failed to delete account', error: e);
+    }
+  }
+
   Future<Result<void>> setRelationshipStartDate(DateTime date) async {
     final uid = _auth.currentUser?.uid;
     if (uid == null) return const Failure('User not authenticated');

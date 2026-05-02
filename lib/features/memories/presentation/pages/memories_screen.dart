@@ -308,7 +308,7 @@ class _Header extends StatelessWidget {
                         letterSpacing: -0.8,
                       ),
                     ),
-                    SizedBox(height: 6.h),
+                    6.verticalSpace,
                     Row(
                       children: [
                         Icon(
@@ -316,7 +316,7 @@ class _Header extends StatelessWidget {
                           size: 12.r,
                           color: AppColors.roseDust,
                         ),
-                        SizedBox(width: 6.w),
+                        6.horizontalSpace,
                         Text(
                           AppLocalizations.of(context)!.ourStorySlogan,
                           style: GoogleFonts.outfit(
@@ -524,7 +524,7 @@ class _MemoryCardState extends State<_MemoryCard>
                         size: 18.r,
                       ),
                     ),
-                    SizedBox(width: 14.w),
+                    14.horizontalSpace,
 
                     // Text
                     Expanded(
@@ -542,7 +542,7 @@ class _MemoryCardState extends State<_MemoryCard>
                               fontWeight: FontWeight.w500,
                             ),
                           ),
-                          SizedBox(height: 4.h),
+                          4.verticalSpace,
                           Text(
                             title,
                             style: GoogleFonts.outfit(
@@ -612,7 +612,7 @@ class _EmptyState extends StatelessWidget {
               size: 52.r,
               color: AppColors.roseDust.withValues(alpha: 0.5),
             ),
-            SizedBox(height: 18.h),
+            18.verticalSpace,
             Text(
               AppLocalizations.of(context)!.noMemories,
               style: GoogleFonts.outfit(
@@ -621,7 +621,7 @@ class _EmptyState extends StatelessWidget {
                 color: AppColors.warmBrown,
               ),
             ),
-            SizedBox(height: 10.h),
+            10.verticalSpace,
             Text(
               AppLocalizations.of(context)!.noMemoriesSubtitle,
               textAlign: TextAlign.center,
@@ -633,7 +633,7 @@ class _EmptyState extends StatelessWidget {
                 fontWeight: FontWeight.w300,
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
             GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();

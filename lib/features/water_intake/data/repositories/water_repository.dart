@@ -65,6 +65,25 @@ class WaterRepository {
     }
   }
 
+  Future<Result<void>> updateDrink(int originalIndex, String updatedJson) async {
+    log('Preferences: Updating drink at index $originalIndex', name: 'Preferences');
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final history = prefs.getStringList(AppConstants.drinkHistoryPrefsKey) ?? [];
+      if (originalIndex >= 0 && originalIndex < history.length) {
+        history[originalIndex] = updatedJson;
+        await prefs.setStringList(AppConstants.drinkHistoryPrefsKey, history);
+        log('Preferences: Drink updated successfully', name: 'Preferences');
+        return const Success(null);
+      } else {
+        return const Failure('Entry not found');
+      }
+    } catch (e) {
+      log('Preferences: Error updating drink: $e', name: 'Preferences');
+      return Failure('Failed to update drink entry', error: e);
+    }
+  }
+
   Future<Result<String>> getHydrationUnit() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -84,6 +103,25 @@ class WaterRepository {
     } catch (e) {
       log('Preferences: Error setting hydration unit: $e', name: 'Preferences');
       return Failure('Failed to save hydration unit', error: e);
+    }
+  }
+
+  Future<Result<int>> getDailyWaterGoal() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      return Success(prefs.getInt(AppConstants.waterGoalPrefsKey) ?? AppConstants.defaultDailyWaterGoal);
+    } catch (e) {
+      return Failure('Failed to load goal', error: e);
+    }
+  }
+
+  Future<Result<void>> setDailyWaterGoal(int goal) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt(AppConstants.waterGoalPrefsKey, goal);
+      return const Success(null);
+    } catch (e) {
+      return Failure('Failed to save goal', error: e);
     }
   }
 }

@@ -191,7 +191,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               color: bannerColor,
             ),
           ),
-          SizedBox(width: 12.w),
+          12.horizontalSpace,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -250,7 +250,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     letterSpacing: -0.8,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.verticalSpace,
                 Row(
                   children: [
                     Icon(
@@ -258,7 +258,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                       size: 12.r,
                       color: _kUserColor,
                     ),
-                    SizedBox(width: 6.w),
+                    6.horizontalSpace,
                     Text(
                       'every cycle, understood',
                       style: GoogleFonts.outfit(
@@ -312,7 +312,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       child: Row(
         children: [
           _tabButton(0, Icons.calendar_month_rounded, 'Calendar'),
-          SizedBox(width: 12.w),
+          12.horizontalSpace,
           _tabButton(1, Icons.history_rounded, 'History'),
         ],
       ),
@@ -339,7 +339,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             Icon(icon,
                 size: 16.r,
                 color: active ? Colors.white : AppColors.softBrown),
-            SizedBox(width: 6.w),
+            6.horizontalSpace,
             Text(
               label,
               style: GoogleFonts.outfit(
@@ -367,13 +367,13 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       child: Column(
         children: [
           _buildMonthNav(),
-          SizedBox(height: 12.h),
+          12.verticalSpace,
           _buildCalendarGrid(cycles, mostRecent, avgLength),
-          SizedBox(height: 14.h),
+          14.verticalSpace,
           _buildLegend(cycles),
-          SizedBox(height: 14.h),
+          14.verticalSpace,
           if (mostRecent != null) _buildPhaseCard(mostRecent, avgLength),
-          if (mostRecent != null && nextPeriod != null) SizedBox(height: 14.h),
+          if (mostRecent != null && nextPeriod != null) 14.verticalSpace,
           if (nextPeriod != null) _buildPredictionCard(nextPeriod),
         ],
       ),
@@ -452,7 +452,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             ),
             child: Icon(icon, color: color, size: 22.r),
           ),
-          SizedBox(width: 16.w),
+          16.horizontalSpace,
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -462,7 +462,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                   style: GoogleFonts.outfit(
                       fontSize: 12.sp, color: AppColors.softBrown),
                 ),
-                SizedBox(height: 2.h),
+                2.verticalSpace,
                 Text(
                   title,
                   style: GoogleFonts.outfit(
@@ -471,7 +471,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     color: AppColors.warmBrown,
                   ),
                 ),
-                SizedBox(height: 4.h),
+                4.verticalSpace,
                 Text(
                   focus,
                   style: GoogleFonts.outfit(
@@ -480,7 +480,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     height: 1.3,
                   ),
                 ),
-                SizedBox(height: 12.h),
+                12.verticalSpace,
                 Container(
                   padding: EdgeInsets.all(10.r),
                   decoration: BoxDecoration(
@@ -493,7 +493,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     children: [
                       Icon(Icons.lightbulb_outline_rounded,
                           size: 16.r, color: color),
-                      SizedBox(width: 8.w),
+                      8.horizontalSpace,
                       Expanded(
                         child: Text(
                           insight,
@@ -598,7 +598,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 )
                 .toList(),
           ),
-          SizedBox(height: 8.h),
+          8.verticalSpace,
           ...List.generate(rows, (row) {
             return Padding(
               padding: EdgeInsets.only(bottom: 4.h),
@@ -672,7 +672,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
           height: 10.r,
           decoration: BoxDecoration(color: color, shape: BoxShape.circle),
         ),
-        SizedBox(width: 6.w),
+        6.horizontalSpace,
         Text(
           label,
           style: GoogleFonts.outfit(
@@ -711,7 +711,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             ),
             child: Icon(Icons.event_rounded, color: _kCycleColor, size: 22.r),
           ),
-          SizedBox(width: 16.w),
+          16.horizontalSpace,
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -720,7 +720,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 style: GoogleFonts.outfit(
                     fontSize: 12.sp, color: AppColors.softBrown),
               ),
-              SizedBox(height: 2.h),
+              2.verticalSpace,
               Text(
                 isPast
                     ? DateFormat('MMM d').format(nextPeriod)
@@ -770,7 +770,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     );
   }
 
-  Future<void> _confirmDelete(PeriodCycle cycle) async {
+  Future<bool> _confirmDelete(PeriodCycle cycle) async {
     HapticFeedback.mediumImpact();
     final confirmed = await showDialog<bool>(
       context: context,
@@ -808,6 +808,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     if (confirmed == true && cycle.id != null) {
       await _repo.deleteCycle(cycle.id!);
     }
+    return confirmed ?? false;
   }
 
   Widget _buildEmptyState() {
@@ -818,7 +819,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('🌸', style: TextStyle(fontSize: 48.sp)),
-            SizedBox(height: 18.h),
+            18.verticalSpace,
             Text(
               'No cycles logged yet',
               style: GoogleFonts.outfit(
@@ -827,7 +828,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 color: AppColors.warmBrown,
               ),
             ),
-            SizedBox(height: 10.h),
+            10.verticalSpace,
             Text(
               'Track your cycle to get insights\nand share with your partner.',
               textAlign: TextAlign.center,
@@ -838,7 +839,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 height: 1.6,
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
             GestureDetector(
               onTap: () {
                 HapticFeedback.lightImpact();
@@ -963,9 +964,10 @@ class _DayCell extends StatelessWidget {
 class _CycleCard extends StatelessWidget {
   final PeriodCycle cycle;
   final VoidCallback onTap;
-  final VoidCallback onDelete;
+  final Future<bool?> Function() onDelete;
 
   const _CycleCard({
+    super.key,
     required this.cycle,
     required this.onTap,
     required this.onDelete,
@@ -990,8 +992,8 @@ class _CycleCard extends StatelessWidget {
       key: Key(cycle.id ?? UniqueKey().toString()),
       direction: DismissDirection.endToStart,
       confirmDismiss: (_) async {
-        onDelete();
-        return false;
+        final result = await onDelete();
+        return result ?? false;
       },
       background: Container(
         margin: EdgeInsets.only(bottom: 12.h),
@@ -1035,7 +1037,7 @@ class _CycleCard extends StatelessWidget {
                     children: [
                       Icon(Icons.calendar_today_rounded,
                           size: 14.r, color: _kUserColor),
-                      SizedBox(width: 6.w),
+                      6.horizontalSpace,
                       Text(
                         '$startStr  →  $endStr',
                         style: GoogleFonts.outfit(
@@ -1064,12 +1066,12 @@ class _CycleCard extends StatelessWidget {
                   ),
                 ],
               ),
-              SizedBox(height: 10.h),
+              10.verticalSpace,
               Row(
                 children: [
                   Text(_flowEmoji(cycle.flowLevel),
                       style: const TextStyle(fontSize: 14)),
-                  SizedBox(width: 6.w),
+                  6.horizontalSpace,
                   Text(
                     '${_flowLabel(cycle.flowLevel)} flow',
                     style: GoogleFonts.outfit(
@@ -1078,7 +1080,7 @@ class _CycleCard extends StatelessWidget {
                 ],
               ),
               if (cycle.symptoms.isNotEmpty) ...[
-                SizedBox(height: 8.h),
+                8.verticalSpace,
                 Wrap(
                   spacing: 6.w,
                   runSpacing: 4.h,
@@ -1103,7 +1105,7 @@ class _CycleCard extends StatelessWidget {
                 ),
               ],
               if (cycle.notes != null && cycle.notes!.isNotEmpty) ...[
-                SizedBox(height: 8.h),
+                8.verticalSpace,
                 Text(
                   cycle.notes!,
                   style: GoogleFonts.outfit(

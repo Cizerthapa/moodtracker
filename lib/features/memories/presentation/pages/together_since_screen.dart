@@ -118,9 +118,9 @@ class _TogetherSinceScreenState extends State<TogetherSinceScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.calendar_month_rounded, size: 60.r, color: AppColors.roseDust.withValues(alpha: 0.5)),
-                      SizedBox(height: 16.h),
+                      16.verticalSpace,
                       Text("When did the magical journey start?", style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 16.sp)),
-                      SizedBox(height: 24.h),
+                      24.verticalSpace,
                       ElevatedButton(
                         onPressed: _pickDate,
                         style: ElevatedButton.styleFrom(
@@ -139,7 +139,7 @@ class _TogetherSinceScreenState extends State<TogetherSinceScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.favorite_rounded, color: AppColors.roseDeep, size: 70.r),
-                          SizedBox(height: 24.h),
+                          24.verticalSpace,
                           Text(
                             "${_elapsed.inDays} Days",
                             style: GoogleFonts.outfit(
@@ -148,7 +148,7 @@ class _TogetherSinceScreenState extends State<TogetherSinceScreen> {
                               color: AppColors.warmBrown,
                             ),
                           ),
-                          SizedBox(height: 8.h),
+                          8.verticalSpace,
                           Container(
                             padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
                             decoration: BoxDecoration(
@@ -160,7 +160,7 @@ class _TogetherSinceScreenState extends State<TogetherSinceScreen> {
                               style: GoogleFonts.outfit(fontSize: 16.sp, color: AppColors.softBrown, fontWeight: FontWeight.bold),
                             ),
                           ),
-                          SizedBox(height: 48.h),
+                          48.verticalSpace,
                           TextButton(
                             onPressed: _pickDate,
                             child: Text("Change Date", style: TextStyle(color: AppColors.roseDust)),

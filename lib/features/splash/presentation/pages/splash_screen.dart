@@ -173,7 +173,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 ),
-                SizedBox(height: 28.h),
+                28.verticalSpace,
                 Text(
                   "Welcome baby,",
                   style: GoogleFonts.outfit(
@@ -183,7 +183,7 @@ class _SplashScreenState extends State<SplashScreen>
                     letterSpacing: -0.5,
                   ),
                 ),
-                SizedBox(height: 8.h),
+                8.verticalSpace,
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 40.w),
                   child: Text(
@@ -199,7 +199,7 @@ class _SplashScreenState extends State<SplashScreen>
                 ),
 
                 if (!_isAuthenticating) ...[
-                  SizedBox(height: 40.h),
+                  40.verticalSpace,
                   GestureDetector(
                     onTap: _authenticate,
                     child: Container(
@@ -226,7 +226,7 @@ class _SplashScreenState extends State<SplashScreen>
                             color: Colors.white,
                             size: 16.sp,
                           ),
-                          SizedBox(width: 8.w),
+                          8.horizontalSpace,
                           Text(
                             "Tap to Unlock",
                             style: GoogleFonts.outfit(
@@ -240,7 +240,7 @@ class _SplashScreenState extends State<SplashScreen>
                     ),
                   ),
                 ] else ...[
-                  SizedBox(height: 48.h),
+                  48.verticalSpace,
                   SizedBox(
                     width: 24.r,
                     height: 24.r,

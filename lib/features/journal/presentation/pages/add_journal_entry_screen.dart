@@ -364,7 +364,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                         color: const Color(0xFF2C1F0E),
                                       ),
                                     ),
-                                    SizedBox(height: 1.h),
+                                    1.verticalSpace,
                                     Text(
                                       timeStr,
                                       style: GoogleFonts.dmSans(
@@ -378,7 +378,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                             ),
                           ),
 
-                          SizedBox(height: 22.h),
+                          22.verticalSpace,
 
                           // ── Heading: "How are you feeling?" + emoji ──────────
                           Padding(
@@ -397,7 +397,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                   ),
                                 ),
                                 if (_selectedEmoji != null) ...[
-                                  SizedBox(width: 10.w),
+                                  10.horizontalSpace,
                                   ScaleTransition(
                                     scale: _emojiPopAnim,
                                     child: AnimatedSwitcher(
@@ -415,7 +415,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                               ],
                             ),
                           ),
-                          SizedBox(height: 10.h),
+                          10.verticalSpace,
 
                           // ── Horizontal mood chips ────────────────────────────
                           SizedBox(
@@ -425,7 +425,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                               padding: EdgeInsets.symmetric(horizontal: 24.w),
                               physics: const BouncingScrollPhysics(),
                               itemCount: widget.moods.length,
-                              separatorBuilder: (_, _) => SizedBox(width: 8.w),
+                              separatorBuilder: (_, _) => 8.horizontalSpace,
                               itemBuilder: (context, i) {
                                 final m = widget.moods[i];
                                 final emoji = m['emoji'] as String;
@@ -444,7 +444,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                             ),
                           ),
 
-                          SizedBox(height: 14.h),
+                          14.verticalSpace,
 
                           // ── Triple accent divider ────────────────────────────
                           Padding(
@@ -452,12 +452,12 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                             child: Row(
                               children: [
                                 _DivBar(width: 28.w, color: _accentColor),
-                                SizedBox(width: 5.w),
+                                5.horizontalSpace,
                                 _DivBar(
                                   width: 10.w,
                                   color: _accentColor.withValues(alpha: 0.4),
                                 ),
-                                SizedBox(width: 5.w),
+                                5.horizontalSpace,
                                 _DivBar(
                                   width: 5.w,
                                   color: _accentColor.withValues(alpha: 0.2),
@@ -466,7 +466,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                             ),
                           ),
 
-                          SizedBox(height: 14.h),
+                          14.verticalSpace,
 
                           // ── Writing canvas ───────────────────────────────────
                           GestureDetector(
@@ -567,7 +567,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                   onTap: () => _insertText('• '),
                                   color: _accentColor,
                                 ),
-                                SizedBox(width: 8.w),
+                                8.horizontalSpace,
                                 _FormatButton(
                                   icon: Icons.checklist_rounded,
                                   onTap: () => _insertText('- [ ] '),
@@ -596,7 +596,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Text('✦', style: TextStyle(fontSize: 12.sp, color: _accentColor)),
-                                      SizedBox(width: 8.w),
+                                      8.horizontalSpace,
                                       Expanded(
                                         child: Text(
                                           _currentInsight,
@@ -614,7 +614,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                             ),
                           ),
 
-                          SizedBox(height: 10.h),
+                          10.verticalSpace,
 
                           // ── Bottom bar: word count + save button ─────────────
                           Container(
@@ -655,7 +655,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                         ),
                                       ),
                                     ),
-                                    SizedBox(height: 2.h),
+                                    2.verticalSpace,
                                     Text(
                                       'words written',
                                       style: GoogleFonts.dmSans(fontSize: 10.sp, color: const Color(0xFFB89870)),
@@ -710,7 +710,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
                                           Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 15.sp),
-                                          SizedBox(width: 8.w),
+                                          8.horizontalSpace,
                                           Text(
                                             widget.isEditing ? 'Update Entry' : 'Save Entry',
                                             style: GoogleFonts.dmSans(
@@ -796,7 +796,7 @@ class _MoodChip extends StatelessWidget {
               curve: Curves.easeOutBack,
               child: Text(emoji, style: TextStyle(fontSize: 22.sp)),
             ),
-            SizedBox(height: 4.h),
+            4.verticalSpace,
             Text(
               label,
               style: GoogleFonts.dmSans(

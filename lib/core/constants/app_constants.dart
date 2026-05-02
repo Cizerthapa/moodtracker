@@ -22,6 +22,7 @@ class AppConstants {
   static const String periodsCollection = 'periods';
   static const String moodNotesPrefsKey = 'mood_notes';
   static const String drinkHistoryPrefsKey = 'drink_history';
+  static const String waterGoalPrefsKey = 'water_goal';
   static const String notesCollection = 'notes';
   static const String notificationsPrefsKey = 'notifications_enabled';
   static const String biometricPrefsKey = 'biometric_enabled';

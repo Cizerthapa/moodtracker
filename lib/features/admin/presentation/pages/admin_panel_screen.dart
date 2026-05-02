@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/models/user_profile_model.dart';
@@ -100,7 +101,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   size: 20.r,
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.horizontalSpace,
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -186,13 +187,13 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
             value: _stats['users'],
             loading: _loadingStats,
           ),
-          SizedBox(width: 12.w),
+          12.horizontalSpace,
           _StatChip(
             label: 'Memories',
             value: _stats['memories'],
             loading: _loadingStats,
           ),
-          SizedBox(width: 12.w),
+          12.horizontalSpace,
           _StatChip(
             label: 'Journals',
             value: _stats['journals'],
@@ -261,7 +262,7 @@ class _StatChip extends StatelessWidget {
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-          SizedBox(width: 6.w),
+          6.horizontalSpace,
           Text(
             label,
             style: GoogleFonts.outfit(color: _textSecondary, fontSize: 11.sp),
@@ -354,7 +355,7 @@ class _UsersTab extends StatelessWidget {
                             ),
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        12.horizontalSpace,
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -375,7 +376,7 @@ class _UsersTab extends StatelessWidget {
                                   fontSize: 11.sp,
                                 ),
                               ),
-                              SizedBox(height: 4.h),
+                              4.verticalSpace,
                               Row(
                                 children: [
                                   if (platform != null) ...[
@@ -398,7 +399,7 @@ class _UsersTab extends StatelessWidget {
                                         ),
                                       ),
                                     ),
-                                    SizedBox(width: 6.w),
+                                    6.horizontalSpace,
                                   ],
                                   if (partnerUid != null)
                                     Row(
@@ -408,7 +409,7 @@ class _UsersTab extends StatelessWidget {
                                           color: _danger,
                                           size: 11.r,
                                         ),
-                                        SizedBox(width: 3.w),
+                                        3.horizontalSpace,
                                         Text(
                                           'Linked',
                                           style: GoogleFonts.outfit(
@@ -419,13 +420,13 @@ class _UsersTab extends StatelessWidget {
                                       ],
                                     ),
                                   if (lastSeenStr != null) ...[
-                                    SizedBox(width: 8.w),
+                                    8.horizontalSpace,
                                     Icon(
                                       Icons.access_time_rounded,
                                       color: _textSecondary,
                                       size: 10.r,
                                     ),
-                                    SizedBox(width: 3.w),
+                                    3.horizontalSpace,
                                     Text(
                                       lastSeenStr,
                                       style: GoogleFonts.jetBrainsMono(
@@ -435,13 +436,13 @@ class _UsersTab extends StatelessWidget {
                                     ),
                                   ],
                                   if (relDateStr != null) ...[
-                                    SizedBox(width: 8.w),
+                                    8.horizontalSpace,
                                     Icon(
                                       Icons.calendar_today_rounded,
                                       color: _success,
                                       size: 10.r,
                                     ),
-                                    SizedBox(width: 3.w),
+                                    3.horizontalSpace,
                                     Text(
                                       relDateStr,
                                       style: GoogleFonts.jetBrainsMono(
@@ -478,7 +479,7 @@ class _UsersTab extends StatelessWidget {
                             color: _success,
                             size: 12.r,
                           ),
-                          SizedBox(width: 6.w),
+                          6.horizontalSpace,
                           Expanded(
                             child: SelectableText(
                               fcmToken,
@@ -517,7 +518,7 @@ class _UsersTab extends StatelessWidget {
                             color: _textSecondary,
                             size: 12.r,
                           ),
-                          SizedBox(width: 6.w),
+                          6.horizontalSpace,
                           Text(
                             'No FCM token',
                             style: GoogleFonts.outfit(
@@ -548,7 +549,7 @@ class _UsersTab extends StatelessWidget {
         title: Row(
           children: [
             Icon(Icons.warning_amber_rounded, color: _danger, size: 22.r),
-            SizedBox(width: 8.w),
+            8.horizontalSpace,
             Text(
               'Delete User',
               style: GoogleFonts.outfit(
@@ -640,7 +641,7 @@ class _UsersTab extends StatelessWidget {
             title: Row(
               children: [
                 Icon(Icons.send_rounded, color: _accent, size: 20.r),
-                SizedBox(width: 8.w),
+                8.horizontalSpace,
                 Text(
                   'Send Push Notification',
                   style: GoogleFonts.outfit(
@@ -661,7 +662,7 @@ class _UsersTab extends StatelessWidget {
                     fontSize: 11.sp,
                   ),
                 ),
-                SizedBox(height: 16.h),
+                16.verticalSpace,
                 TextField(
                   controller: titleCtrl,
                   style: GoogleFonts.outfit(color: _textPrimary),
@@ -676,7 +677,7 @@ class _UsersTab extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 12.h),
+                12.verticalSpace,
                 TextField(
                   controller: bodyCtrl,
                   style: GoogleFonts.outfit(color: _textPrimary),
@@ -924,7 +925,7 @@ class _MemoriesTabState extends State<_MemoriesTab> {
                                 : _danger,
                             size: 18.r,
                           ),
-                          SizedBox(width: 12.w),
+                          12.horizontalSpace,
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1210,7 +1211,7 @@ class _JournalsTabState extends State<_JournalsTab> {
                               style: TextStyle(fontSize: 18.sp),
                             ),
                           ),
-                          SizedBox(width: 12.w),
+                          12.horizontalSpace,
                           Expanded(
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1237,7 +1238,7 @@ class _JournalsTabState extends State<_JournalsTab> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                                 if (dateStr != null) ...[
-                                  SizedBox(height: 4.h),
+                                  4.verticalSpace,
                                   Text(
                                     dateStr,
                                     style: GoogleFonts.jetBrainsMono(
@@ -1395,11 +1396,11 @@ class _BroadcastTabState extends State<_BroadcastTab> {
               fontSize: 16.sp,
             ),
           ),
-          SizedBox(height: 12.h),
-          StreamBuilder(
+          12.verticalSpace,
+          StreamBuilder<DocumentSnapshot?>(
             stream: widget.repo.getBroadcastStream(),
             builder: (context, snapshot) {
-              if (!snapshot.hasData || !snapshot.data!.exists) {
+              if (!snapshot.hasData || snapshot.data == null) {
                 return Container(
                   padding: EdgeInsets.all(16.r),
                   decoration: BoxDecoration(
@@ -1432,7 +1433,7 @@ class _BroadcastTabState extends State<_BroadcastTab> {
                 child: Row(
                   children: [
                     Icon(icon, color: color, size: 20.r),
-                    SizedBox(width: 12.w),
+                    12.horizontalSpace,
                     Expanded(
                       child: Text(
                         msg,
@@ -1465,7 +1466,7 @@ class _BroadcastTabState extends State<_BroadcastTab> {
               );
             },
           ),
-          SizedBox(height: 28.h),
+          28.verticalSpace,
 
           // ── Send New Broadcast ─────────────────────────────────
           Text(
@@ -1476,7 +1477,7 @@ class _BroadcastTabState extends State<_BroadcastTab> {
               fontSize: 16.sp,
             ),
           ),
-          SizedBox(height: 12.h),
+          12.verticalSpace,
 
           // Type selector
           Row(
@@ -1504,7 +1505,7 @@ class _BroadcastTabState extends State<_BroadcastTab> {
                           color: color,
                           size: 18.r,
                         ),
-                        SizedBox(height: 4.h),
+                        4.verticalSpace,
                         Text(
                           entry.value['label'] as String,
                           style: GoogleFonts.outfit(
@@ -1519,7 +1520,7 @@ class _BroadcastTabState extends State<_BroadcastTab> {
               );
             }).toList(),
           ),
-          SizedBox(height: 16.h),
+          16.verticalSpace,
 
           // Message field
           TextField(
@@ -1548,7 +1549,7 @@ class _BroadcastTabState extends State<_BroadcastTab> {
               ),
             ),
           ),
-          SizedBox(height: 16.h),
+          16.verticalSpace,
 
           SizedBox(
             width: double.infinity,

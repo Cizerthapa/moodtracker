@@ -8,8 +8,6 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:moodtrack/models/journal_entry_model.dart';
-import 'package:intl/intl.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
@@ -58,11 +56,9 @@ List<Map<String, dynamic>> _getJournalMoods(AppLocalizations l10n) => [
   },
 ];
 
-Map<String, dynamic> _moodMeta(String emoji, AppLocalizations l10n) =>
-    _getJournalMoods(l10n).firstWhere(
-      (m) => m['emoji'] == emoji,
-      orElse: () => _getJournalMoods(l10n)[2],
-    );
+Map<String, dynamic> _moodMeta(String emoji, AppLocalizations l10n) => _getJournalMoods(
+  l10n,
+).firstWhere((m) => m['emoji'] == emoji, orElse: () => _getJournalMoods(l10n)[2]);
 
 class JournalScreen extends StatefulWidget {
   const JournalScreen({super.key});
@@ -71,8 +67,7 @@ class JournalScreen extends StatefulWidget {
   State<JournalScreen> createState() => _JournalScreenState();
 }
 
-class _JournalScreenState extends State<JournalScreen>
-    with SingleTickerProviderStateMixin {
+class _JournalScreenState extends State<JournalScreen> with SingleTickerProviderStateMixin {
   final JournalRepository _repository = sl<JournalRepository>();
   bool _isLoading = false;
   bool _encryptionEnabled = false;
@@ -83,10 +78,7 @@ class _JournalScreenState extends State<JournalScreen>
   @override
   void initState() {
     super.initState();
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    );
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600));
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _loadEncryptionSetting();
   }
@@ -112,18 +104,14 @@ class _JournalScreenState extends State<JournalScreen>
       encrypt: _encryptionEnabled,
     );
     if (result is Failure && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text((result).message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text((result).message)));
     }
   }
 
   Future<void> _deleteJournal(String id) async {
     final result = await _repository.deleteJournal(id);
     if (result is Failure && mounted) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text((result).message)));
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text((result).message)));
     }
   }
 
@@ -140,13 +128,7 @@ class _JournalScreenState extends State<JournalScreen>
     );
   }
 
-  void _showEditEntryScreen(
-    String id,
-    String? title,
-    String text,
-    String emoji,
-    bool isEncrypted,
-  ) {
+  void _showEditEntryScreen(String id, String? title, String text, String emoji, bool isEncrypted) {
     context.pushNamed(
       AppRoutes.addJournal,
       extra: <String, dynamic>{
@@ -197,7 +179,7 @@ class _JournalScreenState extends State<JournalScreen>
                               letterSpacing: -0.8,
                             ),
                           ),
-                          SizedBox(height: 4.h),
+                          4.verticalSpace,
                           Row(
                             children: [
                               Icon(
@@ -205,7 +187,7 @@ class _JournalScreenState extends State<JournalScreen>
                                 size: 12.r,
                                 color: AppColors.roseDust,
                               ),
-                              SizedBox(width: 6.w),
+                              6.horizontalSpace,
                               Text(
                                 AppLocalizations.of(context)!.journalSubHeader,
                                 style: GoogleFonts.outfit(
@@ -216,16 +198,11 @@ class _JournalScreenState extends State<JournalScreen>
                                 ),
                               ),
                               if (_encryptionEnabled) ...[
-                                SizedBox(width: 8.w),
+                                8.horizontalSpace,
                                 Container(
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: 6.w,
-                                    vertical: 2.h,
-                                  ),
+                                  padding: EdgeInsets.symmetric(horizontal: 6.w, vertical: 2.h),
                                   decoration: BoxDecoration(
-                                    color: AppColors.roseDeep.withValues(
-                                      alpha: 0.1,
-                                    ),
+                                    color: AppColors.roseDeep.withValues(alpha: 0.1),
                                     borderRadius: BorderRadius.circular(6.r),
                                   ),
                                   child: Row(
@@ -236,7 +213,7 @@ class _JournalScreenState extends State<JournalScreen>
                                         size: 10.r,
                                         color: AppColors.roseDeep,
                                       ),
-                                      SizedBox(width: 3.w),
+                                      3.horizontalSpace,
                                       Text(
                                         'Encrypted',
                                         style: GoogleFonts.outfit(
@@ -277,11 +254,7 @@ class _JournalScreenState extends State<JournalScreen>
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.edit_rounded,
-                          color: Colors.white,
-                          size: 20.r,
-                        ),
+                        child: Icon(Icons.edit_rounded, color: Colors.white, size: 20.r),
                       ),
                     ),
                   ],
@@ -294,7 +267,7 @@ class _JournalScreenState extends State<JournalScreen>
                 child: Row(
                   children: [
                     _buildTabButton(0, Icons.list_rounded, 'Entries'),
-                    SizedBox(width: 12.w),
+                    12.horizontalSpace,
                     _buildTabButton(1, Icons.bar_chart_rounded, 'Mood Graph'),
                   ],
                 ),
@@ -338,9 +311,7 @@ class _JournalScreenState extends State<JournalScreen>
 
                     return FadeTransition(
                       opacity: _fadeAnim,
-                      child: _selectedTab == 0
-                          ? _buildEntriesList(docs)
-                          : _buildMoodGraph(docs),
+                      child: _selectedTab == 0 ? _buildEntriesList(docs) : _buildMoodGraph(docs),
                     );
                   },
                 ),
@@ -370,12 +341,8 @@ class _JournalScreenState extends State<JournalScreen>
         ),
         child: Row(
           children: [
-            Icon(
-              icon,
-              size: 16.r,
-              color: isSelected ? Colors.white : AppColors.softBrown,
-            ),
-            SizedBox(width: 6.w),
+            Icon(icon, size: 16.r, color: isSelected ? Colors.white : AppColors.softBrown),
+            6.horizontalSpace,
             Text(
               label,
               style: GoogleFonts.outfit(
@@ -397,8 +364,14 @@ class _JournalScreenState extends State<JournalScreen>
       itemBuilder: (context, index) {
         final l10n = AppLocalizations.of(context)!;
         final doc = docs[index];
-        final decryptedText = _repository.decryptIfNeeded({'text': doc.text, 'encrypted': doc.encrypted});
-        final decryptedTitle = _repository.decryptIfNeeded({'title': doc.title, 'encrypted': doc.encrypted}, isTitle: true);
+        final decryptedText = _repository.decryptIfNeeded({
+          'text': doc.text,
+          'encrypted': doc.encrypted,
+        });
+        final decryptedTitle = _repository.decryptIfNeeded({
+          'title': doc.title,
+          'encrypted': doc.encrypted,
+        }, isTitle: true);
         final emoji = doc.mood.isEmpty ? '😐' : doc.mood;
         final meta = _moodMeta(emoji, l10n);
         final ts = doc.timestamp;
@@ -414,13 +387,8 @@ class _JournalScreenState extends State<JournalScreen>
           formattedDate: formattedDate,
           isEncrypted: doc.encrypted,
           onDelete: () => _deleteJournal(doc.id),
-          onTap: () => _showEditEntryScreen(
-            doc.id,
-            decryptedTitle,
-            decryptedText,
-            emoji,
-            doc.encrypted,
-          ),
+          onTap: () =>
+              _showEditEntryScreen(doc.id, decryptedTitle, decryptedText, emoji, doc.encrypted),
         );
       },
     );
@@ -485,33 +453,24 @@ class _JournalScreenState extends State<JournalScreen>
               color: AppColors.warmBrown,
             ),
           ),
-          SizedBox(height: 6.h),
+          6.verticalSpace,
           Text(
             DateFormat('MMMM yyyy').format(now),
-            style: GoogleFonts.outfit(
-              color: AppColors.softBrown,
-              fontSize: 13.sp,
-            ),
+            style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 13.sp),
           ),
-          SizedBox(height: 30.h),
+          30.verticalSpace,
           Expanded(
             child: LineChart(
               LineChartData(
                 gridData: FlGridData(
                   show: true,
                   drawVerticalLine: false,
-                  getDrawingHorizontalLine: (value) => FlLine(
-                    color: AppColors.roseDust.withValues(alpha: 0.2),
-                    strokeWidth: 1,
-                  ),
+                  getDrawingHorizontalLine: (value) =>
+                      FlLine(color: AppColors.roseDust.withValues(alpha: 0.2), strokeWidth: 1),
                 ),
                 titlesData: FlTitlesData(
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
+                  rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                  topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
@@ -522,10 +481,7 @@ class _JournalScreenState extends State<JournalScreen>
                           padding: const EdgeInsets.only(top: 8),
                           child: Text(
                             value.toInt().toString(),
-                            style: GoogleFonts.outfit(
-                              color: AppColors.softBrown,
-                              fontSize: 11.sp,
-                            ),
+                            style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 11.sp),
                           ),
                         );
                       },
@@ -645,9 +601,7 @@ class _JournalEntryCard extends StatelessWidget {
               context: context,
               builder: (ctx) => AlertDialog(
                 backgroundColor: AppColors.ivoryCard,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20.r),
-                ),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
                 title: Text(
                   'Delete Entry?',
                   style: GoogleFonts.outfit(
@@ -657,18 +611,12 @@ class _JournalEntryCard extends StatelessWidget {
                 ),
                 content: Text(
                   'This journal entry will be deleted permanently.',
-                  style: GoogleFonts.outfit(
-                    color: AppColors.softBrown,
-                    fontSize: 14.sp,
-                  ),
+                  style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 14.sp),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(false),
-                    child: Text(
-                      'Cancel',
-                      style: GoogleFonts.outfit(color: AppColors.softBrown),
-                    ),
+                    child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.softBrown)),
                   ),
                   TextButton(
                     onPressed: () => Navigator.of(ctx).pop(true),
@@ -694,11 +642,7 @@ class _JournalEntryCard extends StatelessWidget {
           color: AppColors.roseDeep.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20.r),
         ),
-        child: Icon(
-          Icons.delete_outline_rounded,
-          color: AppColors.roseDeep,
-          size: 24.r,
-        ),
+        child: Icon(Icons.delete_outline_rounded, color: AppColors.roseDeep, size: 24.r),
       ),
       child: GestureDetector(
         onTap: () {
@@ -738,7 +682,7 @@ class _JournalEntryCard extends StatelessWidget {
                           ),
                         ),
                         if (isEncrypted) ...[
-                          SizedBox(width: 6.w),
+                          6.horizontalSpace,
                           Icon(
                             Icons.lock_rounded,
                             size: 10.r,
@@ -748,22 +692,17 @@ class _JournalEntryCard extends StatelessWidget {
                       ],
                     ),
                     Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 10.w,
-                        vertical: 4.h,
-                      ),
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
                       decoration: BoxDecoration(
                         color: accent.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(50.r),
-                        border: Border.all(
-                          color: accent.withValues(alpha: 0.25),
-                        ),
+                        border: Border.all(color: accent.withValues(alpha: 0.25)),
                       ),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(emoji, style: TextStyle(fontSize: 14.sp)),
-                          SizedBox(width: 5.w),
+                          5.horizontalSpace,
                           Text(
                             label,
                             style: GoogleFonts.outfit(
@@ -778,7 +717,7 @@ class _JournalEntryCard extends StatelessWidget {
                   ],
                 ),
                 if (title != null && title!.isNotEmpty) ...[
-                  SizedBox(height: 8.h),
+                  8.verticalSpace,
                   Text(
                     title!,
                     style: GoogleFonts.outfit(
@@ -787,9 +726,9 @@ class _JournalEntryCard extends StatelessWidget {
                       color: AppColors.warmBrown,
                     ),
                   ),
-                  SizedBox(height: 4.h),
+                  4.verticalSpace,
                 ],
-                SizedBox(height: title == null ? 12.h : 0),
+                (title == null ? 12.h : 0).verticalSpace,
                 Text(
                   text,
                   style: GoogleFonts.outfit(
@@ -824,7 +763,7 @@ class _JournalEmptyState extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text('📖', style: TextStyle(fontSize: 48.sp)),
-            SizedBox(height: 18.h),
+            18.verticalSpace,
             Text(
               AppLocalizations.of(context)!.journalEmptyTitle,
               style: GoogleFonts.outfit(
@@ -833,7 +772,7 @@ class _JournalEmptyState extends StatelessWidget {
                 color: AppColors.warmBrown,
               ),
             ),
-            SizedBox(height: 10.h),
+            10.verticalSpace,
             Text(
               AppLocalizations.of(context)!.journalEmptySubtitle,
               textAlign: TextAlign.center,
@@ -844,7 +783,7 @@ class _JournalEmptyState extends StatelessWidget {
                 height: 1.6,
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
             GestureDetector(
               onTap: onAdd,
               child: Container(

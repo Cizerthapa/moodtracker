@@ -190,7 +190,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                 ),
               ),
             ),
-          SizedBox(width: 8.w),
+          8.horizontalSpace,
         ],
       ),
       body: Column(
@@ -220,7 +220,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     ),
                     textInputAction: TextInputAction.next,
                   ),
-                  SizedBox(height: 16.h),
+                  16.verticalSpace,
 
                   // Content Field
                   TextField(
@@ -431,7 +431,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         ],
                       ),
                     ),
-                    SizedBox(width: 8.w),
+                    8.horizontalSpace,
                     Text(
                       moodMeta['label'] as String,
                       style: GoogleFonts.outfit(
@@ -440,7 +440,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    SizedBox(width: 8.w),
+                    8.horizontalSpace,
                   ],
                 ),
               ],

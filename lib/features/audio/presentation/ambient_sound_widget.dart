@@ -48,7 +48,7 @@ class _AmbientSoundWidgetState extends State<AmbientSoundWidget> {
                   onTap: () => setState(() => _isExpanded = false),
                   child: Icon(Icons.close_rounded, color: AppColors.roseDust, size: 24.r),
                 ),
-                SizedBox(width: 12.w),
+                12.horizontalSpace,
                 ..._soundService.tracks.keys.map((track) {
                   final isPlaying = _soundService.isPlaying && _soundService.currentTrack == track;
                   return GestureDetector(
@@ -84,7 +84,7 @@ class _AmbientSoundWidgetState extends State<AmbientSoundWidget> {
                     size: 24.r,
                   ),
                   if (_soundService.isPlaying) ...[
-                    SizedBox(width: 8.w),
+                    8.horizontalSpace,
                     Text(
                       _soundService.currentTrack,
                       style: GoogleFonts.outfit(

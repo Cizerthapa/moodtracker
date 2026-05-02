@@ -78,7 +78,7 @@ class UIStateWrapper extends StatelessWidget {
                               color: Colors.white,
                               size: 16.r,
                             ),
-                            SizedBox(width: 8.w),
+                            8.horizontalSpace,
                             Text(
                               "No Internet Connection",
                               style: GoogleFonts.outfit(

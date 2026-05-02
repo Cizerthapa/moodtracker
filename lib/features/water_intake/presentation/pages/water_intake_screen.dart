@@ -97,7 +97,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
     with SingleTickerProviderStateMixin {
   final WaterRepository _repository = sl<WaterRepository>();
   int _currentIntake = 0;
-  final int _dailyGoal = AppConstants.defaultDailyWaterGoal;
+  int _dailyGoal = AppConstants.defaultDailyWaterGoal;
   List<DrinkEntry> _history = [];
   DrinkType _selectedType = DrinkType.water;
   bool _isLoading = true;
@@ -163,6 +163,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
     
     final historyResult = await _repository.getDrinkHistoryStrings();
     final unitResult = await _repository.getHydrationUnit();
+    final goalResult = await _repository.getDailyWaterGoal();
 
     if (historyResult is Failure || unitResult is Failure) {
       if (mounted) {
@@ -197,6 +198,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
         _history = loadedHistory.reversed.toList();
         _currentIntake = todayIntake;
         _selectedUnit = savedUnit;
+        if (goalResult is Success<int>) {
+          _dailyGoal = goalResult.data;
+        }
         _isLoading = false;
       });
       _fadeController.forward();
@@ -241,6 +245,93 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text((result as Failure).message)),
       );
+    }
+  }
+
+  Future<void> _editDrink(int index, DrinkEntry oldEntry) async {
+    final controller = TextEditingController(text: oldEntry.amount.toString());
+    DrinkType selectedType = oldEntry.type;
+
+    final updated = await showDialog<DrinkEntry>(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => AlertDialog(
+          backgroundColor: AppColors.ivoryCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+          title: Text(
+            'Edit Entry',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: AppColors.warmBrown),
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: DrinkType.values.map((type) {
+                  final isSelected = type == selectedType;
+                  return GestureDetector(
+                    onTap: () => setDialogState(() => selectedType = type),
+                    child: Container(
+                      padding: EdgeInsets.all(8.r),
+                      decoration: BoxDecoration(
+                        color: isSelected ? type.color.withValues(alpha: 0.15) : Colors.transparent,
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: isSelected ? type.color : Colors.transparent,
+                          width: 2,
+                        ),
+                      ),
+                      child: Icon(type.icon, color: type.color, size: 24.r),
+                    ),
+                  );
+                }).toList(),
+              ),
+              16.verticalSpace,
+              TextField(
+                controller: controller,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Amount (ml)',
+                  labelStyle: GoogleFonts.outfit(color: AppColors.softBrown),
+                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12.r)),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(ctx),
+              child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.softBrown)),
+            ),
+            TextButton(
+              onPressed: () {
+                final amount = int.tryParse(controller.text) ?? oldEntry.amount;
+                Navigator.pop(
+                  ctx,
+                  DrinkEntry(
+                    type: selectedType,
+                    amount: amount,
+                    timestamp: oldEntry.timestamp,
+                  ),
+                );
+              },
+              child: Text('Save', style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold)),
+            ),
+          ],
+        ),
+      ),
+    );
+
+    if (updated != null) {
+      final historyResult = await _repository.getDrinkHistoryStrings();
+      if (historyResult is Success<List<String>>) {
+        final historyJson = historyResult.data;
+        final originalIndex = historyJson.length - 1 - index;
+        final result = await _repository.updateDrink(originalIndex, json.encode(updated.toJson()));
+        if (result is Success) {
+          await _loadData();
+        }
+      }
     }
   }
 
@@ -301,13 +392,13 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                         ),
                       ],
                     ),
-                    SizedBox(height: 12.h),
+                    12.verticalSpace,
                     Row(
                       children: [
                         _buildTabButton(0, Icons.track_changes_rounded, 'Goal'),
-                        SizedBox(width: 8.w),
+                        8.horizontalSpace,
                         _buildTabButton(1, Icons.history_rounded, 'History'),
-                        SizedBox(width: 8.w),
+                        8.horizontalSpace,
                         _buildTabButton(2, Icons.bar_chart_rounded, 'Trends'),
                       ],
                     ),
@@ -338,12 +429,12 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                                 width: 200.r,
                               ),
                             ),
-                            SizedBox(height: 48.h),
+                            48.verticalSpace,
                             ShimmerLoading(
                               isLoading: true,
                               child: ShimmerSkeleton(height: 100.h),
                             ),
-                            SizedBox(height: 48.h),
+                            48.verticalSpace,
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                               children: List.generate(
@@ -391,7 +482,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               size: 14.sp,
               color: isSelected ? Colors.white : AppColors.softBrown,
             ),
-            SizedBox(width: 6.w),
+            6.horizontalSpace,
             Text(
               label,
               style: GoogleFonts.outfit(
@@ -476,7 +567,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               ),
             ],
           ),
-          SizedBox(height: 48.h),
+          48.verticalSpace,
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
@@ -488,14 +579,14 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          20.verticalSpace,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: DrinkType.values
                 .map((type) => _buildTypeChip(type))
                 .toList(),
           ),
-          SizedBox(height: 48.h),
+          48.verticalSpace,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: _quickAddOptions.map((amount) => _buildAddButton(amount)).toList(),
@@ -541,7 +632,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               size: 28.r,
             ),
           ),
-          const SizedBox(height: 10),
+          10.verticalSpace,
           Text(
             type.label,
             style: GoogleFonts.outfit(
@@ -591,7 +682,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.history_rounded, size: 48.r, color: AppColors.champagne),
-            SizedBox(height: 16.h),
+            16.verticalSpace,
             Text(
               AppLocalizations.of(context)!.noHistory,
               style: GoogleFonts.outfit(
@@ -674,7 +765,9 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                 false;
           },
           onDismissed: (_) => _deleteDrink(index),
-          child: Container(
+          child: GestureDetector(
+            onTap: () => _editDrink(index, entry),
+            child: Container(
             margin: EdgeInsets.only(bottom: 12.h),
             padding: EdgeInsets.all(18.r),
             decoration: BoxDecoration(
@@ -696,7 +789,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                     size: 20.r,
                   ),
                 ),
-                SizedBox(width: 16.w),
+                16.horizontalSpace,
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,10 +825,11 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               ],
             ),
           ),
-        );
-      },
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   Widget _buildChartView() {
     final now = DateTime.now();
@@ -768,7 +862,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               color: AppColors.warmBrown,
             ),
           ),
-          const SizedBox(height: 32),
+          32.verticalSpace,
           Expanded(
             child: RepaintBoundary(
               child: BarChart(
@@ -843,7 +937,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
               ),
             ),
           ),
-          const SizedBox(height: 20),
+          20.verticalSpace,
         ],
       ),
     );

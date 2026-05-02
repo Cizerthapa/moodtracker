@@ -105,7 +105,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       color: AppColors.warmBrown,
                     ),
                   ),
-                  SizedBox(height: 8.h),
+                  8.verticalSpace,
                   Text(
                     'If an account exists, we will send a password reset link to this email.',
                     style: GoogleFonts.outfit(
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       ), // 0.8 * 255 ≈ 204
                     ),
                   ),
-                  SizedBox(height: 24.h),
+                  24.verticalSpace,
                   TextField(
                     controller: resetController,
                     decoration: InputDecoration(
@@ -128,7 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     keyboardType: TextInputType.emailAddress,
                   ),
-                  SizedBox(height: 24.h),
+                  24.verticalSpace,
                   ElevatedButton(
                     onPressed: isResetting
                         ? null
@@ -217,7 +217,7 @@ class _LoginScreenState extends State<LoginScreen> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              SizedBox(height: 60.h),
+              60.verticalSpace,
 
               // ── Heart Icon ────────────────────────────────────────
               Container(
@@ -256,7 +256,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   )
                   .fadeIn(duration: 400.ms),
 
-              SizedBox(height: 28.h),
+              28.verticalSpace,
 
               // ── Title ─────────────────────────────────────────────
               Text(
@@ -273,7 +273,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   .fadeIn(delay: 200.ms, duration: 500.ms)
                   .slideY(begin: 0.2, end: 0, delay: 200.ms, duration: 500.ms),
 
-              SizedBox(height: 8.h),
+              8.verticalSpace,
 
               // ── Subtitle ──────────────────────────────────────────
               Text(
@@ -292,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   .fadeIn(delay: 350.ms, duration: 500.ms)
                   .slideY(begin: 0.2, end: 0, delay: 350.ms, duration: 500.ms),
 
-              SizedBox(height: 48.h),
+              48.verticalSpace,
 
               // ── Email Field ───────────────────────────────────────
               TextField(
@@ -317,7 +317,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     curve: Curves.easeOutCubic,
                   ),
 
-              SizedBox(height: 16.h),
+              16.verticalSpace,
 
               // ── Password Field ────────────────────────────────────
               TextField(
@@ -342,7 +342,7 @@ class _LoginScreenState extends State<LoginScreen> {
                     curve: Curves.easeOutCubic,
                   ),
 
-              SizedBox(height: 8.h),
+              8.verticalSpace,
 
               // ── Forgot Password Button ──────────────────────────────
               if (_isLogin)
@@ -366,7 +366,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
                 ),
 
-              SizedBox(height: _isLogin ? 24.h : 36.h),
+              (_isLogin ? 24.h : 36.h).verticalSpace,
 
               // ── Submit Button ─────────────────────────────────────
               ElevatedButton(
@@ -401,7 +401,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   .fadeIn(delay: 650.ms, duration: 400.ms)
                   .slideY(begin: 0.2, end: 0, delay: 650.ms, duration: 400.ms),
 
-              SizedBox(height: 16.h),
+              16.verticalSpace,
 
               // ── Toggle Login/Signup ──────────────────────────────
               TextButton(

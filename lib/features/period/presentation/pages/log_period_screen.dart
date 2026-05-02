@@ -126,7 +126,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     _sectionLabel('Dates'),
-                    SizedBox(height: 10.h),
+                    10.verticalSpace,
                     Row(
                       children: [
                         Expanded(
@@ -136,7 +136,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                             onTap: () => _pickDate(isStart: true),
                           ),
                         ),
-                        SizedBox(width: 12.w),
+                        12.horizontalSpace,
                         Expanded(
                           child: _DateTile(
                             label: 'End (optional)',
@@ -149,19 +149,19 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                         ),
                       ],
                     ),
-                    SizedBox(height: 24.h),
+                    24.verticalSpace,
                     _sectionLabel('Flow Level'),
-                    SizedBox(height: 10.h),
+                    10.verticalSpace,
                     _buildFlowSelector(),
-                    SizedBox(height: 24.h),
+                    24.verticalSpace,
                     _sectionLabel('Symptoms'),
-                    SizedBox(height: 10.h),
+                    10.verticalSpace,
                     _buildSymptomChips(),
-                    SizedBox(height: 24.h),
+                    24.verticalSpace,
                     _sectionLabel('Notes (optional)'),
-                    SizedBox(height: 10.h),
+                    10.verticalSpace,
                     _buildNotesField(),
-                    SizedBox(height: 32.h),
+                    32.verticalSpace,
                     _buildSaveButton(),
                   ],
                 ),
@@ -194,7 +194,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
               ),
             ),
           ),
-          SizedBox(width: 16.w),
+          16.horizontalSpace,
           Text(
             _isEditing ? 'Edit Cycle' : 'Log Period',
             style: GoogleFonts.outfit(
@@ -243,7 +243,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
               child: Column(
                 children: [
                   Text(emojis[level]!, style: const TextStyle(fontSize: 14)),
-                  SizedBox(height: 4.h),
+                  4.verticalSpace,
                   Text(
                     labels[level]!,
                     style: GoogleFonts.outfit(
@@ -296,7 +296,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(s['emoji']!, style: const TextStyle(fontSize: 14)),
-                SizedBox(width: 5.w),
+                5.horizontalSpace,
                 Text(
                   s['label']!,
                   style: GoogleFonts.outfit(
@@ -438,7 +438,7 @@ class _DateTile extends StatelessWidget {
                   ),
               ],
             ),
-            SizedBox(height: 4.h),
+            4.verticalSpace,
             Text(
               hasDate
                   ? DateFormat('MMM d, yyyy').format(date!)

@@ -411,7 +411,7 @@ class _HeroSection extends StatelessWidget {
                         Row(
                           children: [
                             Icon(Icons.location_on_rounded, color: AppColors.roseDeep, size: 20.r),
-                            SizedBox(width: 8.w),
+                            8.horizontalSpace,
                             Text(
                               "Location Data",
                               style: GoogleFonts.outfit(
@@ -422,7 +422,7 @@ class _HeroSection extends StatelessWidget {
                             ),
                           ],
                         ),
-                        SizedBox(height: 8.h),
+                        8.verticalSpace,
                         Text(
                           "Lat: ${location.latitude.toStringAsFixed(4)}\nLng: ${location.longitude.toStringAsFixed(4)}",
                           style: GoogleFonts.outfit(
@@ -612,10 +612,10 @@ class _ViewPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SizedBox(height: 4.h),
+          4.verticalSpace,
 
           // ── Unique badge ─────────────────────────────────────────────
-          if (isUnique) ...[_UniqueBadge(), SizedBox(height: 14.h)],
+          if (isUnique) ...[_UniqueBadge(), 14.verticalSpace],
 
           // ── Title ────────────────────────────────────────────────────
           Row(
@@ -641,7 +641,7 @@ class _ViewPanel extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 10.h),
+          10.verticalSpace,
 
           // ── Date pill ────────────────────────────────────────────────
           Row(
@@ -651,7 +651,7 @@ class _ViewPanel extends StatelessWidget {
                 size: 13.sp,
                 color: AppColors.roseDust,
               ),
-              SizedBox(width: 6.w),
+              6.horizontalSpace,
               Text(
                 formatDate(memory.memoryDate ?? memory.timestamp),
                 style: GoogleFonts.outfit(
@@ -662,11 +662,11 @@ class _ViewPanel extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 24.h),
+          24.verticalSpace,
 
           // ── Ornamental divider ───────────────────────────────────────
           _OrnamentalDivider(),
-          SizedBox(height: 24.h),
+          24.verticalSpace,
 
           // ── Description ──────────────────────────────────────────────
           if (memory.description.isNotEmpty) ...[
@@ -679,13 +679,13 @@ class _ViewPanel extends StatelessWidget {
                 fontStyle: FontStyle.italic,
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
           ],
 
           // ── Favorite stories ─────────────────────────────────────────
           if (herFav != null || hisFav != null) ...[
             _StoryCards(herFav: herFav, hisFav: hisFav),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
           ],
 
           if (additionalImages.isNotEmpty) ...[
@@ -698,7 +698,7 @@ class _ViewPanel extends StatelessWidget {
                 letterSpacing: 0.3,
               ),
             ),
-            SizedBox(height: 14.h),
+            14.verticalSpace,
             SizedBox(
               height: 140.h,
               child: ListView.builder(
@@ -727,7 +727,7 @@ class _ViewPanel extends StatelessWidget {
                 },
               ),
             ),
-            SizedBox(height: 28.h),
+            28.verticalSpace,
           ],
 
           // ── Love note footer ─────────────────────────────────────────
@@ -778,7 +778,7 @@ class _EditPanel extends StatelessWidget {
               color: AppColors.warmBrown,
             ),
           ),
-          SizedBox(height: 20.h),
+          20.verticalSpace,
           _StyledField(
             controller: titleController,
             label: 'Title',
@@ -786,25 +786,25 @@ class _EditPanel extends StatelessWidget {
             fontSize: 18.sp,
             fontWeight: FontWeight.w600,
           ),
-          SizedBox(height: 16.h),
+          16.verticalSpace,
           _StyledField(
             controller: descController,
             label: 'Short Note / Description',
             maxLines: 4,
           ),
-          SizedBox(height: 16.h),
+          16.verticalSpace,
           _StyledField(
             controller: herFavController,
             label: 'Her Favorite Story',
             maxLines: 3,
           ),
-          SizedBox(height: 16.h),
+          16.verticalSpace,
           _StyledField(
             controller: hisFavController,
             label: 'His Favorite Story',
             maxLines: 3,
           ),
-          SizedBox(height: 24.h),
+          24.verticalSpace,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -881,7 +881,7 @@ class _EditPanel extends StatelessWidget {
                 },
               ),
             ),
-          SizedBox(height: 28.h),
+          28.verticalSpace,
           Row(
             children: [
               Expanded(
@@ -904,7 +904,7 @@ class _EditPanel extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.horizontalSpace,
               Expanded(
                 flex: 2,
                 child: ElevatedButton.icon(
@@ -960,7 +960,7 @@ class _UniqueBadge extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(Icons.star_rounded, size: 14.sp, color: AppColors.roseDeep),
-          SizedBox(width: 6.w),
+          6.horizontalSpace,
           Text(
             'Special Memory',
             style: GoogleFonts.outfit(
@@ -999,9 +999,9 @@ class _OrnamentalDivider extends StatelessWidget {
           child: Row(
             children: [
               Icon(Icons.favorite, size: 8.sp, color: AppColors.roseDust),
-              SizedBox(width: 5.w),
+              5.horizontalSpace,
               Icon(Icons.favorite, size: 12.sp, color: AppColors.roseDust),
-              SizedBox(width: 5.w),
+              5.horizontalSpace,
               Icon(Icons.favorite, size: 8.sp, color: AppColors.roseDust),
             ],
           ),
@@ -1044,7 +1044,7 @@ class _StoryCards extends StatelessWidget {
             letterSpacing: 0.3,
           ),
         ),
-        SizedBox(height: 14.h),
+        14.verticalSpace,
         if (herFav != null)
           _PerspectiveCard(
             label: 'Her Story',
@@ -1053,7 +1053,7 @@ class _StoryCards extends StatelessWidget {
             accentColor: const Color(0xFFE8A5B0),
             isLeft: true,
           ),
-        if (herFav != null && hisFav != null) SizedBox(height: 12.h),
+        if (herFav != null && hisFav != null) 12.verticalSpace,
         if (hisFav != null)
           _PerspectiveCard(
             label: 'His Story',
@@ -1117,7 +1117,7 @@ class _PerspectiveCard extends StatelessWidget {
                 ),
                 child: Icon(icon, size: 14.sp, color: accentColor),
               ),
-              SizedBox(width: 10.w),
+              10.horizontalSpace,
               Text(
                 label,
                 style: GoogleFonts.outfit(
@@ -1129,7 +1129,7 @@ class _PerspectiveCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 12.h),
+          12.verticalSpace,
           Text(
             text,
             style: GoogleFonts.lora(
@@ -1180,13 +1180,13 @@ class _LoveNoteCard extends StatelessWidget {
                 size: 10.sp,
                 color: AppColors.roseDust.withValues(alpha: 0.5),
               ),
-              SizedBox(width: 6.w),
+              6.horizontalSpace,
               Icon(
                 Icons.favorite_rounded,
                 size: 16.sp,
                 color: AppColors.roseDust,
               ),
-              SizedBox(width: 6.w),
+              6.horizontalSpace,
               Icon(
                 Icons.favorite_rounded,
                 size: 10.sp,
@@ -1194,7 +1194,7 @@ class _LoveNoteCard extends StatelessWidget {
               ),
             ],
           ),
-          SizedBox(height: 14.h),
+          14.verticalSpace,
           Text(
             AppLocalizations.of(context)!.loveNoteText,
             textAlign: TextAlign.center,
@@ -1328,7 +1328,7 @@ class _DeleteSheet extends StatelessWidget {
               size: 26.sp,
             ),
           ),
-          SizedBox(height: 18.h),
+          18.verticalSpace,
           Text(
             'Let this memory go?',
             style: GoogleFonts.cormorantGaramond(
@@ -1337,7 +1337,7 @@ class _DeleteSheet extends StatelessWidget {
               color: AppColors.warmBrown,
             ),
           ),
-          SizedBox(height: 10.h),
+          10.verticalSpace,
           Text(
             'This memory will be gone forever.\nAre you sure?',
             textAlign: TextAlign.center,
@@ -1347,7 +1347,7 @@ class _DeleteSheet extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          SizedBox(height: 28.h),
+          28.verticalSpace,
           Row(
             children: [
               Expanded(
@@ -1370,7 +1370,7 @@ class _DeleteSheet extends StatelessWidget {
                   ),
                 ),
               ),
-              SizedBox(width: 12.w),
+              12.horizontalSpace,
               Expanded(
                 child: ElevatedButton(
                   onPressed: () => Navigator.pop(context, true),

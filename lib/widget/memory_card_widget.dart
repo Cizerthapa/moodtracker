@@ -99,7 +99,7 @@ class MemoryCardState extends State<MemoryCard>
                     size: 18,
                   ),
                 ),
-                const SizedBox(width: 14),
+                14.horizontalSpace,
 
                 // Text
                 Expanded(
@@ -118,7 +118,7 @@ class MemoryCardState extends State<MemoryCard>
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      SizedBox(height: 2.h),
+                      2.verticalSpace,
                       Text(
                         title,
                         style: TextStyle(

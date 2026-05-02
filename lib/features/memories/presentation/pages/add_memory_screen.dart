@@ -147,7 +147,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.add_a_photo_rounded, color: AppColors.roseDust, size: 48.r),
-                          SizedBox(height: 12.h),
+                          12.verticalSpace,
                           Text(
                             "Add a Photo",
                             style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 16.sp),
@@ -156,7 +156,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                       ),
               ),
             ),
-            const SizedBox(height: 24),
+            24.verticalSpace,
 
             TextField(
               controller: _titleController,
@@ -171,7 +171,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16.h),
+            16.verticalSpace,
             
             TextField(
               controller: _descController,
@@ -186,7 +186,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 16.h),
+            16.verticalSpace,
             
             // Date & Time pickers
             Row(
@@ -212,7 +212,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                       child: Row(
                         children: [
                           Icon(Icons.calendar_today_rounded, size: 18.r, color: AppColors.roseDust),
-                          SizedBox(width: 8.w),
+                          8.horizontalSpace,
                           Text("${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2,'0')}-${_selectedDate.day.toString().padLeft(2,'0')}", 
                             style: TextStyle(color: AppColors.warmBrown)),
                         ],
@@ -220,7 +220,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                     ),
                   ),
                 ),
-                SizedBox(width: 12.w),
+                12.horizontalSpace,
                 Expanded(
                   child: InkWell(
                     onTap: () async {
@@ -240,7 +240,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                       child: Row(
                         children: [
                           Icon(Icons.access_time_rounded, size: 18.r, color: AppColors.roseDust),
-                          SizedBox(width: 8.w),
+                          8.horizontalSpace,
                           Text(_selectedTime.format(context), 
                             style: TextStyle(color: AppColors.warmBrown)),
                         ],
@@ -250,7 +250,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 ),
               ],
             ),
-            SizedBox(height: 24.h),
+            24.verticalSpace,
 
             // Is Unique Switch
             Container(
@@ -266,7 +266,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                   Row(
                     children: [
                       Icon(Icons.star_rounded, color: AppColors.roseDeep),
-                      SizedBox(width: 12.w),
+                      12.horizontalSpace,
                       Text("Unique Memory?", style: TextStyle(color: AppColors.warmBrown, fontWeight: FontWeight.bold, fontSize: 16.sp)),
                     ],
                   ),
@@ -279,7 +279,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
               ),
             ),
 
-            SizedBox(height: 16.h),
+            16.verticalSpace,
             TextField(
               controller: _herFavController,
               maxLines: 3,
@@ -294,7 +294,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
                 ),
               ),
             ),
-            SizedBox(height: 12.h),
+            12.verticalSpace,
             TextField(
               controller: _hisFavController,
               maxLines: 3,
@@ -310,7 +310,7 @@ class _AddMemoryScreenState extends State<AddMemoryScreen> {
               ),
             ),
 
-            const SizedBox(height: 32),
+            32.verticalSpace,
 
             SizedBox(
               width: double.infinity,
