@@ -1,13 +1,38 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:moodtrack/core/error/result.dart';
 
 /// A central manager to handle global loading states and error notifications.
 class UIStateManager extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
+  bool _isOffline = false;
+  late StreamSubscription<List<ConnectivityResult>> _connectivitySubscription;
 
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
+  bool get isOffline => _isOffline;
+
+  UIStateManager() {
+    _initConnectivity();
+  }
+
+  void _initConnectivity() {
+    _connectivitySubscription = Connectivity().onConnectivityChanged.listen((results) {
+      final offline = results.contains(ConnectivityResult.none) || results.isEmpty;
+      if (_isOffline != offline) {
+        _isOffline = offline;
+        notifyListeners();
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _connectivitySubscription.cancel();
+    super.dispose();
+  }
 
   /// Sets the global loading state.
   void setLoading(bool loading) {

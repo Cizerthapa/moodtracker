@@ -50,15 +50,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final bioResult = await _repository.getBiometricEnabled();
 
     setState(() {
-      if (notifResult is Success<bool>) _notificationsEnabled = notifResult.data;
-      if (encResult is Success<bool>) _journalEncryptionEnabled = encResult.data;
+      if (notifResult is Success<bool>)
+        _notificationsEnabled = notifResult.data;
+      if (encResult is Success<bool>)
+        _journalEncryptionEnabled = encResult.data;
       if (bioResult is Success<bool>) _biometricEnabled = bioResult.data;
     });
   }
 
   Future<void> _toggleNotifications(bool value) async {
     HapticFeedback.selectionClick();
-    
+
     final result = await _repository.setNotificationsEnabled(value);
     if (!sl<UIStateManager>().handleResult(result)) return;
 
@@ -384,21 +386,25 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ),
                         );
                         try {
-                          final migrationResult = await _journalRepository.migrateEncryption(value);
+                          final migrationResult = await _journalRepository
+                              .migrateEncryption(value);
                           if (migrationResult is Failure) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text((migrationResult as Failure).message)),
+                                SnackBar(
+                                  content: Text((migrationResult).message),
+                                ),
                               );
                             }
                             return;
                           }
 
-                          final setEncResult = await _journalRepository.setEncryptionEnabled(value);
+                          final setEncResult = await _journalRepository
+                              .setEncryptionEnabled(value);
                           if (setEncResult is Failure) {
                             if (mounted) {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text((setEncResult as Failure).message)),
+                                SnackBar(content: Text((setEncResult).message)),
                               );
                             }
                             return;

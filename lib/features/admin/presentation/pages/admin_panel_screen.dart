@@ -49,7 +49,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
           _stats = result.data;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+            SnackBar(
+              content: Text((result as Failure).message),
+              backgroundColor: _danger,
+            ),
           );
         }
         _loadingStats = false;
@@ -660,7 +663,10 @@ class _MemoriesTabState extends State<_MemoriesTab> {
           _memories = result.data;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+            SnackBar(
+              content: Text((result as Failure).message),
+              backgroundColor: _danger,
+            ),
           );
         }
         _loadingMemories = false;
@@ -853,12 +859,18 @@ class _MemoriesTabState extends State<_MemoriesTab> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final result = await widget.repo.deleteMemory(_selectedUid!, mem.id!);
+              final result = await widget.repo.deleteMemory(
+                _selectedUid!,
+                mem.id!,
+              );
               if (result is Success) {
                 _loadMemories(_selectedUid!);
               } else if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+                  SnackBar(
+                    content: Text((result as Failure).message),
+                    backgroundColor: _danger,
+                  ),
                 );
               }
             },
@@ -903,7 +915,6 @@ class _JournalsTabState extends State<_JournalsTab> {
   static const _danger = Color(0xFFFF7B72);
   static const _surface = Color(0xFF161B22);
 
-
   @override
   void initState() {
     super.initState();
@@ -929,7 +940,10 @@ class _JournalsTabState extends State<_JournalsTab> {
           _journals = result.data;
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+            SnackBar(
+              content: Text((result as Failure).message),
+              backgroundColor: _danger,
+            ),
           );
         }
         _loadingJournals = false;
@@ -1135,12 +1149,18 @@ class _JournalsTabState extends State<_JournalsTab> {
           ElevatedButton(
             onPressed: () async {
               Navigator.pop(ctx);
-              final result = await widget.repo.deleteJournal(_selectedUid!, entry.id);
+              final result = await widget.repo.deleteJournal(
+                _selectedUid!,
+                entry.id,
+              );
               if (result is Success) {
                 _loadJournals(_selectedUid!);
               } else if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+                  SnackBar(
+                    content: Text((result as Failure).message),
+                    backgroundColor: _danger,
+                  ),
                 );
               }
             },
@@ -1284,7 +1304,10 @@ class _BroadcastTabState extends State<_BroadcastTab> {
                         final result = await widget.repo.clearBroadcast();
                         if (result is Failure && context.mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text((result as Failure).message), backgroundColor: _danger),
+                            SnackBar(
+                              content: Text((result).message),
+                              backgroundColor: _danger,
+                            ),
                           );
                         }
                       },
@@ -1442,7 +1465,10 @@ class _BroadcastTabState extends State<_BroadcastTab> {
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text((result as Failure).message, style: GoogleFonts.outfit()),
+            content: Text(
+              (result as Failure).message,
+              style: GoogleFonts.outfit(),
+            ),
             backgroundColor: _danger,
           ),
         );
