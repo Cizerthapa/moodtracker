@@ -120,20 +120,25 @@ class UserRepository {
     final partnerUid = partnerDoc.id;
 
     log('Firestore: Linking user ${currentUser.uid} with partner $partnerUid', name: 'Firebase');
-    // Update current user
-    await _usersCollection.doc(currentUser.uid).update({
-      'partnerUid': partnerUid,
-      'partnerEmail': partnerEmail.toLowerCase(),
-    });
+    try {
+      // Update current user
+      await _usersCollection.doc(currentUser.uid).update({
+        'partnerUid': partnerUid,
+        'partnerEmail': partnerEmail.toLowerCase(),
+      });
 
-    // Mutual link: update partner to point back
-    await _usersCollection.doc(partnerUid).update({
-      'partnerUid': currentUser.uid,
-      'partnerEmail': currentUser.email?.toLowerCase(),
-    });
+      // Mutual link: update partner to point back
+      await _usersCollection.doc(partnerUid).update({
+        'partnerUid': currentUser.uid,
+        'partnerEmail': currentUser.email?.toLowerCase(),
+      });
 
-    log('Firestore: Mutual link established successfully', name: 'Firebase');
-    return true;
+      log('Firestore: Mutual link established successfully', name: 'Firebase');
+      return true;
+    } catch (e) {
+      log('Firestore: Error during partner linking: $e', name: 'Firebase');
+      return false;
+    }
   }
 
   Future<void> setRelationshipStartDate(DateTime date) async {
@@ -141,20 +146,25 @@ class UserRepository {
     if (uid == null) return;
 
     log('Firestore: Setting relationship start date for $uid', name: 'Firebase');
-    await _usersCollection.doc(uid).update({
-      'relationshipStartDate': Timestamp.fromDate(date),
-    });
-
-    // Try update partner too if linked
-    final profile = await getUserProfile();
-    final partnerUid = profile?.partnerUid;
-    if (partnerUid != null) {
-      log('Firestore: Setting relationship start date for partner $partnerUid', name: 'Firebase');
-      await _usersCollection.doc(partnerUid).update({
+    try {
+      await _usersCollection.doc(uid).update({
         'relationshipStartDate': Timestamp.fromDate(date),
       });
+
+      // Try update partner too if linked
+      final profile = await getUserProfile();
+      final partnerUid = profile?.partnerUid;
+      if (partnerUid != null) {
+        log('Firestore: Setting relationship start date for partner $partnerUid', name: 'Firebase');
+        await _usersCollection.doc(partnerUid).update({
+          'relationshipStartDate': Timestamp.fromDate(date),
+        });
+      }
+      log('Firestore: Relationship start date updated successfully', name: 'Firebase');
+    } catch (e) {
+      log('Firestore: Error updating relationship start date: $e', name: 'Firebase');
+      rethrow;
     }
-    log('Firestore: Relationship start date updated successfully', name: 'Firebase');
   }
 
   // ── Helpers ───────────────────────────────────────────────────────────────

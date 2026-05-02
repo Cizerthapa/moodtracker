@@ -33,4 +33,9 @@ class AppConstants {
   static const String instantChannelName = 'Instant Notifications';
   static const String dailyChannelId = 'daily_channel';
   static const String dailyChannelName = 'Daily Messages';
+
+  // Audio Tracks
+  static const String audioBirdsUrl = 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_145c228d42.mp3';
+  static const String audioWaterfallUrl = 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_0625c1539c.mp3';
+  static const String audioForestUrl = 'https://cdn.pixabay.com/download/audio/2021/09/06/audio_4f09d20c57.mp3';
 }

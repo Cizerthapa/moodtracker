@@ -56,11 +56,12 @@ class MemoriesRepository {
 
     StreamSubscription? partnerSub;
     final userSub = UserRepository().getUserProfileStream().listen((profile) {
-      if (profile?.partnerUid != null && partnerSub == null) {
-        log('Firestore: Listening to partner memories for ${profile!.partnerUid}', name: 'Firebase');
+      final partnerUid = profile?.partnerUid;
+      if (partnerUid != null && partnerSub == null) {
+        log('Firestore: Listening to partner memories for $partnerUid', name: 'Firebase');
         partnerSub = _firestore
             .collection('users')
-            .doc(profile.partnerUid)
+            .doc(partnerUid)
             .collection(AppConstants.memoriesCollection)
             .orderBy('timestamp', descending: true)
             .snapshots()
@@ -114,25 +115,39 @@ class MemoriesRepository {
 
   Future<void> addMemory(MemoryModel memory) async {
     log('Firestore: Adding memory for $_uid', name: 'Firebase');
-    await _memoriesCollection.add(memory.toFirestore());
-    log('Firestore: Memory added successfully', name: 'Firebase');
-    // Clear cache to force refresh on next load
-    await _clearCache();
+    try {
+      await _memoriesCollection.add(memory.toFirestore());
+      log('Firestore: Memory added successfully', name: 'Firebase');
+      await _clearCache();
+    } catch (e) {
+      log('Firestore: Error adding memory: $e', name: 'Firebase');
+      rethrow;
+    }
   }
 
   Future<void> updateMemory(MemoryModel memory) async {
     if (memory.id == null) return;
     log('Firestore: Updating memory ${memory.id} for $_uid', name: 'Firebase');
-    await _memoriesCollection.doc(memory.id).update(memory.toFirestore());
-    log('Firestore: Memory updated successfully', name: 'Firebase');
-    await _clearCache();
+    try {
+      await _memoriesCollection.doc(memory.id).update(memory.toFirestore());
+      log('Firestore: Memory updated successfully', name: 'Firebase');
+      await _clearCache();
+    } catch (e) {
+      log('Firestore: Error updating memory: $e', name: 'Firebase');
+      rethrow;
+    }
   }
 
   Future<void> deleteMemory(String id) async {
     log('Firestore: Deleting memory $id for $_uid', name: 'Firebase');
-    await _memoriesCollection.doc(id).delete();
-    log('Firestore: Memory deleted successfully', name: 'Firebase');
-    await _clearCache();
+    try {
+      await _memoriesCollection.doc(id).delete();
+      log('Firestore: Memory deleted successfully', name: 'Firebase');
+      await _clearCache();
+    } catch (e) {
+      log('Firestore: Error deleting memory: $e', name: 'Firebase');
+      rethrow;
+    }
   }
 
   Future<void> _clearCache() async {
