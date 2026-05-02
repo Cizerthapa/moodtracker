@@ -1,9 +1,6 @@
 import 'dart:developer';
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:moodtrack/core/constants/app_constants.dart';
-
 
 class AmbientSoundService extends ChangeNotifier {
   static final AmbientSoundService _instance = AmbientSoundService._internal();
@@ -20,20 +17,20 @@ class AmbientSoundService extends ChangeNotifier {
     });
   }
 
-
   final AudioPlayer _player = AudioPlayer();
   bool isPlaying = false;
   String currentTrack = '';
 
+  /// Keys are display names, values are asset paths relative to the assets folder.
   final Map<String, String> tracks = {
-    'Birds': AppConstants.audioBirdsUrl,
-    'Waterfall': AppConstants.audioWaterfallUrl,
-    'Forest': AppConstants.audioForestUrl,
+    'Birds': 'music/birds-relaxing.mp3',
+    'Waterfall': 'music/waterfall.mp3',
+    'Forest': 'music/forest-music.mp3',
   };
 
   Future<void> togglePlay(String trackName) async {
-    final trackUrl = tracks[trackName];
-    if (trackUrl == null) {
+    final assetPath = tracks[trackName];
+    if (assetPath == null) {
       log('Audio: Error - Track "$trackName" not found in library', name: 'Audio');
       return;
     }
@@ -44,18 +41,11 @@ class AmbientSoundService extends ChangeNotifier {
       log('Audio: Pausing current track: $currentTrack', name: 'Audio');
       await _player.pause();
     } else {
-      // Check connectivity before playing remote URL
-      final connectivityResult = await Connectivity().checkConnectivity();
-      if (connectivityResult.contains(ConnectivityResult.none)) {
-        log('Audio: Error - No internet connection to stream audio', name: 'Audio');
-        return;
-      }
-
       try {
-        log('Audio: Playing track: $trackName', name: 'Audio');
+        log('Audio: Playing local asset track: $trackName ($assetPath)', name: 'Audio');
         currentTrack = trackName;
         await _player.setReleaseMode(ReleaseMode.loop);
-        await _player.play(UrlSource(trackUrl));
+        await _player.play(AssetSource(assetPath));
       } catch (e) {
         log('Audio: Critical error playing track $trackName: $e', name: 'Audio');
         isPlaying = false;
