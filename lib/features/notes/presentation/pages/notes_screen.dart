@@ -9,6 +9,7 @@ import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/core/database/local_database.dart';
 import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
@@ -70,8 +71,7 @@ class _NotesScreenState extends State<NotesScreen>
     with SingleTickerProviderStateMixin {
   final NotesRepository _repository = sl<NotesRepository>();
   final StorageService _storageService = sl<StorageService>();
-  List<Map<String, dynamic>> _notes = [];
-  bool _isLoading = true;
+  final AppDatabase _db = sl<AppDatabase>();
   String _searchQuery = "";
   late TextEditingController _searchController;
   late AnimationController _fadeController;
@@ -88,7 +88,7 @@ class _NotesScreenState extends State<NotesScreen>
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _searchController = TextEditingController();
-    _loadNotes();
+    _fadeController.forward();
   }
 
   @override
@@ -98,31 +98,15 @@ class _NotesScreenState extends State<NotesScreen>
     super.dispose();
   }
 
-  Future<void> _loadNotes() async {
-    final result = await _repository.getNotes();
-
-    if (result is Success<List<Map<String, dynamic>>>) {
-      if (mounted) {
-        setState(() {
-          _notes = result.data;
-          _isLoading = false;
-        });
-        _fadeController.forward();
-      }
-    } else {
-      sl<UIStateManager>().handleResult(result, retryTask: _loadNotes);
-      if (mounted) setState(() => _isLoading = false);
-    }
-  }
-
   Future<void> _saveNote(
+    String id,
     String title,
     String text,
     String emoji,
     String? imageUrl,
   ) async {
     final newNote = {
-      'id': DateTime.now().millisecondsSinceEpoch.toString(),
+      'id': id,
       'title': title,
       'text': text,
       'mood': emoji,
@@ -133,7 +117,6 @@ class _NotesScreenState extends State<NotesScreen>
     final result = await _repository.saveNote(newNote);
     if (result is Success) {
       HapticFeedback.mediumImpact();
-      _loadNotes();
     } else if (mounted) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(
@@ -146,27 +129,28 @@ class _NotesScreenState extends State<NotesScreen>
     final result = await _repository.deleteNote(id);
     if (result is Success) {
       HapticFeedback.lightImpact();
-      _loadNotes();
     } else if (mounted) {
       HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text((result as Failure).message)));
-      // Reload to restore the item if needed, though Dismissible might need manual refresh
-      _loadNotes();
     }
   }
 
   Map<String, dynamic> _moodMeta(String emoji) =>
       _moods.firstWhere((m) => m['emoji'] == emoji, orElse: () => _moods[2]);
 
-  void _showAddNoteScreen() {
+  void _showAddNoteScreen({Note? existingNote}) {
     context.pushNamed(
       AppRoutes.addNote,
       extra: <String, dynamic>{
+        'initialTitle': existingNote?.title ?? '',
+        'initialText': existingNote?.textContent ?? '',
+        'initialEmoji': existingNote?.mood ?? '😐',
+        'initialImage': existingNote?.imageUrl,
         'onSave': (String title, String text, String emoji, dynamic image) async {
-          String? imageUrl;
-          if (image != null) {
+          String? imageUrl = existingNote?.imageUrl;
+          if (image != null && image is! String) {
             final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
             final uploadResult = await _storageService.uploadFile(
               file: image,
@@ -181,7 +165,8 @@ class _NotesScreenState extends State<NotesScreen>
               return;
             }
           }
-          await _saveNote(title, text, emoji, imageUrl);
+          final noteId = existingNote?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+          await _saveNote(noteId, title, text, emoji, imageUrl);
         },
       },
     );
@@ -340,103 +325,90 @@ class _NotesScreenState extends State<NotesScreen>
 
               // ── Notes list ────────────────────────────────────────────
               Expanded(
-                child: UnifiedRefreshIndicator(
-                  onRefresh: _loadNotes,
-                  child: _isLoading
-                      ? ListView.builder(
-                          padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
-                          itemCount: 4,
-                          itemBuilder: (context, index) => Padding(
-                            padding: const EdgeInsets.only(bottom: 12),
-                            child: ShimmerLoading(
-                              isLoading: true,
-                              child: ShimmerSkeleton(
-                                height: 120,
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
-                          ),
-                        )
-                      : _notes.isEmpty
-                      ? SingleChildScrollView(
-                          physics: const AlwaysScrollableScrollPhysics(),
-                          child: SizedBox(
-                            height: 0.6.sh,
-                            child: _EmptyState(onAdd: _showAddNoteScreen),
-                          ),
-                        )
-                      : FadeTransition(
-                          opacity: _fadeAnim,
-                          child: RepaintBoundary(
-                            child: Builder(
-                              builder: (context) {
-                                final filteredNotes = _searchQuery.isEmpty
-                                    ? _notes
-                                    : _notes
-                                          .where(
-                                            (n) =>
-                                                (n['text'] ?? "")
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .contains(
-                                                      _searchQuery
-                                                          .toLowerCase(),
-                                                    ) ||
-                                                (n['mood'] ?? "")
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .contains(
-                                                      _searchQuery
-                                                          .toLowerCase(),
-                                                    ),
-                                          )
-                                          .toList();
-
-                                if (filteredNotes.isEmpty &&
-                                    _searchQuery.isNotEmpty) {
-                                  return SingleChildScrollView(
-                                    physics:
-                                        const AlwaysScrollableScrollPhysics(),
-                                    child: SizedBox(
-                                      height: 0.5.sh,
-                                      child: Center(
-                                        child: Text(
-                                          "No notes match your search",
-                                          style: TextStyle(
-                                            color: AppColors.softBrown,
-                                            fontSize: 14.sp,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  );
-                                }
-
-                                return ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(
-                                    20.w,
-                                    4.h,
-                                    20.w,
-                                    100.h,
-                                  ),
-                                  itemCount: filteredNotes.length,
-                                  physics:
-                                      const AlwaysScrollableScrollPhysics(),
-                                  itemBuilder: (context, index) {
-                                    final note = filteredNotes[index];
-                                    return _NoteCard(
-                                      note: note,
-                                      moodMeta: _moodMeta(note['mood'] ?? '😐'),
-                                      onDelete: () => _deleteNote(
-                                        note['id'] ?? note['date'],
-                                      ),
-                                    );
-                                  },
-                                );
-                              },
+                child: StreamBuilder<List<Note>>(
+                  stream: _db.watchAllNotes(),
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
+                      return ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
+                        itemCount: 4,
+                        itemBuilder: (context, index) => Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: ShimmerLoading(
+                            isLoading: true,
+                            child: ShimmerSkeleton(
+                              height: 120,
+                              borderRadius: BorderRadius.circular(20),
                             ),
                           ),
                         ),
+                      );
+                    }
+
+                    final notesList = snapshot.data ?? [];
+                    if (notesList.isEmpty) {
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: 0.6.sh,
+                          child: _EmptyState(onAdd: _showAddNoteScreen),
+                        ),
+                      );
+                    }
+                    
+                    // Sort by newest first
+                    notesList.sort((a, b) => b.date.compareTo(a.date));
+
+                    final filteredNotes = _searchQuery.isEmpty
+                        ? notesList
+                        : notesList
+                            .where(
+                              (n) =>
+                                  n.textContent
+                                      .toLowerCase()
+                                      .contains(_searchQuery.toLowerCase()) ||
+                                  n.mood
+                                      .toLowerCase()
+                                      .contains(_searchQuery.toLowerCase()),
+                            )
+                            .toList();
+
+                    if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
+                      return SingleChildScrollView(
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        child: SizedBox(
+                          height: 0.5.sh,
+                          child: Center(
+                            child: Text(
+                              "No notes match your search",
+                              style: TextStyle(
+                                color: AppColors.softBrown,
+                                fontSize: 14.sp,
+                              ),
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return FadeTransition(
+                      opacity: _fadeAnim,
+                      child: ListView.builder(
+                        padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
+                        itemCount: filteredNotes.length,
+                        physics: const AlwaysScrollableScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          final note = filteredNotes[index];
+                          return _NoteCard(
+                            note: note,
+                            moodMeta: _moodMeta(note.mood),
+                            onDelete: () => _deleteNote(note.id),
+                            onTap: () => _showAddNoteScreen(existingNote: note),
+                          );
+                        },
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
@@ -450,27 +422,29 @@ class _NotesScreenState extends State<NotesScreen>
 // ─── Note Card ───────────────────────────────────────────────────────────────
 
 class _NoteCard extends StatelessWidget {
-  final Map<String, dynamic> note;
+  final Note note;
   final Map<String, dynamic> moodMeta;
   final VoidCallback onDelete;
+  final VoidCallback onTap;
 
   const _NoteCard({
     required this.note,
     required this.moodMeta,
     required this.onDelete,
+    required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    final date = DateTime.parse(note['date']);
+    final date = note.date;
     final formattedDate = DateFormat('MMM d · h:mm a').format(date);
     final tint = moodMeta['tint'] as Color;
     final accent = moodMeta['accent'] as Color;
-    final emoji = note['mood'] as String? ?? '😐';
+    final emoji = note.mood;
     final label = moodMeta['label'] as String;
 
     return Dismissible(
-      key: Key(note['id'] ?? note['date']),
+      key: Key(note.id),
       direction: DismissDirection.endToStart,
       background: Container(
         margin: EdgeInsets.only(bottom: 12.h),
@@ -487,23 +461,25 @@ class _NoteCard extends StatelessWidget {
         ),
       ),
       onDismissed: (_) => onDelete(),
-      child: Container(
-        margin: EdgeInsets.only(bottom: 12.h),
-        decoration: BoxDecoration(
-          color: tint,
-          borderRadius: BorderRadius.circular(20.r),
-          border: Border.all(color: accent.withValues(alpha: 0.2), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: accent.withValues(alpha: 0.06),
-              blurRadius: 12.r,
-              offset: Offset(0, 3.h),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(18.r),
-          child: Column(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          margin: EdgeInsets.only(bottom: 12.h),
+          decoration: BoxDecoration(
+            color: tint,
+            borderRadius: BorderRadius.circular(20.r),
+            border: Border.all(color: accent.withValues(alpha: 0.2), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: accent.withValues(alpha: 0.06),
+                blurRadius: 12.r,
+                offset: Offset(0, 3.h),
+              ),
+            ],
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(18.r),
+            child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Top row: date + mood badge
@@ -552,10 +528,10 @@ class _NoteCard extends StatelessWidget {
               SizedBox(height: 12.h),
 
               // Note Title
-              if (note['title'] != null &&
-                  note['title'].toString().isNotEmpty) ...[
+              if (note.title != null &&
+                  note.title.toString().isNotEmpty) ...[
                 Text(
-                  note['title'],
+                  note.title!,
                   style: GoogleFonts.outfit(
                     fontSize: 18.sp,
                     fontWeight: FontWeight.bold,
@@ -567,7 +543,7 @@ class _NoteCard extends StatelessWidget {
 
               // Note text
               Text(
-                note['text'] ?? '',
+                note.textContent,
                 maxLines: 4,
                 overflow: TextOverflow.ellipsis,
                 style: GoogleFonts.outfit(
@@ -578,12 +554,12 @@ class _NoteCard extends StatelessWidget {
               ),
 
               // Note Image
-              if (note['imageUrl'] != null) ...[
+              if (note.imageUrl != null) ...[
                 SizedBox(height: 16.h),
                 ClipRRect(
                   borderRadius: BorderRadius.circular(16.r),
                   child: Image.network(
-                    note['imageUrl'],
+                    note.imageUrl!,
                     height: 180.h,
                     width: double.infinity,
                     fit: BoxFit.cover,
@@ -612,6 +588,7 @@ class _NoteCard extends StatelessWidget {
             ],
           ),
         ),
+      ),
       ),
     );
   }

@@ -133,7 +133,13 @@ class AppRouter {
                       as Function(String, String, String, dynamic)?;
                   return CustomTransitionPage(
                     fullscreenDialog: true,
-                    child: AddNoteScreen(onSave: onSave ?? (_, __, ___, ____) {}),
+                    child: AddNoteScreen(
+                      onSave: onSave ?? (_, __, ___, ____) {},
+                      initialTitle: args?['initialTitle'] as String?,
+                      initialText: args?['initialText'] as String?,
+                      initialEmoji: args?['initialEmoji'] as String?,
+                      initialImage: args?['initialImage'] as String?,
+                    ),
                     transitionsBuilder: (_, anim, __, child) =>
                         FadeTransition(opacity: anim, child: child),
                   );

@@ -49,23 +49,44 @@ final _moods = [
 ];
 
 class AddNoteScreen extends StatefulWidget {
-  final Function(String title, String text, String emoji, File? image) onSave;
+  final Function(String title, String text, String emoji, dynamic image) onSave;
+  final String? initialTitle;
+  final String? initialText;
+  final String? initialEmoji;
+  final String? initialImage;
 
-  const AddNoteScreen({super.key, required this.onSave});
+  const AddNoteScreen({
+    super.key, 
+    required this.onSave,
+    this.initialTitle,
+    this.initialText,
+    this.initialEmoji,
+    this.initialImage,
+  });
 
   @override
   State<AddNoteScreen> createState() => _AddNoteScreenState();
 }
 
 class _AddNoteScreenState extends State<AddNoteScreen> {
-  final _titleController = TextEditingController();
-  final _contentController = TextEditingController();
+  late final TextEditingController _titleController;
+  late final TextEditingController _contentController;
   final _titleFocusNode = FocusNode();
   final _contentFocusNode = FocusNode();
 
-  String _selectedEmoji = _moods[0]['emoji'] as String;
+  late String _selectedEmoji;
   File? _selectedImage;
+  String? _existingImageUrl;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _titleController = TextEditingController(text: widget.initialTitle);
+    _contentController = TextEditingController(text: widget.initialText);
+    _selectedEmoji = widget.initialEmoji ?? _moods[0]['emoji'] as String;
+    _existingImageUrl = widget.initialImage;
+  }
 
   @override
   void dispose() {
@@ -84,7 +105,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
     );
     if (pickedFile != null) {
       HapticFeedback.lightImpact();
-      setState(() => _selectedImage = File(pickedFile.path));
+      setState(() {
+        _selectedImage = File(pickedFile.path);
+        _existingImageUrl = null;
+      });
     }
   }
 
@@ -120,7 +144,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
       _titleController.text.trim(),
       _contentController.text.trim(),
       _selectedEmoji,
-      _selectedImage,
+      _selectedImage ?? _existingImageUrl,
     );
     if (mounted) Navigator.pop(context);
   }
@@ -220,40 +244,78 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                   ),
 
                   // Image Preview
-                  if (_selectedImage != null) ...[
-                    SizedBox(height: 24.h),
+                  if (_selectedImage != null)
                     Stack(
                       children: [
                         ClipRRect(
-                          borderRadius: BorderRadius.circular(20.r),
+                          borderRadius: BorderRadius.circular(16.r),
                           child: Image.file(
                             _selectedImage!,
+                            height: 200.h,
                             width: double.infinity,
                             fit: BoxFit.cover,
                           ),
                         ),
                         Positioned(
-                          top: 8,
-                          right: 8,
+                          top: 8.h,
+                          right: 8.w,
                           child: GestureDetector(
-                            onTap: () => setState(() => _selectedImage = null),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() => _selectedImage = null);
+                            },
                             child: Container(
-                              padding: const EdgeInsets.all(4),
+                              padding: EdgeInsets.all(4.r),
                               decoration: const BoxDecoration(
                                 color: Colors.black54,
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(
-                                Icons.close,
+                              child: Icon(
+                                Icons.close_rounded,
                                 color: Colors.white,
-                                size: 20,
+                                size: 16.r,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    )
+                  else if (_existingImageUrl != null)
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(16.r),
+                          child: Image.network(
+                            _existingImageUrl!,
+                            height: 200.h,
+                            width: double.infinity,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                        Positioned(
+                          top: 8.h,
+                          right: 8.w,
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              setState(() => _existingImageUrl = null);
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(4.r),
+                              decoration: const BoxDecoration(
+                                color: Colors.black54,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                Icons.close_rounded,
+                                color: Colors.white,
+                                size: 16.r,
                               ),
                             ),
                           ),
                         ),
                       ],
                     ),
-                  ],
 
                   SizedBox(
                     height: 100.h,
