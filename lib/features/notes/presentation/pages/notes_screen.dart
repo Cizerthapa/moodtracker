@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
@@ -129,8 +130,10 @@ class _NotesScreenState extends State<NotesScreen>
 
     final result = await _repository.saveNote(newNote);
     if (result is Success) {
+      HapticFeedback.mediumImpact();
       _loadNotes();
     } else if (mounted) {
+      HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text((result as Failure).message)));
@@ -140,8 +143,10 @@ class _NotesScreenState extends State<NotesScreen>
   Future<void> _deleteNote(String id) async {
     final result = await _repository.deleteNote(id);
     if (result is Success) {
+      HapticFeedback.lightImpact();
       _loadNotes();
     } else if (mounted) {
+      HapticFeedback.heavyImpact();
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text((result as Failure).message)));
@@ -234,7 +239,10 @@ class _NotesScreenState extends State<NotesScreen>
                       ),
                     ),
                     GestureDetector(
-                      onTap: _showAddNoteScreen,
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _showAddNoteScreen();
+                      },
                       child: Container(
                         width: 46.r,
                         height: 46.r,

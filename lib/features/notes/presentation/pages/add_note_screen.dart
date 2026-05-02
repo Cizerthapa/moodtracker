@@ -52,6 +52,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
     if (pickedFile != null) {
+      HapticFeedback.lightImpact();
       setState(() => _selectedImage = File(pickedFile.path));
     }
   }
@@ -65,6 +66,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
       selection: TextSelection.collapsed(offset: selection.start + insertion.length),
     );
     _contentFocusNode.requestFocus();
+    HapticFeedback.lightImpact();
   }
 
   Future<void> _save() async {
