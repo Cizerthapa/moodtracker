@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
-import 'package:moodtrack/features/memories/presentation/pages/memory_detail_screen.dart';
-import 'package:moodtrack/features/memories/presentation/pages/add_memory_screen.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 
@@ -129,13 +129,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
   }
 
   void _showAddMemorySheet() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const AddMemoryScreen(),
-        fullscreenDialog: true,
-      ),
-    );
+    context.pushNamed(AppRoutes.addMemory);
   }
 
   @override
@@ -263,24 +257,12 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                                       index: index,
                                       onTap: () {
                                         if (docs.isNotEmpty) {
-                                          Navigator.push(
-                                            context,
-                                            PageRouteBuilder(
-                                              pageBuilder: (_, anim, _) =>
-                                                  MemoryDetailScreen(
-                                                    memory: docs[index],
-                                                  ),
-                                              transitionsBuilder:
-                                                  (_, anim, _, child) =>
-                                                      FadeTransition(
-                                                        opacity: anim,
-                                                        child: child,
-                                                      ),
-                                              transitionDuration: const Duration(
-                                                milliseconds: AppConstants
-                                                    .defaultTransitionDurationMs,
-                                              ),
-                                            ),
+                                          context.pushNamed(
+                                            AppRoutes.memoryDetail,
+                                            pathParameters: {
+                                              'memoryId': docs[index].id ?? 'unknown',
+                                            },
+                                            extra: docs[index],
                                           );
                                         }
                                       },

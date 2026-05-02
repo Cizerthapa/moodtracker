@@ -3,16 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:go_router/go_router.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:moodtrack/features/memories/presentation/pages/memories_screen.dart';
-import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_screen.dart';
-import 'package:moodtrack/features/journal/presentation/pages/journal_screen.dart';
-import 'package:moodtrack/features/settings/presentation/pages/settings_screen.dart';
-import 'package:moodtrack/features/period/presentation/pages/period_tracking_screen.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
-import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/features/audio/presentation/ambient_sound_widget.dart';
 
 class EntryScreen extends StatelessWidget {
@@ -67,12 +63,7 @@ class EntryScreen extends StatelessWidget {
                         GestureDetector(
                           onTap: () {
                             HapticFeedback.lightImpact();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const SettingsScreen(),
-                              ),
-                            );
+                            context.pushNamed(AppRoutes.settings);
                           },
                           child: Container(
                             padding: EdgeInsets.all(12.r),
@@ -119,7 +110,7 @@ class EntryScreen extends StatelessWidget {
                         subtitle: l10n.ourStorySubtitle,
                         icon: Icons.auto_awesome_rounded,
                         color: AppColors.roseDust,
-                        destination: const MemoriesScreen(),
+                        routeName: AppRoutes.memories,
                         index: 0,
                       ),
                       SizedBox(height: 20.h),
@@ -129,7 +120,7 @@ class EntryScreen extends StatelessWidget {
                         subtitle: l10n.hydrationSubtitle,
                         icon: Icons.water_drop_rounded,
                         color: const Color(0xFF6DAA7A),
-                        destination: const WaterIntakeScreen(),
+                        routeName: AppRoutes.water,
                         index: 1,
                       ),
                       SizedBox(height: 20.h),
@@ -139,7 +130,7 @@ class EntryScreen extends StatelessWidget {
                         subtitle: l10n.journalSubtitle,
                         icon: Icons.auto_awesome_rounded,
                         color: const Color(0xFFD4A832),
-                        destination: const JournalScreen(),
+                        routeName: AppRoutes.journal,
                         index: 2,
                       ),
                       SizedBox(height: 20.h),
@@ -149,7 +140,7 @@ class EntryScreen extends StatelessWidget {
                         subtitle: 'Track, predict & share your cycle.',
                         icon: Icons.favorite_rounded,
                         color: const Color(0xFF9B7EC8),
-                        destination: const PeriodTrackingScreen(),
+                        routeName: AppRoutes.period,
                         index: 3,
                       ),
                     ],
@@ -171,23 +162,13 @@ class EntryScreen extends StatelessWidget {
     required String subtitle,
     required IconData icon,
     required Color color,
-    required Widget destination,
+    required String routeName,
     required int index,
   }) {
     return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            Navigator.push(
-              context,
-              PageRouteBuilder(
-                pageBuilder: (_, anim, _) => destination,
-                transitionsBuilder: (_, anim, _, child) =>
-                    FadeTransition(opacity: anim, child: child),
-                transitionDuration: const Duration(
-                  milliseconds: AppConstants.defaultTransitionDurationMs,
-                ),
-              ),
-            );
+            context.pushNamed(routeName);
           },
           child: Container(
             decoration: BoxDecoration(

@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
@@ -14,7 +16,6 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/error/result.dart';
-import 'add_note_screen.dart';
 import 'package:moodtrack/core/widgets/unified_refresh_indicator.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
 
@@ -160,32 +161,29 @@ class _NotesScreenState extends State<NotesScreen>
       _moods.firstWhere((m) => m['emoji'] == emoji, orElse: () => _moods[2]);
 
   void _showAddNoteScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddNoteScreen(
-          onSave: (title, text, emoji, image) async {
-            String? imageUrl;
-            if (image != null) {
-              final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
-              final uploadResult = await _storageService.uploadFile(
-                file: image,
-                path: path,
+    context.pushNamed(
+      AppRoutes.addNote,
+      extra: <String, dynamic>{
+        'onSave': (String title, String text, String emoji, dynamic image) async {
+          String? imageUrl;
+          if (image != null) {
+            final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
+            final uploadResult = await _storageService.uploadFile(
+              file: image,
+              path: path,
+            );
+            if (uploadResult is Success<String>) {
+              imageUrl = uploadResult.data;
+            } else if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text((uploadResult as Failure).message)),
               );
-              if (uploadResult is Success<String>) {
-                imageUrl = uploadResult.data;
-              } else if (mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text((uploadResult as Failure).message)),
-                );
-                return;
-              }
+              return;
             }
-            await _saveNote(title, text, emoji, imageUrl);
-          },
-        ),
-        fullscreenDialog: true,
-      ),
+          }
+          await _saveNote(title, text, emoji, imageUrl);
+        },
+      },
     );
   }
 

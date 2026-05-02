@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/mood_palette.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
@@ -13,12 +15,9 @@ import 'package:moodtrack/features/settings/data/repositories/settings_repositor
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
 import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
 import 'package:moodtrack/core/managers/locale_manager.dart';
-import 'package:moodtrack/features/auth/presentation/pages/login_screen.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
-import 'package:moodtrack/features/memories/presentation/pages/together_since_screen.dart';
-import 'package:moodtrack/features/admin/presentation/pages/admin_panel_screen.dart';
 import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
@@ -481,12 +480,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       size: 22.r,
                     ),
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const TogetherSinceScreen(),
-                        ),
-                      );
+                      context.pushNamed(AppRoutes.togetherSince);
                     },
                     index: 6,
                   ),
@@ -505,10 +499,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       HapticFeedback.heavyImpact();
                       await sl<AuthRepository>().signOut();
                       if (!context.mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(builder: (_) => const LoginScreen()),
-                        (_) => false,
-                      );
+                      context.go('/login');
                     },
                     index: 7,
                   ),
@@ -755,15 +746,7 @@ class _AdminFooterState extends State<_AdminFooter>
     HapticFeedback.heavyImpact();
     final user = FirebaseAuth.instance.currentUser;
     if (user?.email == AdminRepository.adminEmail) {
-      Navigator.push(
-        context,
-        PageRouteBuilder(
-          pageBuilder: (_, anim, __) => const AdminPanelScreen(),
-          transitionsBuilder: (_, anim, __, child) =>
-              FadeTransition(opacity: anim, child: child),
-          transitionDuration: const Duration(milliseconds: 400),
-        ),
-      );
+      context.pushNamed(AppRoutes.admin);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

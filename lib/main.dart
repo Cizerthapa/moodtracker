@@ -9,12 +9,10 @@ import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/constants/app_strings.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
 import 'package:moodtrack/core/widgets/ui_state_wrapper.dart';
-
 import 'package:moodtrack/core/managers/locale_manager.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-import 'package:moodtrack/features/splash/presentation/pages/splash_screen.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
-
+import 'package:moodtrack/core/navigation/app_router.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,23 +49,16 @@ class MoodTrackApp extends StatelessWidget {
       builder: (context, child) {
         return Consumer2<ThemeManager, LocaleManager>(
           builder: (context, themeManager, localeManager, child) {
-            return MaterialApp(
-              title:
-                  AppLocalizations.of(context)?.appName ?? AppStrings.appName,
+            return MaterialApp.router(
+              title: AppStrings.appName,
               debugShowCheckedModeBanner: false,
               theme: AppTheme.getTheme(themeManager.palette),
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
               locale: localeManager.locale,
-              builder: (context, child) {
-                return UIStateWrapper(child: child!);
-              },
-              home: KeyedSubtree(
-                key: ValueKey(
-                  '${themeManager.palette.name}_${localeManager.locale.languageCode}',
-                ),
-                child: const SplashScreen(),
-              ),
+              // UIStateWrapper wraps every page via the builder
+              builder: (context, child) => UIStateWrapper(child: child!),
+              routerConfig: AppRouter.router,
             );
           },
         );

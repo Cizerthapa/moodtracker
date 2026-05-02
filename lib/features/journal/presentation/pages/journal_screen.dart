@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
-import 'package:moodtrack/features/journal/presentation/pages/add_journal_entry_screen.dart';
 
 // Mood metadata matching the original NotesScreen style
 List<Map<String, dynamic>> _getJournalMoods(AppLocalizations l10n) => [
@@ -125,17 +126,15 @@ class _JournalScreenState extends State<JournalScreen>
   }
 
   void _showAddEntryScreen() {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddJournalEntryScreen(
-          onSave: (title, text, emoji) async {
-            await _addJournal(title, text, emoji);
-          },
-          moods: _getJournalMoods(AppLocalizations.of(context)!),
-        ),
-        fullscreenDialog: true,
-      ),
+    context.pushNamed(
+      AppRoutes.addJournal,
+      extra: <String, dynamic>{
+        'onSave': (String? title, String text, String emoji) async {
+          await _addJournal(title, text, emoji);
+        },
+        'moods': _getJournalMoods(AppLocalizations.of(context)!),
+        'isEditing': false,
+      },
     );
   }
 
@@ -146,27 +145,24 @@ class _JournalScreenState extends State<JournalScreen>
     String emoji,
     bool isEncrypted,
   ) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => AddJournalEntryScreen(
-          onSave: (newTitle, newText, newEmoji) async {
-            await _repository.updateJournal(
-              id,
-              title: newTitle,
-              text: newText,
-              mood: newEmoji,
-              encrypt: isEncrypted,
-            );
-          },
-          moods: _getJournalMoods(AppLocalizations.of(context)!),
-          initialTitle: title,
-          initialText: text,
-          initialMood: emoji,
-          isEditing: true,
-        ),
-        fullscreenDialog: true,
-      ),
+    context.pushNamed(
+      AppRoutes.addJournal,
+      extra: <String, dynamic>{
+        'onSave': (String? newTitle, String newText, String newEmoji) async {
+          await _repository.updateJournal(
+            id,
+            title: newTitle,
+            text: newText,
+            mood: newEmoji,
+            encrypt: isEncrypted,
+          );
+        },
+        'moods': _getJournalMoods(AppLocalizations.of(context)!),
+        'initialTitle': title,
+        'initialText': text,
+        'initialMood': emoji,
+        'isEditing': true,
+      },
     );
   }
 
