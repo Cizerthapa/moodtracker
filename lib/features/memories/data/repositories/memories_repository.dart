@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -41,10 +42,12 @@ class MemoriesRepository {
     }
 
     StreamSubscription? mySub;
+    log('Firestore: Listening to memories for $_uid', name: 'Firebase');
     mySub = _memoriesCollection
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snap) {
+          log('Firestore: Received ${snap.docs.length} memories for $_uid', name: 'Firebase');
           myMemories = snap.docs
               .map((doc) => MemoryModel.fromFirestore(doc))
               .toList();
@@ -54,13 +57,15 @@ class MemoriesRepository {
     StreamSubscription? partnerSub;
     final userSub = UserRepository().getUserProfileStream().listen((profile) {
       if (profile?.partnerUid != null && partnerSub == null) {
+        log('Firestore: Listening to partner memories for ${profile!.partnerUid}', name: 'Firebase');
         partnerSub = _firestore
             .collection('users')
-            .doc(profile!.partnerUid)
+            .doc(profile.partnerUid)
             .collection(AppConstants.memoriesCollection)
             .orderBy('timestamp', descending: true)
             .snapshots()
             .listen((snap) {
+              log('Firestore: Received ${snap.docs.length} partner memories', name: 'Firebase');
               partnerMemories = snap.docs
                   .map((doc) => MemoryModel.fromFirestore(doc))
                   .toList();
@@ -92,10 +97,12 @@ class MemoriesRepository {
   }
 
   Future<List<MemoryModel>> fetchAndCacheMemories() async {
+    log('Firestore: Fetching memories for $_uid', name: 'Firebase');
     final snapshot = await _memoriesCollection
         .orderBy('timestamp', descending: true)
         .get();
 
+    log('Firestore: Fetched ${snapshot.docs.length} memories', name: 'Firebase');
     final memories = snapshot.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
 
     final prefs = await SharedPreferences.getInstance();
@@ -106,19 +113,25 @@ class MemoriesRepository {
   }
 
   Future<void> addMemory(MemoryModel memory) async {
+    log('Firestore: Adding memory for $_uid', name: 'Firebase');
     await _memoriesCollection.add(memory.toFirestore());
+    log('Firestore: Memory added successfully', name: 'Firebase');
     // Clear cache to force refresh on next load
     await _clearCache();
   }
 
   Future<void> updateMemory(MemoryModel memory) async {
     if (memory.id == null) return;
+    log('Firestore: Updating memory ${memory.id} for $_uid', name: 'Firebase');
     await _memoriesCollection.doc(memory.id).update(memory.toFirestore());
+    log('Firestore: Memory updated successfully', name: 'Firebase');
     await _clearCache();
   }
 
   Future<void> deleteMemory(String id) async {
+    log('Firestore: Deleting memory $id for $_uid', name: 'Firebase');
     await _memoriesCollection.doc(id).delete();
+    log('Firestore: Memory deleted successfully', name: 'Firebase');
     await _clearCache();
   }
 
@@ -128,12 +141,14 @@ class MemoriesRepository {
   }
 
   Future<void> seedMemories(List<MemoryModel> seeds) async {
+    log('Firestore: Seeding ${seeds.length} memories for $_uid', name: 'Firebase');
     final batch = _firestore.batch();
     for (var memory in seeds) {
       final docRef = _memoriesCollection.doc();
       batch.set(docRef, memory.toFirestore());
     }
     await batch.commit();
+    log('Firestore: Seeding batch committed successfully', name: 'Firebase');
     await _clearCache();
   }
 }

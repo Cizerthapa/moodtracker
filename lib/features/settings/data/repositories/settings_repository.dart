@@ -1,4 +1,6 @@
+import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
+
 import 'package:moodtrack/core/constants/app_constants.dart';
 
 class SettingsRepository {
@@ -11,6 +13,7 @@ class SettingsRepository {
   }
 
   Future<void> setNotificationsEnabled(bool enabled) async {
+    log('Preferences: Setting notifications enabled: $enabled', name: 'Preferences');
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.notificationsPrefsKey, enabled);
   }
@@ -21,6 +24,7 @@ class SettingsRepository {
   }
 
   Future<void> setThemeName(String themeName) async {
+    log('Preferences: Setting theme: $themeName', name: 'Preferences');
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('theme_name', themeName);
   }
@@ -31,6 +35,7 @@ class SettingsRepository {
   }
 
   Future<void> setBiometricEnabled(bool enabled) async {
+    log('Preferences: Setting biometric enabled: $enabled', name: 'Preferences');
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(AppConstants.biometricPrefsKey, enabled);
   }

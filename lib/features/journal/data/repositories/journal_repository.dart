@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -34,6 +35,7 @@ class JournalRepository {
   // ── CRUD ───────────────────────────────────────────────────────────────────
 
   Stream<QuerySnapshot> getJournalsStream() {
+    log('Firestore: Listening to journals for $_uid', name: 'Firebase');
     return _journalsCollection
         .orderBy('timestamp', descending: true)
         .snapshots();
@@ -46,6 +48,7 @@ class JournalRepository {
     String? imageLocalPath,
     bool encrypt = false,
   }) async {
+    log('Firestore: Adding journal for $_uid (encrypted: $encrypt)', name: 'Firebase');
     final encryptedTitle = (encrypt && title != null) ? _encryption.encrypt(title, _uid) : title;
     final content = encrypt ? _encryption.encrypt(text, _uid) : text;
     await _journalsCollection.add({
@@ -56,6 +59,7 @@ class JournalRepository {
       'encrypted': encrypt,
       'timestamp': FieldValue.serverTimestamp(),
     });
+    log('Firestore: Journal added successfully', name: 'Firebase');
   }
 
   Future<void> updateJournal(
@@ -65,6 +69,7 @@ class JournalRepository {
     required String mood,
     bool encrypt = false,
   }) async {
+    log('Firestore: Updating journal $id for $_uid (encrypted: $encrypt)', name: 'Firebase');
     final encryptedTitle =
         (encrypt && title != null) ? _encryption.encrypt(title, _uid) : title;
     final content = encrypt ? _encryption.encrypt(text, _uid) : text;
@@ -75,10 +80,13 @@ class JournalRepository {
       'encrypted': encrypt,
       'lastUpdated': FieldValue.serverTimestamp(),
     });
+    log('Firestore: Journal updated successfully', name: 'Firebase');
   }
 
   Future<void> deleteJournal(String id) async {
+    log('Firestore: Deleting journal $id for $_uid', name: 'Firebase');
     await _journalsCollection.doc(id).delete();
+    log('Firestore: Journal deleted successfully', name: 'Firebase');
   }
 
   /// Decrypts text if the document is marked as encrypted.
@@ -100,8 +108,12 @@ class JournalRepository {
 
   /// Called when the user toggles encryption. Re-encrypts or decrypts all entries.
   Future<void> migrateEncryption(bool enableEncryption) async {
+    log('Firestore: Migrating journal encryption for $_uid (enable: $enableEncryption)', name: 'Firebase');
     final snapshot = await _journalsCollection.get();
-    if (snapshot.docs.isEmpty) return;
+    if (snapshot.docs.isEmpty) {
+      log('Firestore: No journals to migrate', name: 'Firebase');
+      return;
+    }
 
     final batch = _firestore.batch();
     for (final doc in snapshot.docs) {
@@ -130,5 +142,6 @@ class JournalRepository {
       }
     }
     await batch.commit();
+    log('Firestore: Migration batch committed successfully', name: 'Firebase');
   }
 }

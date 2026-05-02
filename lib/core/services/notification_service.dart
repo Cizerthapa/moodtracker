@@ -23,12 +23,15 @@ class NotificationService {
   Timer? _periodicTimer;
 
   Future<void> init() async {
+    log('Notifications: Initializing...', name: 'LocalNotifications');
     tz.initializeTimeZones();
     try {
       final dynamic tzData = await FlutterTimezone.getLocalTimezone();
       final String timeZoneName = tzData.toString();
+      log('Notifications: System timezone: $timeZoneName', name: 'LocalNotifications');
       tz.setLocalLocation(tz.getLocation(timeZoneName));
     } catch (e) {
+      log('Notifications: Error getting timezone, falling back to UTC: $e', name: 'LocalNotifications');
       // Fallback to UTC if timezone plugin fails (common during hot reload/restart)
       tz.setLocalLocation(tz.getLocation('Etc/UTC'));
     }
@@ -45,7 +48,9 @@ class NotificationService {
 
     await _notificationsPlugin.initialize(
       settings: initSettings,
-      onDidReceiveNotificationResponse: (NotificationResponse details) {},
+      onDidReceiveNotificationResponse: (NotificationResponse details) {
+        log('Notifications: Notification response received: ${details.payload}', name: 'LocalNotifications');
+      },
     );
 
     // Request permissions for Android 13+ and exact alarms
@@ -56,12 +61,15 @@ class NotificationService {
             >();
 
     if (androidImplementation != null) {
+      log('Notifications: Requesting Android permissions...', name: 'LocalNotifications');
       await androidImplementation.requestNotificationsPermission();
       await androidImplementation.requestExactAlarmsPermission();
     }
+    log('Notifications: Initialization complete', name: 'LocalNotifications');
   }
 
   Future<void> showInstantNotification(String title, String body) async {
+    log('Notifications: Showing instant notification: $title - $body', name: 'LocalNotifications');
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
           AppConstants.instantChannelId,
@@ -109,12 +117,14 @@ class NotificationService {
     required int hour,
     required int minute,
   }) async {
+    final scheduledDate = _nextInstanceOfTime(hour, minute);
+    log('Notifications: Scheduling daily notification $id for $hour:$minute (Next instance: $scheduledDate)', name: 'LocalNotifications');
     // ✅ Fixed: use named parameters (v18+ API)
     await _notificationsPlugin.zonedSchedule(
       id: id,
       title: title,
       body: body,
-      scheduledDate: _nextInstanceOfTime(hour, minute),
+      scheduledDate: scheduledDate,
       notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           AppConstants.dailyChannelId,

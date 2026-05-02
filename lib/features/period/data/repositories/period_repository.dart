@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
@@ -34,10 +35,12 @@ class PeriodRepository {
     }
 
     StreamSubscription? mySub;
+    log('Firestore: Listening to periods for $_uid', name: 'Firebase');
     mySub = _periodsCollection
         .orderBy('startDate', descending: true)
         .snapshots()
         .listen((snap) {
+          log('Firestore: Received ${snap.docs.length} periods for $_uid', name: 'Firebase');
           myCycles =
               snap.docs.map((d) => PeriodCycle.fromFirestore(d)).toList();
           emit();
@@ -47,13 +50,15 @@ class PeriodRepository {
     final profileSub =
         UserRepository().getUserProfileStream().listen((profile) {
           if (profile?.partnerUid != null && partnerSub == null) {
+            log('Firestore: Listening to partner periods for ${profile!.partnerUid}', name: 'Firebase');
             partnerSub = _firestore
                 .collection('users')
-                .doc(profile!.partnerUid)
+                .doc(profile.partnerUid)
                 .collection(AppConstants.periodsCollection)
                 .orderBy('startDate', descending: true)
                 .snapshots()
                 .listen((snap) {
+                  log('Firestore: Received ${snap.docs.length} partner periods', name: 'Firebase');
                   partnerCycles =
                       snap.docs.map((d) => PeriodCycle.fromFirestore(d)).toList();
                   emit();
@@ -72,15 +77,21 @@ class PeriodRepository {
   }
 
   Future<void> addCycle(PeriodCycle cycle) async {
+    log('Firestore: Adding cycle for $_uid', name: 'Firebase');
     await _periodsCollection.add(cycle.toFirestore());
+    log('Firestore: Cycle added successfully', name: 'Firebase');
   }
 
   Future<void> updateCycle(PeriodCycle cycle) async {
     if (cycle.id == null) return;
+    log('Firestore: Updating cycle ${cycle.id} for $_uid', name: 'Firebase');
     await _periodsCollection.doc(cycle.id).update(cycle.toFirestore());
+    log('Firestore: Cycle updated successfully', name: 'Firebase');
   }
 
   Future<void> deleteCycle(String id) async {
+    log('Firestore: Deleting cycle $id for $_uid', name: 'Firebase');
     await _periodsCollection.doc(id).delete();
+    log('Firestore: Cycle deleted successfully', name: 'Firebase');
   }
 }

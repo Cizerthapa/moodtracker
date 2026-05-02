@@ -1,5 +1,5 @@
+import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/foundation.dart';
 
 class FcmService {
   FcmService._internal();
@@ -11,6 +11,7 @@ class FcmService {
   /// Requests permission and returns the FCM token.
   /// Returns null if permission denied or on web without VAPID key.
   Future<String?> initAndGetToken() async {
+    log('FCM: Initializing and requesting token', name: 'Firebase');
     try {
       // Request permission (iOS / web)
       final settings = await _messaging.requestPermission(
@@ -20,19 +21,23 @@ class FcmService {
       );
 
       if (settings.authorizationStatus == AuthorizationStatus.denied) {
-        debugPrint('[FCM] Permission denied.');
+        log('FCM: Permission denied', name: 'Firebase');
         return null;
       }
 
+      log('FCM: Getting token', name: 'Firebase');
       final token = await _messaging.getToken();
-      debugPrint('[FCM] Token: $token');
+      log('FCM: Token retrieved: $token', name: 'Firebase');
       return token;
     } catch (e) {
-      debugPrint('[FCM] Error getting token: $e');
+      log('FCM: Error getting token: $e', name: 'Firebase');
       return null;
     }
   }
 
   /// Stream that fires when the FCM token is refreshed.
-  Stream<String> get onTokenRefresh => _messaging.onTokenRefresh;
+  Stream<String> get onTokenRefresh {
+    log('FCM: Token refresh listener attached', name: 'Firebase');
+    return _messaging.onTokenRefresh;
+  }
 }

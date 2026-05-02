@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:moodtrack/core/models/user_profile_model.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
@@ -15,14 +16,20 @@ class AdminRepository {
   // ── Users ────────────────────────────────────────────────────────────────
 
   Future<Map<String, dynamic>?> getUserProfile(String uid) async {
+    log('Firestore [Admin]: Fetching profile for $uid', name: 'Firebase');
     final doc = await _firestore.collection('users').doc(uid).get();
-    if (!doc.exists) return null;
+    if (!doc.exists) {
+      log('Firestore [Admin]: Profile for $uid not found', name: 'Firebase');
+      return null;
+    }
     final data = doc.data()!;
     data['uid'] = doc.id;
+    log('Firestore [Admin]: Profile for $uid retrieved successfully', name: 'Firebase');
     return data;
   }
 
   Future<void> deleteUserData(String uid) async {
+    log('Firestore [Admin]: Deleting all data for $uid', name: 'Firebase');
     // Delete all sub-collections
     final collections = [
       'memories',
@@ -32,6 +39,7 @@ class AdminRepository {
       'moodEntries',
     ];
     for (final col in collections) {
+      log('Firestore [Admin]: Deleting sub-collection $col for $uid', name: 'Firebase');
       final snap = await _firestore
           .collection('users')
           .doc(uid)
@@ -42,9 +50,12 @@ class AdminRepository {
         batch.delete(doc.reference);
       }
       await batch.commit();
+      log('Firestore [Admin]: Sub-collection $col deleted', name: 'Firebase');
     }
     // Delete user document itself
+    log('Firestore [Admin]: Deleting user document $uid', name: 'Firebase');
     await _firestore.collection('users').doc(uid).delete();
+    log('Firestore [Admin]: User $uid fully deleted', name: 'Firebase');
   }
 
   // ── Full Profile ─────────────────────────────────────────────────────────
@@ -61,7 +72,9 @@ class AdminRepository {
   // ── Fix: return Stream<List<UserProfile>> instead of raw maps ──────────────
 
   Stream<List<UserProfile>> getAllUsersStream() {
+    log('Firestore [Admin]: Listening to all users', name: 'Firebase');
     return _firestore.collection('users').snapshots().map((snap) {
+      log('Firestore [Admin]: Received all users snapshot (${snap.docs.length} users)', name: 'Firebase');
       return snap.docs.map((doc) {
         final data = doc.data();
         data['uid'] = doc.id;
@@ -73,42 +86,50 @@ class AdminRepository {
   // ── Journals ──────────────────────────────────────────────────────────────
 
   Future<List<JournalEntry>> getUserJournals(String uid) async {
+    log('Firestore [Admin]: Fetching journals for $uid', name: 'Firebase');
     final snap = await _firestore
         .collection('users')
         .doc(uid)
         .collection('journals')
         .orderBy('timestamp', descending: true)
         .get();
+    log('Firestore [Admin]: Fetched ${snap.docs.length} journals for $uid', name: 'Firebase');
     return snap.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList();
   }
 
   Future<void> deleteJournal(String uid, String journalId) async {
+    log('Firestore [Admin]: Deleting journal $journalId for $uid', name: 'Firebase');
     await _firestore
         .collection('users')
         .doc(uid)
         .collection('journals')
         .doc(journalId)
         .delete();
+    log('Firestore [Admin]: Journal $journalId deleted', name: 'Firebase');
   }
   // ── Memories ─────────────────────────────────────────────────────────────
 
   Future<List<MemoryModel>> getUserMemories(String uid) async {
+    log('Firestore [Admin]: Fetching memories for $uid', name: 'Firebase');
     final snap = await _firestore
         .collection('users')
         .doc(uid)
         .collection('memories')
         .orderBy('timestamp', descending: true)
         .get();
+    log('Firestore [Admin]: Fetched ${snap.docs.length} memories for $uid', name: 'Firebase');
     return snap.docs.map((doc) => MemoryModel.fromFirestore(doc)).toList();
   }
 
   Future<void> deleteMemory(String uid, String memoryId) async {
+    log('Firestore [Admin]: Deleting memory $memoryId for $uid', name: 'Firebase');
     await _firestore
         .collection('users')
         .doc(uid)
         .collection('memories')
         .doc(memoryId)
         .delete();
+    log('Firestore [Admin]: Memory $memoryId deleted', name: 'Firebase');
   }
 
   Future<void> updateMemory(
@@ -116,23 +137,27 @@ class AdminRepository {
     String memoryId,
     Map<String, dynamic> data,
   ) async {
+    log('Firestore [Admin]: Updating memory $memoryId for $uid', name: 'Firebase');
     await _firestore
         .collection('users')
         .doc(uid)
         .collection('memories')
         .doc(memoryId)
         .update(data);
+    log('Firestore [Admin]: Memory $memoryId updated', name: 'Firebase');
   }
 
   // ── Broadcast ─────────────────────────────────────────────────────────────
 
   Future<void> sendBroadcast(String message, {String type = 'info'}) async {
+    log('Firestore [Admin]: Sending broadcast', name: 'Firebase');
     await _firestore.collection('broadcasts').doc('latest').set({
       'message': message,
       'type': type,
       'sentAt': FieldValue.serverTimestamp(),
       'sentBy': adminEmail,
     });
+    log('Firestore [Admin]: Broadcast sent', name: 'Firebase');
   }
 
   Future<void> clearBroadcast() async {
@@ -140,17 +165,21 @@ class AdminRepository {
   }
 
   Stream<DocumentSnapshot> getBroadcastStream() {
+    log('Firestore [Admin]: Listening to broadcasts', name: 'Firebase');
     return _firestore.collection('broadcasts').doc('latest').snapshots();
   }
 
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   Future<Map<String, int>> getStats() async {
+    log('Firestore [Admin]: Fetching global stats', name: 'Firebase');
     final usersSnap = await _firestore.collection('users').get();
+    log('Firestore [Admin]: Fetched ${usersSnap.size} users', name: 'Firebase');
     int totalMemories = 0;
     int totalJournals = 0;
 
     for (final userDoc in usersSnap.docs) {
+      log('Firestore [Admin]: Fetching counts for user ${userDoc.id}', name: 'Firebase');
       final memSnap = await _firestore
           .collection('users')
           .doc(userDoc.id)
@@ -166,6 +195,7 @@ class AdminRepository {
       totalJournals += jSnap.size;
     }
 
+    log('Firestore [Admin]: Stats retrieved - Users: ${usersSnap.size}, Memories: $totalMemories, Journals: $totalJournals', name: 'Firebase');
     return {
       'users': usersSnap.size,
       'memories': totalMemories,
