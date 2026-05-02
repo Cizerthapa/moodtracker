@@ -6,9 +6,12 @@ import 'package:flutter/services.dart';
 import 'package:local_auth/local_auth.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/settings/data/repositories/settings_repository.dart';
-import 'package:moodtrack/core/widgets/auth_wrapper.dart';
+import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
 
@@ -109,9 +112,15 @@ class _SplashScreenState extends State<SplashScreen>
 
   void _navigateToHome() {
     if (!mounted) return;
-    Navigator.of(
-      context,
-    ).pushReplacement(MaterialPageRoute(builder: (_) => const AuthWrapper()));
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final repo = sl<UserRepository>();
+      repo.updateLastSeen();
+      repo.refreshFcmToken(user.uid);
+      context.goNamed(AppRoutes.home);
+    } else {
+      context.goNamed(AppRoutes.login);
+    }
   }
 
   @override

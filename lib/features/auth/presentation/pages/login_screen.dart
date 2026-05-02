@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
+import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 
 
@@ -43,6 +47,16 @@ class _LoginScreenState extends State<LoginScreen> {
           _emailController.text.trim(),
           _passwordController.text.trim(),
         );
+      }
+      
+      if (mounted) {
+        final user = FirebaseAuth.instance.currentUser;
+        if (user != null) {
+          final repo = sl<UserRepository>();
+          repo.updateLastSeen();
+          repo.refreshFcmToken(user.uid);
+        }
+        context.goNamed(AppRoutes.home);
       }
     } catch (e) {
       if (mounted) {

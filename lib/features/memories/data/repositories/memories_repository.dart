@@ -153,6 +153,33 @@ class MemoriesRepository {
     }
   }
 
+  Future<Result<MemoryModel>> getMemoryById(String id) async {
+    try {
+      var doc = await _memoriesCollection.doc(id).get();
+      if (doc.exists) {
+        return Success(MemoryModel.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>));
+      }
+      // If not found, try checking partner's memories
+      final profile = await sl<UserRepository>().getUserProfileStream().first;
+      final partnerUid = profile?.partnerUid;
+      if (partnerUid != null) {
+        doc = await _firestore
+            .collection('users')
+            .doc(partnerUid)
+            .collection(AppConstants.memoriesCollection)
+            .doc(id)
+            .get();
+        if (doc.exists) {
+          return Success(MemoryModel.fromFirestore(doc as DocumentSnapshot<Map<String, dynamic>>));
+        }
+      }
+      return const Failure('Memory not found');
+    } catch (e) {
+      log('Firestore: Error fetching memory by ID: $e', name: 'Firebase');
+      return Failure('Error fetching memory', error: e);
+    }
+  }
+
   Future<Result<void>> deleteMemory(String id) async {
     log('Firestore: Deleting memory $id for $_uid', name: 'Firebase');
     try {

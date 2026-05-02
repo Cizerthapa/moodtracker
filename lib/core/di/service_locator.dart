@@ -16,6 +16,8 @@ import 'package:moodtrack/features/admin/data/repositories/admin_repository.dart
 import 'package:moodtrack/core/services/storage_service.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
 import 'package:moodtrack/core/database/local_database.dart';
+import 'package:moodtrack/features/period/data/repositories/period_repository.dart';
+
 
 final sl = GetIt.instance;
 
@@ -42,4 +44,6 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => NotesRepository());
   sl.registerLazySingleton(() => JournalRepository());
   sl.registerLazySingleton(() => AdminRepository());
+  sl.registerLazySingleton(() => PeriodRepository());
+
 }

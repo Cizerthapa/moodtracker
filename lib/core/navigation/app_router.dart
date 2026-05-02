@@ -17,6 +17,9 @@ import 'package:moodtrack/features/notes/presentation/pages/notes_screen.dart';
 import 'package:moodtrack/features/period/presentation/pages/period_tracking_screen.dart';
 import 'package:moodtrack/features/settings/presentation/pages/settings_screen.dart';
 import 'package:moodtrack/features/splash/presentation/pages/splash_screen.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/error/result.dart';
+import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 
 class AppRouter {
   AppRouter._();
@@ -83,9 +86,32 @@ class AppRouter {
                   if (memory != null) {
                     return MemoryDetailScreen(memory: memory);
                   }
-                  // Fallback: show loading/error if no memory data passed
-                  return const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
+                  
+                  final memoryId = state.pathParameters['memoryId'];
+                  if (memoryId == null) {
+                    return const Scaffold(
+                      body: Center(child: Text('Memory not found')),
+                    );
+                  }
+
+                  return FutureBuilder<Result<MemoryModel>>(
+                    future: sl<MemoriesRepository>().getMemoryById(memoryId),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Scaffold(
+                          body: Center(child: CircularProgressIndicator()),
+                        );
+                      }
+                      
+                      if (snapshot.hasData && snapshot.data is Success<MemoryModel>) {
+                        return MemoryDetailScreen(memory: (snapshot.data as Success<MemoryModel>).data);
+                      }
+                      
+                      return Scaffold(
+                        appBar: AppBar(title: const Text('Error')),
+                        body: const Center(child: Text('Failed to load memory.')),
+                      );
+                    },
                   );
                 },
               ),
