@@ -28,6 +28,13 @@ class UIStateWrapper extends StatelessWidget {
                 ),
                 backgroundColor: AppColors.roseDeep,
                 behavior: SnackBarBehavior.floating,
+                action: uiState.canRetry 
+                  ? SnackBarAction(
+                      label: 'RETRY',
+                      textColor: Colors.white,
+                      onPressed: () => uiState.retryLastTask(),
+                    )
+                  : null,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12.r),
                 ),

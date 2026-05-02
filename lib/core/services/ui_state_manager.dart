@@ -62,25 +62,32 @@ class UIStateManager extends ChangeNotifier {
   }
 
   /// Automatically handles a [Result] object. 
-  /// If it's a [Failure], it sets the error message.
+  /// If it's a [Failure], it sets the error message and optionally stores a retry task.
   /// Returns true if success, false if failure.
-  bool handleResult<T>(Result<T> result, {bool showErrorMessage = true}) {
+  bool handleResult<T>(Result<T> result, {bool showErrorMessage = true, Future<void> Function()? retryTask}) {
     if (result is Failure) {
+      _lastFailedTask = retryTask;
       if (showErrorMessage) {
         setError((result as Failure).message);
       }
       return false;
     }
+    _lastFailedTask = null;
+    notifyListeners();
     return true;
   }
 
   /// Executes an async task with automatic loading state management.
+  /// If it fails, it stores the task for a potential retry.
   Future<T?> runTask<T>(Future<T> Function() task, {bool showLoading = true}) async {
     if (showLoading) setLoading(true);
     try {
       final result = await task();
+      _lastFailedTask = null;
+      notifyListeners();
       return result;
     } catch (e) {
+      _lastFailedTask = () async { await task(); };
       setError(e.toString());
       return null;
     } finally {
