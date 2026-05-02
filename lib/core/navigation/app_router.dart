@@ -20,6 +20,7 @@ import 'package:moodtrack/features/splash/presentation/pages/splash_screen.dart'
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
+import 'package:moodtrack/features/water_intake/presentation/pages/water_intake_screen.dart';
 
 class AppRouter {
   AppRouter._();
@@ -205,6 +206,17 @@ class AppRouter {
             pageBuilder: (context, state) => CustomTransitionPage(
               fullscreenDialog: true,
               child: const PeriodTrackingScreen(),
+              transitionsBuilder: (_, anim, __, child) =>
+                  FadeTransition(opacity: anim, child: child),
+            ),
+          ),
+          // ── Water Intake ────────────────────────────────────────────────
+          GoRoute(
+            path: 'water',
+            name: AppRoutes.water,
+            pageBuilder: (context, state) => CustomTransitionPage(
+              fullscreenDialog: true,
+              child: const WaterIntakeScreen(),
               transitionsBuilder: (_, anim, __, child) =>
                   FadeTransition(opacity: anim, child: child),
             ),
