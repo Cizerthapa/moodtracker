@@ -489,6 +489,21 @@ class _UsersTab extends StatelessWidget {
                               maxLines: 1,
                             ),
                           ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.send_rounded,
+                              color: _accent,
+                              size: 16.r,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _showPushNotificationDialog(
+                              context,
+                              uid,
+                              email,
+                              fcmToken,
+                            ),
+                          ),
                         ],
                       ),
                     )
@@ -603,6 +618,139 @@ class _UsersTab extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  void _showPushNotificationDialog(
+      BuildContext context, String uid, String email, String fcmToken) {
+    final titleCtrl = TextEditingController();
+    final bodyCtrl = TextEditingController();
+    bool isSending = false;
+
+    showDialog(
+      context: context,
+      builder: (ctx) => StatefulBuilder(
+        builder: (context, setState) {
+          return AlertDialog(
+            backgroundColor: const Color(0xFF21262D),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            title: Row(
+              children: [
+                Icon(Icons.send_rounded, color: _accent, size: 20.r),
+                SizedBox(width: 8.w),
+                Text(
+                  'Send Push Notification',
+                  style: GoogleFonts.outfit(
+                    color: _textPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'To: $email',
+                  style: GoogleFonts.jetBrainsMono(
+                    color: _textSecondary,
+                    fontSize: 11.sp,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                TextField(
+                  controller: titleCtrl,
+                  style: GoogleFonts.outfit(color: _textPrimary),
+                  decoration: InputDecoration(
+                    labelText: 'Title',
+                    labelStyle: GoogleFonts.outfit(color: _textSecondary),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF30363D)),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: _accent),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 12.h),
+                TextField(
+                  controller: bodyCtrl,
+                  style: GoogleFonts.outfit(color: _textPrimary),
+                  maxLines: 3,
+                  decoration: InputDecoration(
+                    labelText: 'Body',
+                    labelStyle: GoogleFonts.outfit(color: _textSecondary),
+                    enabledBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: Color(0xFF30363D)),
+                    ),
+                    focusedBorder: const OutlineInputBorder(
+                      borderSide: BorderSide(color: _accent),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: isSending ? null : () => Navigator.pop(ctx),
+                child: Text(
+                  'Cancel',
+                  style: GoogleFonts.outfit(color: _textSecondary),
+                ),
+              ),
+              ElevatedButton(
+                onPressed: isSending
+                    ? null
+                    : () async {
+                        if (titleCtrl.text.isEmpty || bodyCtrl.text.isEmpty) {
+                          return;
+                        }
+                        setState(() => isSending = true);
+                        final result = await repo.sendPushNotification(
+                          fcmToken,
+                          titleCtrl.text,
+                          bodyCtrl.text,
+                        );
+                        if (context.mounted) {
+                          Navigator.pop(ctx);
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                result is Success
+                                    ? 'Notification queued successfully.'
+                                    : (result as Failure).message,
+                              ),
+                              backgroundColor:
+                                  result is Success ? _success : _danger,
+                            ),
+                          );
+                        }
+                      },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _accent,
+                  foregroundColor: Colors.white,
+                ),
+                child: isSending
+                    ? SizedBox(
+                        width: 16.r,
+                        height: 16.r,
+                        child: const CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : Text(
+                        'Send',
+                        style: GoogleFonts.outfit(fontWeight: FontWeight.w700),
+                      ),
+              ),
+            ],
+          );
+        },
       ),
     );
   }

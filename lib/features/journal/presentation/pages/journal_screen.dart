@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:intl/intl.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:moodtrack/models/journal_entry_model.dart';
 import 'package:intl/intl.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:moodtrack/core/navigation/app_routes.dart';
@@ -300,7 +302,7 @@ class _JournalScreenState extends State<JournalScreen>
 
               // ── Content ──────────────────────────────────────────────
               Expanded(
-                child: StreamBuilder<QuerySnapshot>(
+                child: StreamBuilder<List<JournalEntry>>(
                   stream: _repository.getJournalsStream(),
                   builder: (context, snapshot) {
                     if (!snapshot.hasData) {
@@ -329,7 +331,7 @@ class _JournalScreenState extends State<JournalScreen>
                       });
                     }
 
-                    final docs = snapshot.data!.docs;
+                    final docs = snapshot.data!;
                     if (docs.isEmpty) {
                       return _JournalEmptyState(onAdd: _showAddEntryScreen);
                     }
@@ -388,20 +390,19 @@ class _JournalScreenState extends State<JournalScreen>
     );
   }
 
-  Widget _buildEntriesList(List<QueryDocumentSnapshot> docs) {
+  Widget _buildEntriesList(List<JournalEntry> docs) {
     return ListView.builder(
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
       itemCount: docs.length,
       itemBuilder: (context, index) {
         final l10n = AppLocalizations.of(context)!;
         final doc = docs[index];
-        final data = doc.data() as Map<String, dynamic>;
-        final decryptedText = _repository.decryptIfNeeded(data);
-        final decryptedTitle = _repository.decryptIfNeeded(data, isTitle: true);
-        final emoji = data['mood'] as String? ?? '😐';
+        final decryptedText = _repository.decryptIfNeeded({'text': doc.text, 'encrypted': doc.encrypted});
+        final decryptedTitle = _repository.decryptIfNeeded({'title': doc.title, 'encrypted': doc.encrypted}, isTitle: true);
+        final emoji = doc.mood.isEmpty ? '😐' : doc.mood;
         final meta = _moodMeta(emoji, l10n);
-        final ts = data['timestamp'];
-        final date = ts != null ? (ts as Timestamp).toDate() : DateTime.now();
+        final ts = doc.timestamp;
+        final date = ts ?? DateTime.now();
         final formattedDate = DateFormat('MMM d · h:mm a').format(date);
 
         return _JournalEntryCard(
@@ -411,21 +412,21 @@ class _JournalScreenState extends State<JournalScreen>
           emoji: emoji,
           moodMeta: meta,
           formattedDate: formattedDate,
-          isEncrypted: data['encrypted'] == true,
+          isEncrypted: doc.encrypted,
           onDelete: () => _deleteJournal(doc.id),
           onTap: () => _showEditEntryScreen(
             doc.id,
             decryptedTitle,
             decryptedText,
             emoji,
-            data['encrypted'] == true,
+            doc.encrypted,
           ),
         );
       },
     );
   }
 
-  Widget _buildMoodGraph(List<QueryDocumentSnapshot> docs) {
+  Widget _buildMoodGraph(List<JournalEntry> docs) {
     // Map moods to a score 1 to 6
     int moodScore(String emoji) {
       switch (emoji) {
@@ -450,12 +451,11 @@ class _JournalScreenState extends State<JournalScreen>
     final now = DateTime.now();
     final spots = <FlSpot>[];
     for (final doc in docs) {
-      final data = doc.data() as Map<String, dynamic>;
-      final ts = data['timestamp'];
+      final ts = doc.timestamp;
       if (ts == null) continue;
-      final date = (ts as Timestamp).toDate();
+      final date = ts;
       if (date.year == now.year && date.month == now.month) {
-        final emoji = data['mood'] as String? ?? '😐';
+        final emoji = doc.mood.isEmpty ? '😐' : doc.mood;
         spots.add(FlSpot(date.day.toDouble(), moodScore(emoji).toDouble()));
       }
     }

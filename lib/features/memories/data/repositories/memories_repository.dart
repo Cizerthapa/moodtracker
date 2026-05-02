@@ -49,6 +49,7 @@ class MemoriesRepository {
     StreamSubscription? mySub;
     log('Firestore: Listening to memories for $_uid', name: 'Firebase');
     mySub = _memoriesCollection
+        .where('deletedAt', isNull: true)
         .orderBy('timestamp', descending: true)
         .snapshots()
         .listen((snap) {
@@ -68,6 +69,7 @@ class MemoriesRepository {
             .collection('users')
             .doc(partnerUid)
             .collection(AppConstants.memoriesCollection)
+            .where('deletedAt', isNull: true)
             .orderBy('timestamp', descending: true)
             .snapshots()
             .listen((snap) {

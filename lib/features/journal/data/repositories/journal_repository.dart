@@ -6,6 +6,7 @@ import 'package:moodtrack/core/services/encryption_service.dart';
 
 import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/models/journal_entry_model.dart';
 
 class JournalRepository {
   final FirebaseFirestore _firestore;
@@ -52,11 +53,12 @@ class JournalRepository {
 
   // ── CRUD ───────────────────────────────────────────────────────────────────
 
-  Stream<QuerySnapshot> getJournalsStream() {
+  Stream<List<JournalEntry>> getJournalsStream() {
     log('Firestore: Listening to journals for $_uid', name: 'Firebase');
     return _journalsCollection
         .orderBy('timestamp', descending: true)
-        .snapshots();
+        .snapshots()
+        .map((snap) => snap.docs.map((doc) => JournalEntry.fromFirestore(doc)).toList());
   }
 
   Future<Result<void>> addJournal({

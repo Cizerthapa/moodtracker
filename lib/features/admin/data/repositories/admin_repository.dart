@@ -238,6 +238,30 @@ class AdminRepository {
     return _firestore.collection('broadcasts').doc('latest').snapshots();
   }
 
+  // ── Push Notifications ───────────────────────────────────────────────────
+
+  Future<Result<void>> sendPushNotification(String fcmToken, String title, String body, {Map<String, dynamic>? data}) async {
+    log('Firestore [Admin]: Queuing push notification to $fcmToken', name: 'Firebase');
+    try {
+      await _firestore.collection('push_notifications_queue').add({
+        'token': fcmToken,
+        'notification': {
+          'title': title,
+          'body': body,
+        },
+        'data': data ?? {},
+        'status': 'pending',
+        'createdAt': FieldValue.serverTimestamp(),
+        'sentBy': adminEmail,
+      });
+      log('Firestore [Admin]: Push notification queued', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error queuing push notification: $e', name: 'Firebase');
+      return Failure('Failed to queue push notification', error: e);
+    }
+  }
+
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   Future<Result<Map<String, int>>> getStats() async {
