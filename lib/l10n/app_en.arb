@@ -88,5 +88,73 @@
   "editMemory": "Edit Memory",
   "shortNoteDesc": "Short Note / Description",
   "herFavStory": "Her Favorite Story",
-  "hisFavStory": "His Favorite Story"
+  "hisFavStory": "His Favorite Story",
+  "cycleTrackerHeader": "Cycle Tracker",
+  "cycleTrackerSlogan": "every cycle, understood",
+  "calendar": "Calendar",
+  "history": "History",
+  "periodExpectedToday": "Period expected today",
+  "basedOnCycleHistory": "Based on your cycle history",
+  "periodDaysAgo": "{count, plural, =1{Period was expected 1 day ago} other{Period was expected {count} days ago}}",
+  "@periodDaysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "haveYouLoggedIt": "Have you logged it?",
+  "periodSoonIn": "{count, plural, =1{Period in 1 day} other{Period in {count} days}}",
+  "@periodSoonIn": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "periodSoonHeadsUp": "Heads up — it's coming soon!",
+  "nextPeriodIn": "{count, plural, =1{Next period in 1 day} other{Next period in {count} days}}",
+  "@nextPeriodIn": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "estimatedDot": " · estimated",
+  "currentPhase": "Current Phase",
+  "menstrualPhase": "Menstrual Phase",
+  "menstrualFocus": "Focus on rest, hydration, and pain management (cramps).",
+  "menstrualInsight": "Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.",
+  "follicularPhase": "Follicular Phase",
+  "follicularFocus": "Focus on rising energy, creativity, and new beginnings.",
+  "follicularInsight": "Did you know? You might feel extra energetic today due to rising estrogen levels.",
+  "ovulatoryPhase": "Ovulatory Phase (Fertility Window)",
+  "ovulatoryFocus": "The \"high energy\" window. Highest chance of conception.",
+  "ovulatoryInsight": "Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!",
+  "lutealPhase": "Luteal Phase",
+  "lutealFocus": "Focus on PMS tracking, skin changes (breakouts), and cravings.",
+  "lutealInsight": "Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.",
+  "yourPeriod": "Your period",
+  "fertileWindow": "Fertile Window",
+  "partnerPeriod": "Partner's period",
+  "nextPeriodLabel": "Next Period",
+  "estimatedBasedOnHistory": "estimated · based on your history",
+  "deleteCycleTitle": "Delete Cycle?",
+  "deleteCycleContent": "This cycle log will be deleted permanently.",
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "noCyclesLogged": "No cycles logged yet",
+  "trackCycleSubtitle": "Track your cycle to get insights\nand share with your partner.",
+  "logFirstCycle": "Log First Cycle",
+  "lightFlow": "Light",
+  "mediumFlow": "Medium",
+  "heavyFlow": "Heavy",
+  "flowSuffix": " flow",
+  "editCycle": "Edit Cycle",
+  "logPeriod": "Log Period",
+  "dates": "Dates",
+  "start": "Start",
+  "endOptional": "End (optional)",
+  "tapToSet": "Tap to set",
+  "flowLevel": "Flow Level",
+  "symptoms": "Symptoms",
+  "notesOptional": "Notes (optional)",
+  "notesHint": "Any notes about this cycle...",
+  "updateCycle": "Update Cycle",
+  "saveCycle": "Save Cycle"
 }

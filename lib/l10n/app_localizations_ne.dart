@@ -263,4 +263,196 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get hisFavStory => 'His Favorite Story';
+
+  @override
+  String get cycleTrackerHeader => 'महिनावारी ट्र्याकर';
+
+  @override
+  String get cycleTrackerSlogan => 'हरेक चक्र, बुझिएको';
+
+  @override
+  String get calendar => 'पात्रो';
+
+  @override
+  String get history => 'इतिहास';
+
+  @override
+  String get periodExpectedToday => 'महिनावारी आज हुने अपेक्षा गरिएको छ';
+
+  @override
+  String get basedOnCycleHistory => 'तपाईंको चक्र इतिहासमा आधारित';
+
+  @override
+  String periodDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'महिनावारी $count दिन पहिले हुने अपेक्षा गरिएको थियो',
+      one: 'महिनावारी १ दिन पहिले हुने अपेक्षा गरिएको थियो',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get haveYouLoggedIt => 'के तपाईंले यसलाई लग गर्नुभयो?';
+
+  @override
+  String periodSoonIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count दिनमा महिनावारी',
+      one: '१ दिनमा महिनावारी',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get periodSoonHeadsUp => 'सावधान — यो चाँडै आउँदैछ!';
+
+  @override
+  String nextPeriodIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'अर्को महिनावारी $count दिनमा',
+      one: 'अर्को महिनावारी १ दिनमा',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get estimatedDot => ' · अनुमानित';
+
+  @override
+  String get currentPhase => 'हालको चरण';
+
+  @override
+  String get menstrualPhase => 'महिनावारी चरण';
+
+  @override
+  String get menstrualFocus =>
+      'आराम, हाइड्रेशन, र दुखाइ व्यवस्थापनमा ध्यान दिनुहोस्।';
+
+  @override
+  String get menstrualInsight =>
+      'के तपाईंलाई थाहा छ? प्रोजेस्टेरोन र एस्ट्रोजेन अहिले सबैभन्दा कम स्तरमा छन्, त्यसैले तपाईंको ऊर्जा कम हुन सक्छ।';
+
+  @override
+  String get follicularPhase => 'फोलिकुलर चरण';
+
+  @override
+  String get follicularFocus =>
+      'बढ्दो ऊर्जा, रचनात्मकता, र नयाँ सुरुवातमा ध्यान दिनुहोस्।';
+
+  @override
+  String get follicularInsight =>
+      'के तपाईंलाई थाहा छ? एस्ट्रोजेन स्तर बढ्दै गएकोले आज तपाईंलाई थप ऊर्जावान महसुस हुन सक्छ।';
+
+  @override
+  String get ovulatoryPhase => 'डिम्बग्रन्थि चरण (प्रजनन विन्डो)';
+
+  @override
+  String get ovulatoryFocus =>
+      '\"उच्च ऊर्जा\" विन्डो। गर्भधारणको उच्चतम सम्भावना।';
+
+  @override
+  String get ovulatoryInsight =>
+      'के तपाईंलाई थाहा छ? टेस्टोस्टेरोन र एस्ट्रोजेन अहिले उच्च स्तरमा छन्, जसले अक्सर आत्मविश्वास र मुड बढाउँछ!';
+
+  @override
+  String get lutealPhase => 'लुटियल चरण';
+
+  @override
+  String get lutealFocus =>
+      'PMS ट्र्याकिङ, छाला परिवर्तनहरू, र लालसामा ध्यान दिनुहोस्।';
+
+  @override
+  String get lutealInsight =>
+      'के तपाईंलाई थाहा छ? यस चरणमा प्रोजेस्टेरोन बढ्छ, जसले तपाईंलाई प्राकृतिक रूपमा थप शान्त महसुस गराउन सक्छ।';
+
+  @override
+  String get yourPeriod => 'तपाईंको महिनावारी';
+
+  @override
+  String get fertileWindow => 'प्रजनन विन्डो';
+
+  @override
+  String get partnerPeriod => 'साथीको महिनावारी';
+
+  @override
+  String get nextPeriodLabel => 'अर्को महिनावारी';
+
+  @override
+  String get estimatedBasedOnHistory => 'अनुमानित · तपाईंको इतिहासमा आधारित';
+
+  @override
+  String get deleteCycleTitle => 'चक्र मेटाउने?';
+
+  @override
+  String get deleteCycleContent => 'यो चक्र लग स्थायी रूपमा मेटिनेछ।';
+
+  @override
+  String get cancel => 'रद्द गर्नुहोस्';
+
+  @override
+  String get delete => 'मेटाउनुहोस्';
+
+  @override
+  String get noCyclesLogged => 'अहिलेसम्म कुनै चक्र लग गरिएको छैन';
+
+  @override
+  String get trackCycleSubtitle =>
+      'अन्तर्दृष्टि प्राप्त गर्न र आफ्नो साथीसँग साझा गर्न आफ्नो चक्र ट्र्याक गर्नुहोस्।';
+
+  @override
+  String get logFirstCycle => 'पहिलो चक्र लग गर्नुहोस्';
+
+  @override
+  String get lightFlow => 'हल्का';
+
+  @override
+  String get mediumFlow => 'मध्यम';
+
+  @override
+  String get heavyFlow => 'धेरै';
+
+  @override
+  String get flowSuffix => ' बहाव';
+
+  @override
+  String get editCycle => 'चक्र सम्पादन गर्नुहोस्';
+
+  @override
+  String get logPeriod => 'महिनावारी लग गर्नुहोस्';
+
+  @override
+  String get dates => 'मितिहरू';
+
+  @override
+  String get start => 'सुरु';
+
+  @override
+  String get endOptional => 'अन्त्य (वैकल्पिक)';
+
+  @override
+  String get tapToSet => 'सेट गर्न ट्याप गर्नुहोस्';
+
+  @override
+  String get flowLevel => 'बहाव स्तर';
+
+  @override
+  String get symptoms => 'लक्षणहरू';
+
+  @override
+  String get notesOptional => 'नोटहरू (वैकल्पिक)';
+
+  @override
+  String get notesHint => 'यो चक्रको बारेमा केही नोटहरू...';
+
+  @override
+  String get updateCycle => 'चक्र अपडेट गर्नुहोस्';
+
+  @override
+  String get saveCycle => 'चक्र सुरक्षित गर्नुहोस्';
 }

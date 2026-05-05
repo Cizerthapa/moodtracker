@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/period/domain/model/period_cycle_model.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 
 // Removed local color constants in favor of AppColors.cycleColor and AppColors.userColor
 
@@ -24,11 +25,7 @@ class LogPeriodScreen extends StatefulWidget {
   final PeriodCycle? existingCycle;
   final Future<void> Function(PeriodCycle cycle) onSave;
 
-  const LogPeriodScreen({
-    super.key,
-    this.existingCycle,
-    required this.onSave,
-  });
+  const LogPeriodScreen({super.key, this.existingCycle, required this.onSave});
 
   @override
   State<LogPeriodScreen> createState() => _LogPeriodScreenState();
@@ -70,9 +67,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
       firstDate: DateTime(2020),
       lastDate: DateTime.now().add(const Duration(days: 30)),
       builder: (ctx, child) => Theme(
-        data: Theme.of(ctx).copyWith(
-          colorScheme: ColorScheme.light(primary: AppColors.cycleColor),
-        ),
+        data: Theme.of(ctx).copyWith(colorScheme: ColorScheme.light(primary: AppColors.cycleColor)),
         child: child!,
       ),
     );
@@ -124,13 +119,13 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionLabel('Dates'),
+                    _sectionLabel(AppLocalizations.of(context)!.dates),
                     10.verticalSpace,
                     Row(
                       children: [
                         Expanded(
                           child: _DateTile(
-                            label: 'Start',
+                            label: AppLocalizations.of(context)!.start,
                             date: _startDate,
                             onTap: () => _pickDate(isStart: true),
                           ),
@@ -138,7 +133,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                         12.horizontalSpace,
                         Expanded(
                           child: _DateTile(
-                            label: 'End (optional)',
+                            label: AppLocalizations.of(context)!.endOptional,
                             date: _endDate,
                             onTap: () => _pickDate(isStart: false),
                             onClear: _endDate != null
@@ -149,15 +144,15 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                       ],
                     ),
                     24.verticalSpace,
-                    _sectionLabel('Flow Level'),
+                    _sectionLabel(AppLocalizations.of(context)!.flowLevel),
                     10.verticalSpace,
                     _buildFlowSelector(),
                     24.verticalSpace,
-                    _sectionLabel('Symptoms'),
+                    _sectionLabel(AppLocalizations.of(context)!.symptoms),
                     10.verticalSpace,
                     _buildSymptomChips(),
                     24.verticalSpace,
-                    _sectionLabel('Notes (optional)'),
+                    _sectionLabel(AppLocalizations.of(context)!.notesOptional),
                     10.verticalSpace,
                     _buildNotesField(),
                     32.verticalSpace,
@@ -186,16 +181,14 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: AppColors.champagne),
               ),
-              child: Icon(
-                Icons.close_rounded,
-                size: 20.r,
-                color: AppColors.warmBrown,
-              ),
+              child: Icon(Icons.close_rounded, size: 20.r, color: AppColors.warmBrown),
             ),
           ),
           16.horizontalSpace,
           Text(
-            _isEditing ? 'Edit Cycle' : 'Log Period',
+            _isEditing
+                ? AppLocalizations.of(context)!.editCycle
+                : AppLocalizations.of(context)!.logPeriod,
             style: GoogleFonts.outfit(
               fontSize: 22.sp,
               fontWeight: FontWeight.w800,
@@ -208,16 +201,17 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
   }
 
   Widget _sectionLabel(String text) => Text(
-        text,
-        style: GoogleFonts.outfit(
-          fontSize: 16.sp,
-          fontWeight: FontWeight.w700,
-          color: AppColors.warmBrown,
-        ),
-      );
+    text,
+    style: GoogleFonts.outfit(
+      fontSize: 16.sp,
+      fontWeight: FontWeight.w700,
+      color: AppColors.warmBrown,
+    ),
+  );
 
   Widget _buildFlowSelector() {
-    const labels = {1: 'Light', 2: 'Medium', 3: 'Heavy'};
+    final l10n = AppLocalizations.of(context)!;
+    final labels = {1: l10n.lightFlow, 2: l10n.mediumFlow, 3: l10n.heavyFlow};
     const emojis = {1: '💧', 2: '💧💧', 3: '💧💧💧'};
 
     return Row(
@@ -235,9 +229,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
               decoration: BoxDecoration(
                 color: isSelected ? AppColors.cycleColor : AppColors.ivoryCard,
                 borderRadius: BorderRadius.circular(14.r),
-                border: Border.all(
-                  color: isSelected ? AppColors.cycleColor : AppColors.champagne,
-                ),
+                border: Border.all(color: isSelected ? AppColors.cycleColor : AppColors.champagne),
               ),
               child: Column(
                 children: [
@@ -248,8 +240,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                     style: GoogleFonts.outfit(
                       fontSize: 12.sp,
                       color: isSelected ? Colors.white : AppColors.softBrown,
-                      fontWeight:
-                          isSelected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                     ),
                   ),
                 ],
@@ -301,8 +292,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                   style: GoogleFonts.outfit(
                     fontSize: 13.sp,
                     color: isSelected ? AppColors.cycleColor : AppColors.softBrown,
-                    fontWeight:
-                        isSelected ? FontWeight.w600 : FontWeight.w500,
+                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
                 ),
               ],
@@ -325,7 +315,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
         maxLines: 4,
         style: GoogleFonts.outfit(fontSize: 14.sp, color: AppColors.warmBrown),
         decoration: InputDecoration(
-          hintText: 'Any notes about this cycle...',
+          hintText: AppLocalizations.of(context)!.notesHint,
           hintStyle: GoogleFonts.outfit(
             color: AppColors.softBrown.withValues(alpha: 0.6),
             fontSize: 14.sp,
@@ -363,13 +353,12 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
               ? SizedBox(
                   width: 20.r,
                   height: 20.r,
-                  child: const CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
+                  child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                 )
               : Text(
-                  _isEditing ? 'Update Cycle' : 'Save Cycle',
+                  _isEditing
+                      ? AppLocalizations.of(context)!.updateCycle
+                      : AppLocalizations.of(context)!.saveCycle,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -390,12 +379,7 @@ class _DateTile extends StatelessWidget {
   final VoidCallback onTap;
   final VoidCallback? onClear;
 
-  const _DateTile({
-    required this.label,
-    required this.date,
-    required this.onTap,
-    this.onClear,
-  });
+  const _DateTile({required this.label, required this.date, required this.onTap, this.onClear});
 
   @override
   Widget build(BuildContext context) {
@@ -408,9 +392,7 @@ class _DateTile extends StatelessWidget {
           color: AppColors.ivoryCard,
           borderRadius: BorderRadius.circular(14.r),
           border: Border.all(
-            color: hasDate
-                ? const Color(0xFF9B7EC8).withValues(alpha: 0.4)
-                : AppColors.champagne,
+            color: hasDate ? const Color(0xFF9B7EC8).withValues(alpha: 0.4) : AppColors.champagne,
           ),
         ),
         child: Column(
@@ -421,19 +403,12 @@ class _DateTile extends StatelessWidget {
               children: [
                 Text(
                   label,
-                  style: GoogleFonts.outfit(
-                    fontSize: 11.sp,
-                    color: AppColors.softBrown,
-                  ),
+                  style: GoogleFonts.outfit(fontSize: 11.sp, color: AppColors.softBrown),
                 ),
                 if (onClear != null)
                   GestureDetector(
                     onTap: onClear,
-                    child: Icon(
-                      Icons.close_rounded,
-                      size: 14.r,
-                      color: AppColors.softBrown,
-                    ),
+                    child: Icon(Icons.close_rounded, size: 14.r, color: AppColors.softBrown),
                   ),
               ],
             ),
@@ -441,7 +416,7 @@ class _DateTile extends StatelessWidget {
             Text(
               hasDate
                   ? DateFormat('MMM d, yyyy').format(date!)
-                  : 'Tap to set',
+                  : AppLocalizations.of(context)!.tapToSet,
               style: GoogleFonts.outfit(
                 fontSize: 14.sp,
                 fontWeight: hasDate ? FontWeight.w700 : FontWeight.w400,

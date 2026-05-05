@@ -263,4 +263,197 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hisFavStory => 'His Favorite Story';
+
+  @override
+  String get cycleTrackerHeader => 'Cycle Tracker';
+
+  @override
+  String get cycleTrackerSlogan => 'every cycle, understood';
+
+  @override
+  String get calendar => 'Calendar';
+
+  @override
+  String get history => 'History';
+
+  @override
+  String get periodExpectedToday => 'Period expected today';
+
+  @override
+  String get basedOnCycleHistory => 'Based on your cycle history';
+
+  @override
+  String periodDaysAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Period was expected $count days ago',
+      one: 'Period was expected 1 day ago',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get haveYouLoggedIt => 'Have you logged it?';
+
+  @override
+  String periodSoonIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Period in $count days',
+      one: 'Period in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get periodSoonHeadsUp => 'Heads up — it\'s coming soon!';
+
+  @override
+  String nextPeriodIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Next period in $count days',
+      one: 'Next period in 1 day',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get estimatedDot => ' · estimated';
+
+  @override
+  String get currentPhase => 'Current Phase';
+
+  @override
+  String get menstrualPhase => 'Menstrual Phase';
+
+  @override
+  String get menstrualFocus =>
+      'Focus on rest, hydration, and pain management (cramps).';
+
+  @override
+  String get menstrualInsight =>
+      'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.';
+
+  @override
+  String get follicularPhase => 'Follicular Phase';
+
+  @override
+  String get follicularFocus =>
+      'Focus on rising energy, creativity, and new beginnings.';
+
+  @override
+  String get follicularInsight =>
+      'Did you know? You might feel extra energetic today due to rising estrogen levels.';
+
+  @override
+  String get ovulatoryPhase => 'Ovulatory Phase (Fertility Window)';
+
+  @override
+  String get ovulatoryFocus =>
+      'The \"high energy\" window. Highest chance of conception.';
+
+  @override
+  String get ovulatoryInsight =>
+      'Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!';
+
+  @override
+  String get lutealPhase => 'Luteal Phase';
+
+  @override
+  String get lutealFocus =>
+      'Focus on PMS tracking, skin changes (breakouts), and cravings.';
+
+  @override
+  String get lutealInsight =>
+      'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.';
+
+  @override
+  String get yourPeriod => 'Your period';
+
+  @override
+  String get fertileWindow => 'Fertile Window';
+
+  @override
+  String get partnerPeriod => 'Partner\'s period';
+
+  @override
+  String get nextPeriodLabel => 'Next Period';
+
+  @override
+  String get estimatedBasedOnHistory => 'estimated · based on your history';
+
+  @override
+  String get deleteCycleTitle => 'Delete Cycle?';
+
+  @override
+  String get deleteCycleContent =>
+      'This cycle log will be deleted permanently.';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get delete => 'Delete';
+
+  @override
+  String get noCyclesLogged => 'No cycles logged yet';
+
+  @override
+  String get trackCycleSubtitle =>
+      'Track your cycle to get insights\nand share with your partner.';
+
+  @override
+  String get logFirstCycle => 'Log First Cycle';
+
+  @override
+  String get lightFlow => 'Light';
+
+  @override
+  String get mediumFlow => 'Medium';
+
+  @override
+  String get heavyFlow => 'Heavy';
+
+  @override
+  String get flowSuffix => ' flow';
+
+  @override
+  String get editCycle => 'Edit Cycle';
+
+  @override
+  String get logPeriod => 'Log Period';
+
+  @override
+  String get dates => 'Dates';
+
+  @override
+  String get start => 'Start';
+
+  @override
+  String get endOptional => 'End (optional)';
+
+  @override
+  String get tapToSet => 'Tap to set';
+
+  @override
+  String get flowLevel => 'Flow Level';
+
+  @override
+  String get symptoms => 'Symptoms';
+
+  @override
+  String get notesOptional => 'Notes (optional)';
+
+  @override
+  String get notesHint => 'Any notes about this cycle...';
+
+  @override
+  String get updateCycle => 'Update Cycle';
+
+  @override
+  String get saveCycle => 'Save Cycle';
 }

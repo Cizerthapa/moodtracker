@@ -78,5 +78,73 @@
   "periodicMessage3": "एउटा सानो रिमाइन्डर कि तपाईं विशेष हुनुहुन्छ।",
   "periodicMessage4": "आज तपाईंको मूड कस्तो छ? आशा छ राम्रो छ!",
   "periodicMessage5": "केही पानी पिउनुहोस्! 🥤",
-  "periodicMessage6": "लामो सास लिनुहोस्। 😌"
+  "periodicMessage6": "लामो सास लिनुहोस्। 😌",
+  "cycleTrackerHeader": "महिनावारी ट्र्याकर",
+  "cycleTrackerSlogan": "हरेक चक्र, बुझिएको",
+  "calendar": "पात्रो",
+  "history": "इतिहास",
+  "periodExpectedToday": "महिनावारी आज हुने अपेक्षा गरिएको छ",
+  "basedOnCycleHistory": "तपाईंको चक्र इतिहासमा आधारित",
+  "periodDaysAgo": "{count, plural, =1{महिनावारी १ दिन पहिले हुने अपेक्षा गरिएको थियो} other{महिनावारी {count} दिन पहिले हुने अपेक्षा गरिएको थियो}}",
+  "@periodDaysAgo": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "haveYouLoggedIt": "के तपाईंले यसलाई लग गर्नुभयो?",
+  "periodSoonIn": "{count, plural, =1{१ दिनमा महिनावारी} other{{count} दिनमा महिनावारी}}",
+  "@periodSoonIn": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "periodSoonHeadsUp": "सावधान — यो चाँडै आउँदैछ!",
+  "nextPeriodIn": "{count, plural, =1{अर्को महिनावारी १ दिनमा} other{अर्को महिनावारी {count} दिनमा}}",
+  "@nextPeriodIn": {
+    "placeholders": {
+      "count": { "type": "int" }
+    }
+  },
+  "estimatedDot": " · अनुमानित",
+  "currentPhase": "हालको चरण",
+  "menstrualPhase": "महिनावारी चरण",
+  "menstrualFocus": "आराम, हाइड्रेशन, र दुखाइ व्यवस्थापनमा ध्यान दिनुहोस्।",
+  "menstrualInsight": "के तपाईंलाई थाहा छ? प्रोजेस्टेरोन र एस्ट्रोजेन अहिले सबैभन्दा कम स्तरमा छन्, त्यसैले तपाईंको ऊर्जा कम हुन सक्छ।",
+  "follicularPhase": "फोलिकुलर चरण",
+  "follicularFocus": "बढ्दो ऊर्जा, रचनात्मकता, र नयाँ सुरुवातमा ध्यान दिनुहोस्।",
+  "follicularInsight": "के तपाईंलाई थाहा छ? एस्ट्रोजेन स्तर बढ्दै गएकोले आज तपाईंलाई थप ऊर्जावान महसुस हुन सक्छ।",
+  "ovulatoryPhase": "डिम्बग्रन्थि चरण (प्रजनन विन्डो)",
+  "ovulatoryFocus": "\"उच्च ऊर्जा\" विन्डो। गर्भधारणको उच्चतम सम्भावना।",
+  "ovulatoryInsight": "के तपाईंलाई थाहा छ? टेस्टोस्टेरोन र एस्ट्रोजेन अहिले उच्च स्तरमा छन्, जसले अक्सर आत्मविश्वास र मुड बढाउँछ!",
+  "lutealPhase": "लुटियल चरण",
+  "lutealFocus": "PMS ट्र्याकिङ, छाला परिवर्तनहरू, र लालसामा ध्यान दिनुहोस्।",
+  "lutealInsight": "के तपाईंलाई थाहा छ? यस चरणमा प्रोजेस्टेरोन बढ्छ, जसले तपाईंलाई प्राकृतिक रूपमा थप शान्त महसुस गराउन सक्छ।",
+  "yourPeriod": "तपाईंको महिनावारी",
+  "fertileWindow": "प्रजनन विन्डो",
+  "partnerPeriod": "साथीको महिनावारी",
+  "nextPeriodLabel": "अर्को महिनावारी",
+  "estimatedBasedOnHistory": "अनुमानित · तपाईंको इतिहासमा आधारित",
+  "deleteCycleTitle": "चक्र मेटाउने?",
+  "deleteCycleContent": "यो चक्र लग स्थायी रूपमा मेटिनेछ।",
+  "cancel": "रद्द गर्नुहोस्",
+  "delete": "मेटाउनुहोस्",
+  "noCyclesLogged": "अहिलेसम्म कुनै चक्र लग गरिएको छैन",
+  "trackCycleSubtitle": "अन्तर्दृष्टि प्राप्त गर्न र आफ्नो साथीसँग साझा गर्न आफ्नो चक्र ट्र्याक गर्नुहोस्।",
+  "logFirstCycle": "पहिलो चक्र लग गर्नुहोस्",
+  "lightFlow": "हल्का",
+  "mediumFlow": "मध्यम",
+  "heavyFlow": "धेरै",
+  "flowSuffix": " बहाव",
+  "editCycle": "चक्र सम्पादन गर्नुहोस्",
+  "logPeriod": "महिनावारी लग गर्नुहोस्",
+  "dates": "मितिहरू",
+  "start": "सुरु",
+  "endOptional": "अन्त्य (वैकल्पिक)",
+  "tapToSet": "सेट गर्न ट्याप गर्नुहोस्",
+  "flowLevel": "बहाव स्तर",
+  "symptoms": "लक्षणहरू",
+  "notesOptional": "नोटहरू (वैकल्पिक)",
+  "notesHint": "यो चक्रको बारेमा केही नोटहरू...",
+  "updateCycle": "चक्र अपडेट गर्नुहोस्",
+  "saveCycle": "चक्र सुरक्षित गर्नुहोस्"
 }

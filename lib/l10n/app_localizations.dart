@@ -593,6 +593,324 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'His Favorite Story'**
   String get hisFavStory;
+
+  /// No description provided for @cycleTrackerHeader.
+  ///
+  /// In en, this message translates to:
+  /// **'Cycle Tracker'**
+  String get cycleTrackerHeader;
+
+  /// No description provided for @cycleTrackerSlogan.
+  ///
+  /// In en, this message translates to:
+  /// **'every cycle, understood'**
+  String get cycleTrackerSlogan;
+
+  /// No description provided for @calendar.
+  ///
+  /// In en, this message translates to:
+  /// **'Calendar'**
+  String get calendar;
+
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
+  /// No description provided for @periodExpectedToday.
+  ///
+  /// In en, this message translates to:
+  /// **'Period expected today'**
+  String get periodExpectedToday;
+
+  /// No description provided for @basedOnCycleHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'Based on your cycle history'**
+  String get basedOnCycleHistory;
+
+  /// No description provided for @periodDaysAgo.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Period was expected 1 day ago} other{Period was expected {count} days ago}}'**
+  String periodDaysAgo(int count);
+
+  /// No description provided for @haveYouLoggedIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Have you logged it?'**
+  String get haveYouLoggedIt;
+
+  /// No description provided for @periodSoonIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Period in 1 day} other{Period in {count} days}}'**
+  String periodSoonIn(int count);
+
+  /// No description provided for @periodSoonHeadsUp.
+  ///
+  /// In en, this message translates to:
+  /// **'Heads up — it\'s coming soon!'**
+  String get periodSoonHeadsUp;
+
+  /// No description provided for @nextPeriodIn.
+  ///
+  /// In en, this message translates to:
+  /// **'{count, plural, =1{Next period in 1 day} other{Next period in {count} days}}'**
+  String nextPeriodIn(int count);
+
+  /// No description provided for @estimatedDot.
+  ///
+  /// In en, this message translates to:
+  /// **' · estimated'**
+  String get estimatedDot;
+
+  /// No description provided for @currentPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Current Phase'**
+  String get currentPhase;
+
+  /// No description provided for @menstrualPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Menstrual Phase'**
+  String get menstrualPhase;
+
+  /// No description provided for @menstrualFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus on rest, hydration, and pain management (cramps).'**
+  String get menstrualFocus;
+
+  /// No description provided for @menstrualInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.'**
+  String get menstrualInsight;
+
+  /// No description provided for @follicularPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Follicular Phase'**
+  String get follicularPhase;
+
+  /// No description provided for @follicularFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus on rising energy, creativity, and new beginnings.'**
+  String get follicularFocus;
+
+  /// No description provided for @follicularInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know? You might feel extra energetic today due to rising estrogen levels.'**
+  String get follicularInsight;
+
+  /// No description provided for @ovulatoryPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Ovulatory Phase (Fertility Window)'**
+  String get ovulatoryPhase;
+
+  /// No description provided for @ovulatoryFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'The \"high energy\" window. Highest chance of conception.'**
+  String get ovulatoryFocus;
+
+  /// No description provided for @ovulatoryInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!'**
+  String get ovulatoryInsight;
+
+  /// No description provided for @lutealPhase.
+  ///
+  /// In en, this message translates to:
+  /// **'Luteal Phase'**
+  String get lutealPhase;
+
+  /// No description provided for @lutealFocus.
+  ///
+  /// In en, this message translates to:
+  /// **'Focus on PMS tracking, skin changes (breakouts), and cravings.'**
+  String get lutealFocus;
+
+  /// No description provided for @lutealInsight.
+  ///
+  /// In en, this message translates to:
+  /// **'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.'**
+  String get lutealInsight;
+
+  /// No description provided for @yourPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Your period'**
+  String get yourPeriod;
+
+  /// No description provided for @fertileWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Fertile Window'**
+  String get fertileWindow;
+
+  /// No description provided for @partnerPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner\'s period'**
+  String get partnerPeriod;
+
+  /// No description provided for @nextPeriodLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Period'**
+  String get nextPeriodLabel;
+
+  /// No description provided for @estimatedBasedOnHistory.
+  ///
+  /// In en, this message translates to:
+  /// **'estimated · based on your history'**
+  String get estimatedBasedOnHistory;
+
+  /// No description provided for @deleteCycleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Cycle?'**
+  String get deleteCycleTitle;
+
+  /// No description provided for @deleteCycleContent.
+  ///
+  /// In en, this message translates to:
+  /// **'This cycle log will be deleted permanently.'**
+  String get deleteCycleContent;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
+
+  /// No description provided for @noCyclesLogged.
+  ///
+  /// In en, this message translates to:
+  /// **'No cycles logged yet'**
+  String get noCyclesLogged;
+
+  /// No description provided for @trackCycleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Track your cycle to get insights\nand share with your partner.'**
+  String get trackCycleSubtitle;
+
+  /// No description provided for @logFirstCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Log First Cycle'**
+  String get logFirstCycle;
+
+  /// No description provided for @lightFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get lightFlow;
+
+  /// No description provided for @mediumFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Medium'**
+  String get mediumFlow;
+
+  /// No description provided for @heavyFlow.
+  ///
+  /// In en, this message translates to:
+  /// **'Heavy'**
+  String get heavyFlow;
+
+  /// No description provided for @flowSuffix.
+  ///
+  /// In en, this message translates to:
+  /// **' flow'**
+  String get flowSuffix;
+
+  /// No description provided for @editCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Cycle'**
+  String get editCycle;
+
+  /// No description provided for @logPeriod.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Period'**
+  String get logPeriod;
+
+  /// No description provided for @dates.
+  ///
+  /// In en, this message translates to:
+  /// **'Dates'**
+  String get dates;
+
+  /// No description provided for @start.
+  ///
+  /// In en, this message translates to:
+  /// **'Start'**
+  String get start;
+
+  /// No description provided for @endOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'End (optional)'**
+  String get endOptional;
+
+  /// No description provided for @tapToSet.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap to set'**
+  String get tapToSet;
+
+  /// No description provided for @flowLevel.
+  ///
+  /// In en, this message translates to:
+  /// **'Flow Level'**
+  String get flowLevel;
+
+  /// No description provided for @symptoms.
+  ///
+  /// In en, this message translates to:
+  /// **'Symptoms'**
+  String get symptoms;
+
+  /// No description provided for @notesOptional.
+  ///
+  /// In en, this message translates to:
+  /// **'Notes (optional)'**
+  String get notesOptional;
+
+  /// No description provided for @notesHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Any notes about this cycle...'**
+  String get notesHint;
+
+  /// No description provided for @updateCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Cycle'**
+  String get updateCycle;
+
+  /// No description provided for @saveCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Save Cycle'**
+  String get saveCycle;
 }
 
 class _AppLocalizationsDelegate

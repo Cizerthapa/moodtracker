@@ -4,6 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
@@ -138,20 +139,21 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         ? AppColors.cycleColor
         : AppColors.cycleColor;
 
+    final l10n = AppLocalizations.of(context)!;
     String label;
     String sublabel;
     if (isToday) {
-      label = 'Period expected today';
-      sublabel = 'Based on your cycle history';
+      label = l10n.periodExpectedToday;
+      sublabel = l10n.basedOnCycleHistory;
     } else if (isPast) {
-      label = 'Period was expected ${daysUntil.abs()} day${daysUntil.abs() == 1 ? '' : 's'} ago';
-      sublabel = 'Have you logged it?';
+      label = l10n.periodDaysAgo(daysUntil.abs());
+      sublabel = l10n.haveYouLoggedIt;
     } else if (isSoon) {
-      label = 'Period in $daysUntil day${daysUntil == 1 ? '' : 's'}';
-      sublabel = 'Heads up — it\'s coming soon!';
+      label = l10n.periodSoonIn(daysUntil);
+      sublabel = l10n.periodSoonHeadsUp;
     } else {
-      label = 'Next period in $daysUntil days';
-      sublabel = DateFormat('MMMM d').format(nextPeriod) + ' · estimated';
+      label = l10n.nextPeriodIn(daysUntil);
+      sublabel = DateFormat('MMMM d').format(nextPeriod) + l10n.estimatedDot;
     }
 
     return Container(
@@ -230,7 +232,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Cycle Tracker',
+                  AppLocalizations.of(context)!.cycleTrackerHeader,
                   style: GoogleFonts.outfit(
                     fontSize: 34.sp,
                     fontWeight: FontWeight.w800,
@@ -245,7 +247,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     Icon(Icons.favorite_rounded, size: 12.r, color: AppColors.userColor),
                     6.horizontalSpace,
                     Text(
-                      'every cycle, understood',
+                      AppLocalizations.of(context)!.cycleTrackerSlogan,
                       style: GoogleFonts.outfit(
                         fontStyle: FontStyle.italic,
                         fontSize: 13.sp,
@@ -296,9 +298,9 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
       child: Row(
         children: [
-          _tabButton(0, Icons.calendar_month_rounded, 'Calendar'),
+          _tabButton(0, Icons.calendar_month_rounded, AppLocalizations.of(context)!.calendar),
           12.horizontalSpace,
-          _tabButton(1, Icons.history_rounded, 'History'),
+          _tabButton(1, Icons.history_rounded, AppLocalizations.of(context)!.history),
         ],
       ),
     );
@@ -377,36 +379,33 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     IconData icon;
     Color color;
 
+    final l10n = AppLocalizations.of(context)!;
     switch (phase) {
       case CyclePhase.menstrual:
-        title = 'Menstrual Phase';
-        focus = 'Focus on rest, hydration, and pain management (cramps).';
-        insight =
-            'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.';
+        title = l10n.menstrualPhase;
+        focus = l10n.menstrualFocus;
+        insight = l10n.menstrualInsight;
         icon = Icons.water_drop_rounded;
         color = AppColors.userColor;
         break;
       case CyclePhase.follicular:
-        title = 'Follicular Phase';
-        focus = 'Focus on rising energy, creativity, and new beginnings.';
-        insight =
-            'Did you know? You might feel extra energetic today due to rising estrogen levels.';
+        title = l10n.follicularPhase;
+        focus = l10n.follicularFocus;
+        insight = l10n.follicularInsight;
         icon = Icons.spa_rounded;
         color = Colors.teal;
         break;
       case CyclePhase.ovulatory:
-        title = 'Ovulatory Phase (Fertility Window)';
-        focus = 'The "high energy" window. Highest chance of conception.';
-        insight =
-            'Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!';
+        title = l10n.ovulatoryPhase;
+        focus = l10n.ovulatoryFocus;
+        insight = l10n.ovulatoryInsight;
         icon = Icons.favorite_rounded;
         color = Colors.orangeAccent;
         break;
       case CyclePhase.luteal:
-        title = 'Luteal Phase';
-        focus = 'Focus on PMS tracking, skin changes (breakouts), and cravings.';
-        insight =
-            'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.';
+        title = l10n.lutealPhase;
+        focus = l10n.lutealFocus;
+        insight = l10n.lutealInsight;
         icon = Icons.nightlight_round;
         color = AppColors.cycleColor;
         break;
@@ -441,7 +440,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Current Phase',
+                  AppLocalizations.of(context)!.currentPhase,
                   style: GoogleFonts.outfit(fontSize: 12.sp, color: AppColors.softBrown),
                 ),
                 2.verticalSpace,
@@ -594,7 +593,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
                   Color? periodColor;
                   for (final c in cycles) {
-                      periodColor = c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
+                    periodColor = c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
                   }
 
                   final isFertile = _isFertileWindow(date, mostRecent, avgCycleLength);
@@ -616,14 +615,15 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
   Widget _buildLegend(List<PeriodCycle> cycles) {
     final hasPartnerData = cycles.any((c) => c.ownerUid != _uid);
+    final l10n = AppLocalizations.of(context)!;
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 16.w,
       runSpacing: 8.h,
       children: [
-        _legendDot(AppColors.userColor, 'Your period'),
-        _legendDot(Colors.orangeAccent, 'Fertile Window'),
-        if (hasPartnerData) _legendDot(AppColors.partnerColor, 'Partner\'s period'),
+        _legendDot(AppColors.userColor, l10n.yourPeriod),
+        _legendDot(Colors.orangeAccent, l10n.fertileWindow),
+        if (hasPartnerData) _legendDot(AppColors.partnerColor, l10n.partnerPeriod),
       ],
     );
   }
@@ -655,7 +655,10 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [AppColors.cycleColor.withValues(alpha: 0.1), AppColors.userColor.withValues(alpha: 0.07)],
+          colors: [
+            AppColors.cycleColor.withValues(alpha: 0.1),
+            AppColors.userColor.withValues(alpha: 0.07),
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -677,7 +680,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Next Period',
+                AppLocalizations.of(context)!.nextPeriodLabel,
                 style: GoogleFonts.outfit(fontSize: 12.sp, color: AppColors.softBrown),
               ),
               2.verticalSpace,
@@ -692,7 +695,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 ),
               ),
               Text(
-                'estimated · based on your history',
+                AppLocalizations.of(context)!.estimatedBasedOnHistory,
                 style: GoogleFonts.outfit(
                   fontSize: 10.sp,
                   color: AppColors.softBrown,
@@ -730,28 +733,29 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
   Future<bool> _confirmDelete(PeriodCycle cycle) async {
     HapticFeedback.mediumImpact();
+    final l10n = AppLocalizations.of(context)!;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          'Delete Cycle?',
+          l10n.deleteCycleTitle,
           style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: AppColors.warmBrown),
         ),
         content: Text(
-          'This cycle log will be deleted permanently.',
+          l10n.deleteCycleContent,
           style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 14.sp),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.softBrown)),
+            child: Text(l10n.cancel, style: GoogleFonts.outfit(color: AppColors.softBrown)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
-              'Delete',
+              l10n.delete,
               style: GoogleFonts.outfit(color: AppColors.userColor, fontWeight: FontWeight.w700),
             ),
           ),
@@ -774,7 +778,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             Text('🌸', style: TextStyle(fontSize: 48.sp)),
             18.verticalSpace,
             Text(
-              'No cycles logged yet',
+              AppLocalizations.of(context)!.noCyclesLogged,
               style: GoogleFonts.outfit(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
@@ -783,7 +787,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             ),
             10.verticalSpace,
             Text(
-              'Track your cycle to get insights\nand share with your partner.',
+              AppLocalizations.of(context)!.trackCycleSubtitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
@@ -812,7 +816,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                   ],
                 ),
                 child: Text(
-                  'Log First Cycle',
+                  AppLocalizations.of(context)!.logFirstCycle,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -914,11 +918,14 @@ class _CycleCard extends StatelessWidget {
 
   const _CycleCard({required this.cycle, required this.onTap, required this.onDelete});
 
-  String _flowLabel(int l) => l == 1
-      ? 'Light'
-      : l == 3
-      ? 'Heavy'
-      : 'Medium';
+  String _flowLabel(BuildContext context, int l) {
+    final l10n = AppLocalizations.of(context)!;
+    return l == 1
+        ? l10n.lightFlow
+        : l == 3
+        ? l10n.heavyFlow
+        : l10n.mediumFlow;
+  }
 
   String _flowEmoji(int l) => l == 1
       ? '💧'
@@ -1013,7 +1020,7 @@ class _CycleCard extends StatelessWidget {
                   Text(_flowEmoji(cycle.flowLevel), style: const TextStyle(fontSize: 14)),
                   6.horizontalSpace,
                   Text(
-                    '${_flowLabel(cycle.flowLevel)} flow',
+                    '${_flowLabel(context, cycle.flowLevel)}${AppLocalizations.of(context)!.flowSuffix}',
                     style: GoogleFonts.outfit(fontSize: 13.sp, color: AppColors.softBrown),
                   ),
                 ],
