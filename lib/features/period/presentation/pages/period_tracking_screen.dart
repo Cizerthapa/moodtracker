@@ -805,7 +805,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                   borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
-                      color: _kCycleColor.withValues(alpha: 0.3),
+                      color: AppColors.cycleColor.withValues(alpha: 0.3),
                       blurRadius: 16.r,
                       offset: Offset(0, 4.h),
                     ),
