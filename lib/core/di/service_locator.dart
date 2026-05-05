@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
+import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/features/audio/ambient_sound_service.dart';
 import 'package:moodtrack/features/settings/data/repositories/settings_repository.dart';
@@ -39,6 +40,7 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => StreakService());
 
   // ── Repositories ──────────────────────────────────────────────────────────
+  sl.registerLazySingleton(() => AuthRepository());
   sl.registerLazySingleton(() => UserRepository());
   sl.registerLazySingleton(() => MemoriesRepository());
   sl.registerLazySingleton(() => SettingsRepository());
