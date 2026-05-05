@@ -84,6 +84,10 @@ class AppStrings {
   static const String nightBody = 'You did great today. Rest well and see you tomorrow!';
   static const String periodicHeader = 'Aves World Alert';
 
+  // Streak Notifications
+  static const String streakReminderTitle = 'Streak reminder 🔥';
+  static const String streakReminderBody = "Don't forget to log your mood today and keep your streak alive!";
+
   static const List<String> periodicMessages = [
     'Cizer loves you! ❤️',
     'What are you doing? Thinking of you!',

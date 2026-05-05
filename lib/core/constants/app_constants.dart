@@ -28,6 +28,12 @@ class AppConstants {
   static const String biometricPrefsKey = 'biometric_enabled';
   static const String memoriesCacheKey = 'memories_cache';
 
+  // Streaks
+  static const String longestStreakPrefsKey = 'longest_streak';
+  static const int streakReminderNotificationId = 102;
+  static const int streakReminderHour = 21;
+  static const int streakReminderMinute = 0;
+
   // Notifications
   static const String notificationMethodChannel = 'com.cizerthapa.moodtrack/notifications';
   static const String instantChannelId = 'instant_channel';

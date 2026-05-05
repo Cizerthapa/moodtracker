@@ -73,6 +73,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
     if (value) {
       await _notificationService.scheduleDailyNotifications();
+      await _notificationService.scheduleStreakReminder();
       await _notificationService.startPeriodicNotifications();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

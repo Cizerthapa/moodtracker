@@ -17,6 +17,7 @@ import 'package:moodtrack/core/services/storage_service.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
 import 'package:moodtrack/core/database/local_database.dart';
 import 'package:moodtrack/features/period/data/repositories/period_repository.dart';
+import 'package:moodtrack/core/services/streak_service.dart';
 
 
 final sl = GetIt.instance;
@@ -35,6 +36,7 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => AmbientSoundService());
   sl.registerLazySingleton(() => StorageService());
   sl.registerLazySingleton(() => UIStateManager());
+  sl.registerLazySingleton(() => StreakService());
 
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => UserRepository());

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -13,7 +14,9 @@ import 'package:moodtrack/core/database/local_database.dart';
 import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
+import 'package:moodtrack/core/services/streak_service.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
+import 'package:moodtrack/widget/streak_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/error/result.dart';
@@ -69,10 +72,13 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
   final NotesRepository _repository = sl<NotesRepository>();
   final StorageService _storageService = sl<StorageService>();
   final AppDatabase _db = sl<AppDatabase>();
+  final StreakService _streakService = sl<StreakService>();
   String _searchQuery = "";
   late TextEditingController _searchController;
   late AnimationController _fadeController;
   late Animation<double> _fadeAnim;
+  StreakData? _streakData;
+  StreamSubscription<List<Note>>? _notesSub;
 
   @override
   void initState() {
@@ -84,13 +90,21 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _searchController = TextEditingController();
     _fadeController.forward();
+    _refreshStreak();
+    _notesSub = _db.watchAllNotes().listen((_) => _refreshStreak());
   }
 
   @override
   void dispose() {
+    _notesSub?.cancel();
     _fadeController.dispose();
     _searchController.dispose();
     super.dispose();
+  }
+
+  Future<void> _refreshStreak() async {
+    final data = await _streakService.getStreakData();
+    if (mounted) setState(() => _streakData = data);
   }
 
   Future<void> _saveNote(
@@ -306,6 +320,13 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
                   ],
                 ),
               ),
+
+              // ── Streak Card ───────────────────────────────────────────
+              if (_streakData != null)
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 0),
+                  child: StreakCard(data: _streakData!),
+                ),
 
               // ── Notes list ────────────────────────────────────────────
               Expanded(

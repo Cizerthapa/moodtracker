@@ -110,6 +110,16 @@ class NotificationService {
     );
   }
 
+  Future<void> scheduleStreakReminder() async {
+    await _scheduleDaily(
+      id: AppConstants.streakReminderNotificationId,
+      title: AppStrings.streakReminderTitle,
+      body: AppStrings.streakReminderBody,
+      hour: AppConstants.streakReminderHour,
+      minute: AppConstants.streakReminderMinute,
+    );
+  }
+
   Future<void> _scheduleDaily({
     required int id,
     required String title,
