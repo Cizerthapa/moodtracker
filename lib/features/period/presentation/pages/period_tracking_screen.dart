@@ -79,6 +79,20 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     return count > 0 ? (totalDays / count).round() : 28;
   }
 
+  int _getAveragePeriodLength(List<PeriodCycle> cycles) {
+    final mine = cycles.where((c) => c.ownerUid == _uid).toList();
+    if (mine.isEmpty) return 5;
+    int totalDays = 0;
+    int count = 0;
+    for (final c in mine) {
+      if (c.endDate != null) {
+        totalDays += c.durationDays;
+        count++;
+      }
+    }
+    return count > 0 ? (totalDays / count).round() : 5;
+  }
+
   /// Returns the predicted next start date based on the user's own cycle history.
   DateTime? _predictNext(List<PeriodCycle> cycles) {
     final mostRecent = _getMostRecentCycle(cycles);
@@ -353,7 +367,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         children: [
           _buildMonthNav(),
           12.verticalSpace,
-          _buildCalendarGrid(cycles, mostRecent, avgLength),
+          _buildCalendarGrid(cycles, mostRecent, avgLength, nextPeriod),
           14.verticalSpace,
           _buildLegend(cycles),
           14.verticalSpace,
@@ -535,7 +549,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     return false;
   }
 
-  Widget _buildCalendarGrid(List<PeriodCycle> cycles, PeriodCycle? mostRecent, int avgCycleLength) {
+  Widget _buildCalendarGrid(List<PeriodCycle> cycles, PeriodCycle? mostRecent, int avgCycleLength, DateTime? nextPeriod) {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
     final lastDay = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0);
     final today = DateTime.now();
@@ -592,8 +606,26 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                       date.year == today.year && date.month == today.month && date.day == today.day;
 
                   Color? periodColor;
+                  bool isPredicted = false;
                   for (final c in cycles) {
-                    periodColor = c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
+                    if (c.isActiveOn(date)) {
+                      periodColor = c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
+                      break;
+                    }
+                  }
+
+                  // If no actual period, check for predicted period
+                  if (periodColor == null && nextPeriod != null) {
+                    final avgPeriod = _getAveragePeriodLength(cycles);
+                    final nextEnd = nextPeriod.add(Duration(days: avgPeriod - 1));
+                    final d = DateTime(date.year, date.month, date.day);
+                    final start = DateTime(nextPeriod.year, nextPeriod.month, nextPeriod.day);
+                    final end = DateTime(nextEnd.year, nextEnd.month, nextEnd.day);
+
+                    if (!d.isBefore(start) && !d.isAfter(end)) {
+                      periodColor = AppColors.userColor;
+                      isPredicted = true;
+                    }
                   }
 
                   final isFertile = _isFertileWindow(date, mostRecent, avgCycleLength);
@@ -603,6 +635,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     isToday: isToday,
                     periodColor: periodColor,
                     isFertileWindow: isFertile,
+                    isPredicted: isPredicted,
                   );
                 }),
               ),
@@ -622,6 +655,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       runSpacing: 8.h,
       children: [
         _legendDot(AppColors.userColor, l10n.yourPeriod),
+        _legendDot(AppColors.userColor.withValues(alpha: 0.4), l10n.nextPeriodLabel),
         _legendDot(Colors.orangeAccent, l10n.fertileWindow),
         if (hasPartnerData) _legendDot(AppColors.partnerColor, l10n.partnerPeriod),
       ],
@@ -860,12 +894,14 @@ class _DayCell extends StatelessWidget {
   final bool isToday;
   final Color? periodColor;
   final bool isFertileWindow;
+  final bool isPredicted;
 
   const _DayCell({
     required this.day,
     required this.isToday,
     this.periodColor,
     this.isFertileWindow = false,
+    this.isPredicted = false,
   });
 
   @override
@@ -877,13 +913,15 @@ class _DayCell extends StatelessWidget {
         margin: EdgeInsets.all(2.r),
         decoration: BoxDecoration(
           color: periodColor != null
-              ? periodColor!.withValues(alpha: 0.85)
+              ? (isPredicted ? periodColor!.withValues(alpha: 0.25) : periodColor!.withValues(alpha: 0.85))
               : isFertileWindow
               ? Colors.orangeAccent.withValues(alpha: 0.15)
               : Colors.transparent,
           shape: BoxShape.circle,
           border: isToday && periodColor == null
               ? Border.all(color: AppColors.cycleColor.withValues(alpha: 0.5), width: 1.5)
+              : isPredicted
+              ? Border.all(color: periodColor!.withValues(alpha: 0.4), width: 1, style: BorderStyle.solid)
               : isFertileWindow && periodColor == null
               ? Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3), width: 1)
               : null,
@@ -895,7 +933,7 @@ class _DayCell extends StatelessWidget {
               fontSize: 13.sp,
               fontWeight: isToday ? FontWeight.w800 : FontWeight.w500,
               color: periodColor != null
-                  ? Colors.white
+                  ? (isPredicted ? AppColors.warmBrown : Colors.white)
                   : isToday
                   ? AppColors.cycleColor
                   : isFertileWindow
