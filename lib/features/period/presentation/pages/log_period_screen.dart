@@ -7,8 +7,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/period/domain/model/period_cycle_model.dart';
 
-const Color _kCycleColor = Color(0xFF9B7EC8);
-const Color _kPeriodColor = Color(0xFFE8789A);
+// Removed local color constants in favor of AppColors.cycleColor and AppColors.userColor
 
 const List<Map<String, String>> _kSymptoms = [
   {'key': 'cramps', 'label': 'Cramps', 'emoji': '😣'},
@@ -72,7 +71,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
       lastDate: DateTime.now().add(const Duration(days: 30)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.light(primary: _kCycleColor),
+          colorScheme: ColorScheme.light(primary: AppColors.cycleColor),
         ),
         child: child!,
       ),
@@ -234,10 +233,10 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
               margin: EdgeInsets.only(right: level < 3 ? 8.w : 0),
               padding: EdgeInsets.symmetric(vertical: 12.h),
               decoration: BoxDecoration(
-                color: isSelected ? _kCycleColor : AppColors.ivoryCard,
+                color: isSelected ? AppColors.cycleColor : AppColors.ivoryCard,
                 borderRadius: BorderRadius.circular(14.r),
                 border: Border.all(
-                  color: isSelected ? _kCycleColor : AppColors.champagne,
+                  color: isSelected ? AppColors.cycleColor : AppColors.champagne,
                 ),
               ),
               child: Column(
@@ -284,11 +283,11 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: isSelected
-                  ? _kCycleColor.withValues(alpha: 0.13)
+                  ? AppColors.cycleColor.withValues(alpha: 0.13)
                   : AppColors.ivoryCard,
               borderRadius: BorderRadius.circular(50.r),
               border: Border.all(
-                color: isSelected ? _kCycleColor : AppColors.champagne,
+                color: isSelected ? AppColors.cycleColor : AppColors.champagne,
                 width: isSelected ? 1.5 : 1,
               ),
             ),
@@ -301,7 +300,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                   s['label']!,
                   style: GoogleFonts.outfit(
                     fontSize: 13.sp,
-                    color: isSelected ? _kCycleColor : AppColors.softBrown,
+                    color: isSelected ? AppColors.cycleColor : AppColors.softBrown,
                     fontWeight:
                         isSelected ? FontWeight.w600 : FontWeight.w500,
                   ),
@@ -346,14 +345,14 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
         padding: EdgeInsets.symmetric(vertical: 16.h),
         decoration: BoxDecoration(
           gradient: const LinearGradient(
-            colors: [_kCycleColor, _kPeriodColor],
+            colors: [AppColors.cycleColor, AppColors.userColor],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(50.r),
           boxShadow: [
             BoxShadow(
-              color: _kCycleColor.withValues(alpha: 0.3),
+              color: AppColors.cycleColor.withValues(alpha: 0.3),
               blurRadius: 16.r,
               offset: Offset(0, 4.h),
             ),

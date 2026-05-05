@@ -14,9 +14,7 @@ import 'package:moodtrack/core/di/service_locator.dart';
 
 import 'package:moodtrack/features/period/presentation/pages/log_period_screen.dart';
 
-const Color _kCycleColor = Color(0xFF9B7EC8);
-const Color _kUserColor = Color(0xFFE8789A);
-const Color _kPartnerColor = Color(0xFF7ABBE8);
+// Removed local color constants in favor of AppColors.cycleColor, AppColors.userColor, and AppColors.partnerColor
 
 class PeriodTrackingScreen extends StatefulWidget {
   const PeriodTrackingScreen({super.key});
@@ -133,12 +131,12 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     final isSoon = daysUntil > 0 && daysUntil <= 3;
 
     final Color bannerColor = isPast
-        ? const Color(0xFFE8789A)
+        ? AppColors.userColor
         : isToday
-        ? const Color(0xFFE8789A)
+        ? AppColors.userColor
         : isSoon
-        ? const Color(0xFF9B7EC8)
-        : const Color(0xFF9B7EC8);
+        ? AppColors.cycleColor
+        : AppColors.cycleColor;
 
     String label;
     String sublabel;
@@ -244,7 +242,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 4.verticalSpace,
                 Row(
                   children: [
-                    Icon(Icons.favorite_rounded, size: 12.r, color: _kUserColor),
+                    Icon(Icons.favorite_rounded, size: 12.r, color: AppColors.userColor),
                     6.horizontalSpace,
                     Text(
                       'every cycle, understood',
@@ -270,14 +268,14 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               height: 46.r,
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [_kCycleColor, _kUserColor],
+                  colors: [AppColors.cycleColor, AppColors.userColor],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: _kCycleColor.withValues(alpha: 0.3),
+                    color: AppColors.cycleColor.withValues(alpha: 0.3),
                     blurRadius: 14.r,
                     offset: Offset(0, 4.h),
                   ),
@@ -318,7 +316,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
         decoration: BoxDecoration(
-          color: active ? _kCycleColor : Colors.transparent,
+          color: active ? AppColors.cycleColor : Colors.transparent,
           borderRadius: BorderRadius.circular(50.r),
         ),
         child: Row(
@@ -386,7 +384,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         insight =
             'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.';
         icon = Icons.water_drop_rounded;
-        color = _kUserColor;
+        color = AppColors.userColor;
         break;
       case CyclePhase.follicular:
         title = 'Follicular Phase';
@@ -410,7 +408,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         insight =
             'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.';
         icon = Icons.nightlight_round;
-        color = _kCycleColor;
+        color = AppColors.cycleColor;
         break;
     }
 
@@ -551,7 +549,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       decoration: BoxDecoration(
         color: AppColors.ivoryCard,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: _kCycleColor.withValues(alpha: 0.15)),
+        border: Border.all(color: AppColors.cycleColor.withValues(alpha: 0.15)),
       ),
       padding: EdgeInsets.all(16.r),
       child: Column(
@@ -596,10 +594,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
                   Color? periodColor;
                   for (final c in cycles) {
-                    if (c.isActiveOn(date)) {
-                      periodColor = c.ownerUid == _uid ? _kUserColor : _kPartnerColor;
-                      break;
-                    }
+                      periodColor = c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
                   }
 
                   final isFertile = _isFertileWindow(date, mostRecent, avgCycleLength);
@@ -626,9 +621,9 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       spacing: 16.w,
       runSpacing: 8.h,
       children: [
-        _legendDot(_kUserColor, 'Your period'),
+        _legendDot(AppColors.userColor, 'Your period'),
         _legendDot(Colors.orangeAccent, 'Fertile Window'),
-        if (hasPartnerData) _legendDot(_kPartnerColor, 'Partner\'s period'),
+        if (hasPartnerData) _legendDot(AppColors.partnerColor, 'Partner\'s period'),
       ],
     );
   }
@@ -660,22 +655,22 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [_kCycleColor.withValues(alpha: 0.1), _kUserColor.withValues(alpha: 0.07)],
+          colors: [AppColors.cycleColor.withValues(alpha: 0.1), AppColors.userColor.withValues(alpha: 0.07)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: _kCycleColor.withValues(alpha: 0.2)),
+        border: Border.all(color: AppColors.cycleColor.withValues(alpha: 0.2)),
       ),
       child: Row(
         children: [
           Container(
             padding: EdgeInsets.all(12.r),
             decoration: BoxDecoration(
-              color: _kCycleColor.withValues(alpha: 0.13),
+              color: AppColors.cycleColor.withValues(alpha: 0.13),
               borderRadius: BorderRadius.circular(14.r),
             ),
-            child: Icon(Icons.event_rounded, color: _kCycleColor, size: 22.r),
+            child: Icon(Icons.event_rounded, color: AppColors.cycleColor, size: 22.r),
           ),
           16.horizontalSpace,
           Column(
@@ -757,7 +752,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
               'Delete',
-              style: GoogleFonts.outfit(color: _kUserColor, fontWeight: FontWeight.w700),
+              style: GoogleFonts.outfit(color: AppColors.userColor, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -806,7 +801,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               child: Container(
                 padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
                 decoration: BoxDecoration(
-                  color: _kCycleColor,
+                  color: AppColors.cycleColor,
                   borderRadius: BorderRadius.circular(50.r),
                   boxShadow: [
                     BoxShadow(
@@ -884,7 +879,7 @@ class _DayCell extends StatelessWidget {
               : Colors.transparent,
           shape: BoxShape.circle,
           border: isToday && periodColor == null
-              ? Border.all(color: _kCycleColor.withValues(alpha: 0.5), width: 1.5)
+              ? Border.all(color: AppColors.cycleColor.withValues(alpha: 0.5), width: 1.5)
               : isFertileWindow && periodColor == null
               ? Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3), width: 1)
               : null,
@@ -898,7 +893,7 @@ class _DayCell extends StatelessWidget {
               color: periodColor != null
                   ? Colors.white
                   : isToday
-                  ? _kCycleColor
+                  ? AppColors.cycleColor
                   : isFertileWindow
                   ? Colors.orange.shade300
                   : AppColors.warmBrown,
@@ -950,10 +945,10 @@ class _CycleCard extends StatelessWidget {
         alignment: Alignment.centerRight,
         padding: EdgeInsets.only(right: 24.w),
         decoration: BoxDecoration(
-          color: _kUserColor.withValues(alpha: 0.1),
+          color: AppColors.userColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20.r),
         ),
-        child: Icon(Icons.delete_outline_rounded, color: _kUserColor, size: 24.r),
+        child: Icon(Icons.delete_outline_rounded, color: AppColors.userColor, size: 24.r),
       ),
       child: GestureDetector(
         onTap: () {
@@ -966,10 +961,10 @@ class _CycleCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.ivoryCard,
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: _kUserColor.withValues(alpha: 0.2)),
+            border: Border.all(color: AppColors.userColor.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: _kUserColor.withValues(alpha: 0.06),
+                color: AppColors.userColor.withValues(alpha: 0.06),
                 blurRadius: 12.r,
                 offset: Offset(0, 3.h),
               ),
@@ -983,7 +978,7 @@ class _CycleCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.calendar_today_rounded, size: 14.r, color: _kUserColor),
+                      Icon(Icons.calendar_today_rounded, size: 14.r, color: AppColors.userColor),
                       6.horizontalSpace,
                       Text(
                         '$startStr  →  $endStr',
@@ -998,14 +993,14 @@ class _CycleCard extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: _kUserColor.withValues(alpha: 0.12),
+                      color: AppColors.userColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(50.r),
                     ),
                     child: Text(
                       duration,
                       style: GoogleFonts.outfit(
                         fontSize: 11.sp,
-                        color: _kUserColor,
+                        color: AppColors.userColor,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
@@ -1034,12 +1029,12 @@ class _CycleCard extends StatelessWidget {
                         (s) => Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
-                            color: _kCycleColor.withValues(alpha: 0.1),
+                            color: AppColors.cycleColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(50.r),
                           ),
                           child: Text(
                             s.replaceAll('_', ' '),
-                            style: GoogleFonts.outfit(fontSize: 11.sp, color: _kCycleColor),
+                            style: GoogleFonts.outfit(fontSize: 11.sp, color: AppColors.cycleColor),
                           ),
                         ),
                       )

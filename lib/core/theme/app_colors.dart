@@ -23,4 +23,9 @@ class AppColors {
   // Static/Fixed colors (if any are needed)
   static const Color white = Colors.white;
   static const Color transparent = Colors.transparent;
+
+  // ─── Tracker Colors ──────────────────────────────────────────────────
+  static const Color cycleColor = Color(0xFF9B7EC8);
+  static const Color userColor = Color(0xFFE8789A);
+  static const Color partnerColor = Color(0xFF7ABBE8);
 }
