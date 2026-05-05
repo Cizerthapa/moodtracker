@@ -3,7 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class JournalEntry {
   final String id;
   final String? title;
-  final String text;
+  final String? text;
   final String mood;
   final String? imageLocalPath;
   final bool encrypted;
@@ -13,7 +13,7 @@ class JournalEntry {
   const JournalEntry({
     required this.id,
     this.title,
-    required this.text,
+    this.text,
     required this.mood,
     this.imageLocalPath,
     this.encrypted = false,

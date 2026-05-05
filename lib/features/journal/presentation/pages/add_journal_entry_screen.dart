@@ -187,7 +187,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
   }
 
   Future<void> _save() async {
-    if (_textController.text.trim().isEmpty || _selectedEmoji == null) {
+    if (_selectedEmoji == null) {
       HapticFeedback.heavyImpact();
       return;
     }
@@ -674,7 +674,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                   )
                                 else
                                   GestureDetector(
-                                    onTap: hasText ? _save : null,
+                                    onTap: _save,
                                     child: AnimatedContainer(
                                       duration: const Duration(milliseconds: 280),
                                       curve: Curves.easeOut,
@@ -683,28 +683,19 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                         vertical: 13.h,
                                       ),
                                       decoration: BoxDecoration(
-                                        gradient: hasText
-                                            ? LinearGradient(
-                                                colors: [_accentColor, _accentColor.withValues(alpha: 0.78)],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              )
-                                            : LinearGradient(
-                                                colors: [
-                                                  const Color(0xFFE8D9C0).withValues(alpha: 0.6),
-                                                  const Color(0xFFE8D9C0).withValues(alpha: 0.6),
-                                                ],
-                                              ),
+                                        gradient: LinearGradient(
+                                          colors: [_accentColor, _accentColor.withValues(alpha: 0.78)],
+                                          begin: Alignment.topLeft,
+                                          end: Alignment.bottomRight,
+                                        ),
                                         borderRadius: BorderRadius.circular(50.r),
-                                        boxShadow: hasText
-                                            ? [
-                                                BoxShadow(
-                                                  color: _accentColor.withValues(alpha: 0.32),
-                                                  blurRadius: 16,
-                                                  offset: const Offset(0, 5),
-                                                ),
-                                              ]
-                                            : [],
+                                        boxShadow: [
+                                          BoxShadow(
+                                            color: _accentColor.withValues(alpha: 0.32),
+                                            blurRadius: 16,
+                                            offset: const Offset(0, 5),
+                                          ),
+                                        ],
                                       ),
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,

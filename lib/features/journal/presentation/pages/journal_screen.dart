@@ -728,17 +728,19 @@ class _JournalEntryCard extends StatelessWidget {
                   ),
                   4.verticalSpace,
                 ],
-                (title == null ? 12.h : 0).verticalSpace,
-                Text(
-                  text,
-                  style: GoogleFonts.outfit(
-                    fontSize: 14.sp,
-                    color: AppColors.warmBrown.withValues(alpha: 0.8),
-                    height: 1.55,
+                if (text.isNotEmpty) ...[
+                  (title == null ? 12.h : 0).verticalSpace,
+                  Text(
+                    text,
+                    style: GoogleFonts.outfit(
+                      fontSize: 14.sp,
+                      color: AppColors.warmBrown.withValues(alpha: 0.8),
+                      height: 1.55,
+                    ),
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                ],
               ],
             ),
           ),

@@ -51,7 +51,7 @@ class NotesRepository {
       final note = Note(
         id: id,
         title: noteData['title'],
-        textContent: noteData['text'] ?? '',
+        textContent: noteData['text'],
         mood: noteData['mood'] ?? '😐',
         imageUrl: noteData['imageUrl'],
         date: DateTime.tryParse(noteData['date'] ?? '') ?? DateTime.now(),

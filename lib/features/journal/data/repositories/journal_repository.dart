@@ -63,7 +63,7 @@ class JournalRepository {
 
   Future<Result<void>> addJournal({
     String? title,
-    required String text,
+    String? text,
     required String mood,
     String? imageLocalPath,
     bool encrypt = false,
@@ -71,7 +71,7 @@ class JournalRepository {
     log('Firestore: Adding journal for $_uid (encrypted: $encrypt)', name: 'Firebase');
     try {
       final encryptedTitle = (encrypt && title != null) ? _encryption.encrypt(title, _uid) : title;
-      final content = encrypt ? _encryption.encrypt(text, _uid) : text;
+      final content = (encrypt && text != null) ? _encryption.encrypt(text, _uid) : text;
       await _journalsCollection.add({
         'title': encryptedTitle,
         'text': content,
@@ -91,7 +91,7 @@ class JournalRepository {
   Future<Result<void>> updateJournal(
     String id, {
     String? title,
-    required String text,
+    String? text,
     required String mood,
     bool encrypt = false,
   }) async {
@@ -99,7 +99,7 @@ class JournalRepository {
     try {
       final encryptedTitle =
           (encrypt && title != null) ? _encryption.encrypt(title, _uid) : title;
-      final content = encrypt ? _encryption.encrypt(text, _uid) : text;
+      final content = (encrypt && text != null) ? _encryption.encrypt(text, _uid) : text;
       await _journalsCollection.doc(id).update({
         'title': encryptedTitle,
         'text': content,

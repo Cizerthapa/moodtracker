@@ -12,7 +12,7 @@ part 'local_database.g.dart';
 class Notes extends Table {
   TextColumn get id => text()();
   TextColumn get title => text().nullable()();
-  TextColumn get textContent => text()();
+  TextColumn get textContent => text().nullable()();
   TextColumn get mood => text()();
   TextColumn get imageUrl => text().nullable()();
   DateTimeColumn get date => dateTime()();
@@ -25,7 +25,7 @@ class Notes extends Table {
 class Journals extends Table {
   TextColumn get id => text()();
   TextColumn get title => text().nullable()();
-  TextColumn get textContent => text()();
+  TextColumn get textContent => text().nullable()();
   TextColumn get mood => text()();
   BoolColumn get encrypted => boolean().withDefault(const Constant(false))();
   DateTimeColumn get date => dateTime()();
@@ -67,7 +67,21 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration {
+    return MigrationStrategy(
+      onUpgrade: (m, from, to) async {
+        if (from < 2) {
+          // We use alterTable to recreate the table with the new nullable constraint.
+          // This is the most reliable way to change column constraints in SQLite.
+          await m.alterTable(TableMigration(notes));
+          await m.alterTable(TableMigration(journals));
+        }
+      },
+    );
+  }
 
   // ── Helper Methods ───────────────────────────────────────────────────────
 

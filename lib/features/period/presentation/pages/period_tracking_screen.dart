@@ -607,15 +607,33 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
                   Color? periodColor;
                   bool isPredicted = false;
+                  double opacity = 1.0;
+
+                  PeriodCycle? activeCycle;
                   for (final c in cycles) {
                     if (c.isActiveOn(date)) {
-                      periodColor = c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
+                      activeCycle = c;
+                      periodColor =
+                          c.ownerUid == _uid ? AppColors.userColor : AppColors.partnerColor;
                       break;
                     }
                   }
 
-                  // If no actual period, check for predicted period
-                  if (periodColor == null && nextPeriod != null) {
+                  if (activeCycle != null) {
+                    final dayOfPeriod = date.difference(activeCycle.startDate).inDays + 1;
+                    final totalDuration = activeCycle.endDate != null
+                        ? activeCycle.durationDays
+                        : _getAveragePeriodLength(cycles);
+
+                    if (totalDuration >= 3) {
+                      if (dayOfPeriod >= totalDuration) {
+                        opacity = 0.35;
+                      } else if (dayOfPeriod >= totalDuration - 1) {
+                        opacity = 0.65;
+                      }
+                    }
+                  } else if (nextPeriod != null) {
+                    // Check for predicted period
                     final avgPeriod = _getAveragePeriodLength(cycles);
                     final nextEnd = nextPeriod.add(Duration(days: avgPeriod - 1));
                     final d = DateTime(date.year, date.month, date.day);
@@ -625,6 +643,14 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     if (!d.isBefore(start) && !d.isAfter(end)) {
                       periodColor = AppColors.userColor;
                       isPredicted = true;
+                      final dayOfPeriod = d.difference(start).inDays + 1;
+                      if (avgPeriod >= 3) {
+                        if (dayOfPeriod >= avgPeriod) {
+                          opacity = 0.4;
+                        } else if (dayOfPeriod >= avgPeriod - 1) {
+                          opacity = 0.7;
+                        }
+                      }
                     }
                   }
 
@@ -636,6 +662,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     periodColor: periodColor,
                     isFertileWindow: isFertile,
                     isPredicted: isPredicted,
+                    opacity: opacity,
                   );
                 }),
               ),
@@ -895,6 +922,7 @@ class _DayCell extends StatelessWidget {
   final Color? periodColor;
   final bool isFertileWindow;
   final bool isPredicted;
+  final double opacity;
 
   const _DayCell({
     required this.day,
@@ -902,6 +930,7 @@ class _DayCell extends StatelessWidget {
     this.periodColor,
     this.isFertileWindow = false,
     this.isPredicted = false,
+    this.opacity = 1.0,
   });
 
   @override
@@ -913,7 +942,9 @@ class _DayCell extends StatelessWidget {
         margin: EdgeInsets.all(2.r),
         decoration: BoxDecoration(
           color: periodColor != null
-              ? (isPredicted ? periodColor!.withValues(alpha: 0.25) : periodColor!.withValues(alpha: 0.85))
+              ? (isPredicted
+                  ? periodColor!.withValues(alpha: 0.25 * opacity)
+                  : periodColor!.withValues(alpha: 0.85 * opacity))
               : isFertileWindow
               ? Colors.orangeAccent.withValues(alpha: 0.15)
               : Colors.transparent,

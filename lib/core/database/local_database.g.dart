@@ -33,9 +33,9 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
   late final GeneratedColumn<String> textContent = GeneratedColumn<String>(
     'text_content',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _moodMeta = const VerificationMeta('mood');
   @override
@@ -122,8 +122,6 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
           _textContentMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_textContentMeta);
     }
     if (data.containsKey('mood')) {
       context.handle(
@@ -176,7 +174,7 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
       textContent: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}text_content'],
-      )!,
+      ),
       mood: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}mood'],
@@ -205,7 +203,7 @@ class $NotesTable extends Notes with TableInfo<$NotesTable, Note> {
 class Note extends DataClass implements Insertable<Note> {
   final String id;
   final String? title;
-  final String textContent;
+  final String? textContent;
   final String mood;
   final String? imageUrl;
   final DateTime date;
@@ -213,7 +211,7 @@ class Note extends DataClass implements Insertable<Note> {
   const Note({
     required this.id,
     this.title,
-    required this.textContent,
+    this.textContent,
     required this.mood,
     this.imageUrl,
     required this.date,
@@ -226,7 +224,9 @@ class Note extends DataClass implements Insertable<Note> {
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
     }
-    map['text_content'] = Variable<String>(textContent);
+    if (!nullToAbsent || textContent != null) {
+      map['text_content'] = Variable<String>(textContent);
+    }
     map['mood'] = Variable<String>(mood);
     if (!nullToAbsent || imageUrl != null) {
       map['image_url'] = Variable<String>(imageUrl);
@@ -242,7 +242,9 @@ class Note extends DataClass implements Insertable<Note> {
       title: title == null && nullToAbsent
           ? const Value.absent()
           : Value(title),
-      textContent: Value(textContent),
+      textContent: textContent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textContent),
       mood: Value(mood),
       imageUrl: imageUrl == null && nullToAbsent
           ? const Value.absent()
@@ -260,7 +262,7 @@ class Note extends DataClass implements Insertable<Note> {
     return Note(
       id: serializer.fromJson<String>(json['id']),
       title: serializer.fromJson<String?>(json['title']),
-      textContent: serializer.fromJson<String>(json['textContent']),
+      textContent: serializer.fromJson<String?>(json['textContent']),
       mood: serializer.fromJson<String>(json['mood']),
       imageUrl: serializer.fromJson<String?>(json['imageUrl']),
       date: serializer.fromJson<DateTime>(json['date']),
@@ -273,7 +275,7 @@ class Note extends DataClass implements Insertable<Note> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'title': serializer.toJson<String?>(title),
-      'textContent': serializer.toJson<String>(textContent),
+      'textContent': serializer.toJson<String?>(textContent),
       'mood': serializer.toJson<String>(mood),
       'imageUrl': serializer.toJson<String?>(imageUrl),
       'date': serializer.toJson<DateTime>(date),
@@ -284,7 +286,7 @@ class Note extends DataClass implements Insertable<Note> {
   Note copyWith({
     String? id,
     Value<String?> title = const Value.absent(),
-    String? textContent,
+    Value<String?> textContent = const Value.absent(),
     String? mood,
     Value<String?> imageUrl = const Value.absent(),
     DateTime? date,
@@ -292,7 +294,7 @@ class Note extends DataClass implements Insertable<Note> {
   }) => Note(
     id: id ?? this.id,
     title: title.present ? title.value : this.title,
-    textContent: textContent ?? this.textContent,
+    textContent: textContent.present ? textContent.value : this.textContent,
     mood: mood ?? this.mood,
     imageUrl: imageUrl.present ? imageUrl.value : this.imageUrl,
     date: date ?? this.date,
@@ -347,7 +349,7 @@ class Note extends DataClass implements Insertable<Note> {
 class NotesCompanion extends UpdateCompanion<Note> {
   final Value<String> id;
   final Value<String?> title;
-  final Value<String> textContent;
+  final Value<String?> textContent;
   final Value<String> mood;
   final Value<String?> imageUrl;
   final Value<DateTime> date;
@@ -366,14 +368,13 @@ class NotesCompanion extends UpdateCompanion<Note> {
   NotesCompanion.insert({
     required String id,
     this.title = const Value.absent(),
-    required String textContent,
+    this.textContent = const Value.absent(),
     required String mood,
     this.imageUrl = const Value.absent(),
     required DateTime date,
     this.pendingSync = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       textContent = Value(textContent),
        mood = Value(mood),
        date = Value(date);
   static Insertable<Note> custom({
@@ -401,7 +402,7 @@ class NotesCompanion extends UpdateCompanion<Note> {
   NotesCompanion copyWith({
     Value<String>? id,
     Value<String?>? title,
-    Value<String>? textContent,
+    Value<String?>? textContent,
     Value<String>? mood,
     Value<String?>? imageUrl,
     Value<DateTime>? date,
@@ -496,9 +497,9 @@ class $JournalsTable extends Journals with TableInfo<$JournalsTable, Journal> {
   late final GeneratedColumn<String> textContent = GeneratedColumn<String>(
     'text_content',
     aliasedName,
-    false,
+    true,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
   );
   static const VerificationMeta _moodMeta = const VerificationMeta('mood');
   @override
@@ -589,8 +590,6 @@ class $JournalsTable extends Journals with TableInfo<$JournalsTable, Journal> {
           _textContentMeta,
         ),
       );
-    } else if (isInserting) {
-      context.missing(_textContentMeta);
     }
     if (data.containsKey('mood')) {
       context.handle(
@@ -643,7 +642,7 @@ class $JournalsTable extends Journals with TableInfo<$JournalsTable, Journal> {
       textContent: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}text_content'],
-      )!,
+      ),
       mood: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}mood'],
@@ -672,7 +671,7 @@ class $JournalsTable extends Journals with TableInfo<$JournalsTable, Journal> {
 class Journal extends DataClass implements Insertable<Journal> {
   final String id;
   final String? title;
-  final String textContent;
+  final String? textContent;
   final String mood;
   final bool encrypted;
   final DateTime date;
@@ -680,7 +679,7 @@ class Journal extends DataClass implements Insertable<Journal> {
   const Journal({
     required this.id,
     this.title,
-    required this.textContent,
+    this.textContent,
     required this.mood,
     required this.encrypted,
     required this.date,
@@ -693,7 +692,9 @@ class Journal extends DataClass implements Insertable<Journal> {
     if (!nullToAbsent || title != null) {
       map['title'] = Variable<String>(title);
     }
-    map['text_content'] = Variable<String>(textContent);
+    if (!nullToAbsent || textContent != null) {
+      map['text_content'] = Variable<String>(textContent);
+    }
     map['mood'] = Variable<String>(mood);
     map['encrypted'] = Variable<bool>(encrypted);
     map['date'] = Variable<DateTime>(date);
@@ -707,7 +708,9 @@ class Journal extends DataClass implements Insertable<Journal> {
       title: title == null && nullToAbsent
           ? const Value.absent()
           : Value(title),
-      textContent: Value(textContent),
+      textContent: textContent == null && nullToAbsent
+          ? const Value.absent()
+          : Value(textContent),
       mood: Value(mood),
       encrypted: Value(encrypted),
       date: Value(date),
@@ -723,7 +726,7 @@ class Journal extends DataClass implements Insertable<Journal> {
     return Journal(
       id: serializer.fromJson<String>(json['id']),
       title: serializer.fromJson<String?>(json['title']),
-      textContent: serializer.fromJson<String>(json['textContent']),
+      textContent: serializer.fromJson<String?>(json['textContent']),
       mood: serializer.fromJson<String>(json['mood']),
       encrypted: serializer.fromJson<bool>(json['encrypted']),
       date: serializer.fromJson<DateTime>(json['date']),
@@ -736,7 +739,7 @@ class Journal extends DataClass implements Insertable<Journal> {
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
       'title': serializer.toJson<String?>(title),
-      'textContent': serializer.toJson<String>(textContent),
+      'textContent': serializer.toJson<String?>(textContent),
       'mood': serializer.toJson<String>(mood),
       'encrypted': serializer.toJson<bool>(encrypted),
       'date': serializer.toJson<DateTime>(date),
@@ -747,7 +750,7 @@ class Journal extends DataClass implements Insertable<Journal> {
   Journal copyWith({
     String? id,
     Value<String?> title = const Value.absent(),
-    String? textContent,
+    Value<String?> textContent = const Value.absent(),
     String? mood,
     bool? encrypted,
     DateTime? date,
@@ -755,7 +758,7 @@ class Journal extends DataClass implements Insertable<Journal> {
   }) => Journal(
     id: id ?? this.id,
     title: title.present ? title.value : this.title,
-    textContent: textContent ?? this.textContent,
+    textContent: textContent.present ? textContent.value : this.textContent,
     mood: mood ?? this.mood,
     encrypted: encrypted ?? this.encrypted,
     date: date ?? this.date,
@@ -810,7 +813,7 @@ class Journal extends DataClass implements Insertable<Journal> {
 class JournalsCompanion extends UpdateCompanion<Journal> {
   final Value<String> id;
   final Value<String?> title;
-  final Value<String> textContent;
+  final Value<String?> textContent;
   final Value<String> mood;
   final Value<bool> encrypted;
   final Value<DateTime> date;
@@ -829,14 +832,13 @@ class JournalsCompanion extends UpdateCompanion<Journal> {
   JournalsCompanion.insert({
     required String id,
     this.title = const Value.absent(),
-    required String textContent,
+    this.textContent = const Value.absent(),
     required String mood,
     this.encrypted = const Value.absent(),
     required DateTime date,
     this.pendingSync = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
-       textContent = Value(textContent),
        mood = Value(mood),
        date = Value(date);
   static Insertable<Journal> custom({
@@ -864,7 +866,7 @@ class JournalsCompanion extends UpdateCompanion<Journal> {
   JournalsCompanion copyWith({
     Value<String>? id,
     Value<String?>? title,
-    Value<String>? textContent,
+    Value<String?>? textContent,
     Value<String>? mood,
     Value<bool>? encrypted,
     Value<DateTime>? date,
@@ -1412,7 +1414,7 @@ typedef $$NotesTableCreateCompanionBuilder =
     NotesCompanion Function({
       required String id,
       Value<String?> title,
-      required String textContent,
+      Value<String?> textContent,
       required String mood,
       Value<String?> imageUrl,
       required DateTime date,
@@ -1423,7 +1425,7 @@ typedef $$NotesTableUpdateCompanionBuilder =
     NotesCompanion Function({
       Value<String> id,
       Value<String?> title,
-      Value<String> textContent,
+      Value<String?> textContent,
       Value<String> mood,
       Value<String?> imageUrl,
       Value<DateTime> date,
@@ -1585,7 +1587,7 @@ class $$NotesTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String?> title = const Value.absent(),
-                Value<String> textContent = const Value.absent(),
+                Value<String?> textContent = const Value.absent(),
                 Value<String> mood = const Value.absent(),
                 Value<String?> imageUrl = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
@@ -1605,7 +1607,7 @@ class $$NotesTableTableManager
               ({
                 required String id,
                 Value<String?> title = const Value.absent(),
-                required String textContent,
+                Value<String?> textContent = const Value.absent(),
                 required String mood,
                 Value<String?> imageUrl = const Value.absent(),
                 required DateTime date,
@@ -1647,7 +1649,7 @@ typedef $$JournalsTableCreateCompanionBuilder =
     JournalsCompanion Function({
       required String id,
       Value<String?> title,
-      required String textContent,
+      Value<String?> textContent,
       required String mood,
       Value<bool> encrypted,
       required DateTime date,
@@ -1658,7 +1660,7 @@ typedef $$JournalsTableUpdateCompanionBuilder =
     JournalsCompanion Function({
       Value<String> id,
       Value<String?> title,
-      Value<String> textContent,
+      Value<String?> textContent,
       Value<String> mood,
       Value<bool> encrypted,
       Value<DateTime> date,
@@ -1821,7 +1823,7 @@ class $$JournalsTableTableManager
               ({
                 Value<String> id = const Value.absent(),
                 Value<String?> title = const Value.absent(),
-                Value<String> textContent = const Value.absent(),
+                Value<String?> textContent = const Value.absent(),
                 Value<String> mood = const Value.absent(),
                 Value<bool> encrypted = const Value.absent(),
                 Value<DateTime> date = const Value.absent(),
@@ -1841,7 +1843,7 @@ class $$JournalsTableTableManager
               ({
                 required String id,
                 Value<String?> title = const Value.absent(),
-                required String textContent,
+                Value<String?> textContent = const Value.absent(),
                 required String mood,
                 Value<bool> encrypted = const Value.absent(),
                 required DateTime date,

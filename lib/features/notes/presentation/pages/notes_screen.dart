@@ -369,7 +369,7 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
                         : notesList
                               .where(
                                 (n) =>
-                                    n.textContent.toLowerCase().contains(
+                                    (n.textContent ?? '').toLowerCase().contains(
                                       _searchQuery.toLowerCase(),
                                     ) ||
                                     n.mood.toLowerCase().contains(_searchQuery.toLowerCase()),
@@ -531,16 +531,17 @@ class _NoteCard extends StatelessWidget {
                 ],
 
                 // Note text
-                Text(
-                  note.textContent,
-                  maxLines: 4,
-                  overflow: TextOverflow.ellipsis,
-                  style: GoogleFonts.outfit(
-                    fontSize: 15.sp,
-                    color: AppColors.warmBrown.withValues(alpha: 0.85),
-                    height: 1.55,
+                if (note.textContent != null && note.textContent!.isNotEmpty)
+                  Text(
+                    note.textContent!,
+                    maxLines: 4,
+                    overflow: TextOverflow.ellipsis,
+                    style: GoogleFonts.outfit(
+                      fontSize: 15.sp,
+                      color: AppColors.warmBrown.withValues(alpha: 0.85),
+                      height: 1.55,
+                    ),
                   ),
-                ),
 
                 // Note Image
                 if (note.imageUrl != null) ...[

@@ -31,7 +31,11 @@ class PeriodCycle {
   bool isActiveOn(DateTime day) {
     final d = DateTime(day.year, day.month, day.day);
     final start = DateTime(startDate.year, startDate.month, startDate.day);
-    if (endDate == null) return d == start;
+    if (endDate == null) {
+      final today = DateTime.now();
+      final todayDate = DateTime(today.year, today.month, today.day);
+      return !d.isBefore(start) && !d.isAfter(todayDate);
+    }
     final end = DateTime(endDate!.year, endDate!.month, endDate!.day);
     return !d.isBefore(start) && !d.isAfter(end);
   }

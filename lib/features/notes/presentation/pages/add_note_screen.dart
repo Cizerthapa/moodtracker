@@ -131,14 +131,6 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   }
 
   Future<void> _save() async {
-    if (_contentController.text.trim().isEmpty) {
-      HapticFeedback.heavyImpact();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please write something before saving.')),
-      );
-      return;
-    }
-
     setState(() => _isSaving = true);
     await widget.onSave(
       _titleController.text.trim(),
