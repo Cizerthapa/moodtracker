@@ -17,8 +17,6 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/error/result.dart';
-import 'package:moodtrack/core/widgets/unified_refresh_indicator.dart';
-import 'package:moodtrack/core/services/ui_state_manager.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
 final _moods = [
@@ -67,8 +65,7 @@ class NotesScreen extends StatefulWidget {
   State<NotesScreen> createState() => _NotesScreenState();
 }
 
-class _NotesScreenState extends State<NotesScreen>
-    with SingleTickerProviderStateMixin {
+class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStateMixin {
   final NotesRepository _repository = sl<NotesRepository>();
   final StorageService _storageService = sl<StorageService>();
   final AppDatabase _db = sl<AppDatabase>();
@@ -82,9 +79,7 @@ class _NotesScreenState extends State<NotesScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(
-        milliseconds: AppConstants.fadeTransitionDurationMs,
-      ),
+      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _searchController = TextEditingController();
@@ -152,16 +147,13 @@ class _NotesScreenState extends State<NotesScreen>
           String? imageUrl = existingNote?.imageUrl;
           if (image != null && image is! String) {
             final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
-            final uploadResult = await _storageService.uploadFile(
-              file: image,
-              path: path,
-            );
+            final uploadResult = await _storageService.uploadFile(file: image, path: path);
             if (uploadResult is Success<String>) {
               imageUrl = uploadResult.data;
             } else if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text((uploadResult as Failure).message)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text((uploadResult as Failure).message)));
               return;
             }
           }
@@ -241,11 +233,7 @@ class _NotesScreenState extends State<NotesScreen>
                             ),
                           ],
                         ),
-                        child: Icon(
-                          Icons.edit_rounded,
-                          color: Colors.white,
-                          size: 20.r,
-                        ),
+                        child: Icon(Icons.edit_rounded, color: Colors.white, size: 20.r),
                       ),
                     ),
                   ],
@@ -265,11 +253,7 @@ class _NotesScreenState extends State<NotesScreen>
                       color: AppColors.softBrown.withValues(alpha: 0.5),
                       fontSize: 14.sp,
                     ),
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: AppColors.roseDust,
-                      size: 20.r,
-                    ),
+                    prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust, size: 20.r),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: Icon(Icons.clear_rounded, size: 18.r),
@@ -355,23 +339,21 @@ class _NotesScreenState extends State<NotesScreen>
                         ),
                       );
                     }
-                    
+
                     // Sort by newest first
                     notesList.sort((a, b) => b.date.compareTo(a.date));
 
                     final filteredNotes = _searchQuery.isEmpty
                         ? notesList
                         : notesList
-                            .where(
-                              (n) =>
-                                  n.textContent
-                                      .toLowerCase()
-                                      .contains(_searchQuery.toLowerCase()) ||
-                                  n.mood
-                                      .toLowerCase()
-                                      .contains(_searchQuery.toLowerCase()),
-                            )
-                            .toList();
+                              .where(
+                                (n) =>
+                                    n.textContent.toLowerCase().contains(
+                                      _searchQuery.toLowerCase(),
+                                    ) ||
+                                    n.mood.toLowerCase().contains(_searchQuery.toLowerCase()),
+                              )
+                              .toList();
 
                     if (filteredNotes.isEmpty && _searchQuery.isNotEmpty) {
                       return SingleChildScrollView(
@@ -381,10 +363,7 @@ class _NotesScreenState extends State<NotesScreen>
                           child: Center(
                             child: Text(
                               "No notes match your search",
-                              style: TextStyle(
-                                color: AppColors.softBrown,
-                                fontSize: 14.sp,
-                              ),
+                              style: TextStyle(color: AppColors.softBrown, fontSize: 14.sp),
                             ),
                           ),
                         ),
@@ -454,11 +433,7 @@ class _NoteCard extends StatelessWidget {
           color: AppColors.roseDeep.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20.r),
         ),
-        child: Icon(
-          Icons.delete_outline_rounded,
-          color: AppColors.roseDeep,
-          size: 24.r,
-        ),
+        child: Icon(Icons.delete_outline_rounded, color: AppColors.roseDeep, size: 24.r),
       ),
       onDismissed: (_) => onDelete(),
       child: GestureDetector(
@@ -480,115 +455,105 @@ class _NoteCard extends StatelessWidget {
           child: Padding(
             padding: EdgeInsets.all(18.r),
             child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top row: date + mood badge
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    formattedDate,
-                    style: TextStyle(
-                      fontStyle: FontStyle.italic,
-                      fontSize: 11.sp,
-                      color: AppColors.softBrown,
-                    ),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: 10.w,
-                      vertical: 4.h,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(50.r),
-                      border: Border.all(
-                        color: accent.withValues(alpha: 0.25),
-                        width: 1,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Top row: date + mood badge
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      formattedDate,
+                      style: TextStyle(
+                        fontStyle: FontStyle.italic,
+                        fontSize: 11.sp,
+                        color: AppColors.softBrown,
                       ),
                     ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(emoji, style: TextStyle(fontSize: 14.sp)),
-                        5.horizontalSpace,
-                        Text(
-                          label,
-                          style: TextStyle(
-                            fontSize: 11.sp,
-                            color: accent,
-                            fontWeight: FontWeight.bold,
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 4.h),
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(50.r),
+                        border: Border.all(color: accent.withValues(alpha: 0.25), width: 1),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(emoji, style: TextStyle(fontSize: 14.sp)),
+                          5.horizontalSpace,
+                          Text(
+                            label,
+                            style: TextStyle(
+                              fontSize: 11.sp,
+                              color: accent,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                12.verticalSpace,
+
+                // Note Title
+                if (note.title != null && note.title.toString().isNotEmpty) ...[
+                  Text(
+                    note.title!,
+                    style: GoogleFonts.outfit(
+                      fontSize: 18.sp,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.warmBrown,
+                    ),
+                  ),
+                  8.verticalSpace,
+                ],
+
+                // Note text
+                Text(
+                  note.textContent,
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: GoogleFonts.outfit(
+                    fontSize: 15.sp,
+                    color: AppColors.warmBrown.withValues(alpha: 0.85),
+                    height: 1.55,
+                  ),
+                ),
+
+                // Note Image
+                if (note.imageUrl != null) ...[
+                  16.verticalSpace,
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(16.r),
+                    child: Image.network(
+                      note.imageUrl!,
+                      height: 180.h,
+                      width: double.infinity,
+                      fit: BoxFit.cover,
+                      loadingBuilder: (context, child, loadingProgress) {
+                        if (loadingProgress == null) return child;
+                        return ShimmerLoading(
+                          isLoading: true,
+                          child: ShimmerSkeleton(height: 180.h),
+                        );
+                      },
+                      errorBuilder: (context, error, stackTrace) => Container(
+                        height: 150.h,
+                        width: double.infinity,
+                        decoration: BoxDecoration(
+                          color: Colors.white24,
+                          borderRadius: BorderRadius.circular(16.r),
                         ),
-                      ],
+                        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+                      ),
                     ),
                   ),
                 ],
-              ),
-              12.verticalSpace,
-
-              // Note Title
-              if (note.title != null &&
-                  note.title.toString().isNotEmpty) ...[
-                Text(
-                  note.title!,
-                  style: GoogleFonts.outfit(
-                    fontSize: 18.sp,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.warmBrown,
-                  ),
-                ),
-                8.verticalSpace,
               ],
-
-              // Note text
-              Text(
-                note.textContent,
-                maxLines: 4,
-                overflow: TextOverflow.ellipsis,
-                style: GoogleFonts.outfit(
-                  fontSize: 15.sp,
-                  color: AppColors.warmBrown.withValues(alpha: 0.85),
-                  height: 1.55,
-                ),
-              ),
-
-              // Note Image
-              if (note.imageUrl != null) ...[
-                16.verticalSpace,
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16.r),
-                  child: Image.network(
-                    note.imageUrl!,
-                    height: 180.h,
-                    width: double.infinity,
-                    fit: BoxFit.cover,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return ShimmerLoading(
-                        isLoading: true,
-                        child: ShimmerSkeleton(height: 180.h),
-                      );
-                    },
-                    errorBuilder: (context, error, stackTrace) => Container(
-                      height: 150.h,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.white24,
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                      child: const Icon(
-                        Icons.broken_image_outlined,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ],
+            ),
           ),
         ),
-      ),
       ),
     );
   }
@@ -633,10 +598,7 @@ class _EmptyState extends StatelessWidget {
             GestureDetector(
               onTap: onAdd,
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 28,
-                  vertical: 14,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 14),
                 decoration: BoxDecoration(
                   color: AppColors.roseDeep,
                   borderRadius: BorderRadius.circular(50.r),

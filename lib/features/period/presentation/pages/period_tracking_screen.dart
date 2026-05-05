@@ -28,14 +28,12 @@ class PeriodTrackingScreen extends StatefulWidget {
 class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   final PeriodRepository _repo = sl<PeriodRepository>();
   final String _uid = FirebaseAuth.instance.currentUser?.uid ?? '';
-  DateTime _focusedMonth =
-      DateTime(DateTime.now().year, DateTime.now().month);
+  DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   int _selectedTab = 0; // 0 = Calendar, 1 = History
 
   void _navigateMonth(int delta) {
     setState(() {
-      _focusedMonth =
-          DateTime(_focusedMonth.year, _focusedMonth.month + delta);
+      _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + delta);
     });
   }
 
@@ -65,9 +63,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   }
 
   int _getAverageCycleLength(List<PeriodCycle> cycles) {
-    final mine = cycles
-        .where((c) => c.ownerUid == _uid)
-        .toList()
+    final mine = cycles.where((c) => c.ownerUid == _uid).toList()
       ..sort((a, b) => b.startDate.compareTo(a.startDate));
 
     if (mine.isEmpty || mine.length == 1) return 28;
@@ -75,8 +71,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     int totalDays = 0;
     int count = 0;
     for (int i = 0; i < mine.length - 1 && i < 3; i++) {
-      final diff =
-          mine[i].startDate.difference(mine[i + 1].startDate).inDays;
+      final diff = mine[i].startDate.difference(mine[i + 1].startDate).inDays;
       if (diff > 10 && diff < 60) {
         totalDays += diff;
         count++;
@@ -89,7 +84,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   DateTime? _predictNext(List<PeriodCycle> cycles) {
     final mostRecent = _getMostRecentCycle(cycles);
     if (mostRecent == null) return null;
-    
+
     final avgCycle = _getAverageCycleLength(cycles);
     return mostRecent.startDate.add(Duration(days: avgCycle));
   }
@@ -110,14 +105,13 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 children: [
                   _buildHeader(),
                   _buildTabs(),
-                  if (snapshot.hasData && nextPeriod != null)
-                    _buildNextPeriodBanner(nextPeriod),
+                  if (snapshot.hasData && nextPeriod != null) _buildNextPeriodBanner(nextPeriod),
                   Expanded(
                     child: !snapshot.hasData
                         ? _buildShimmer()
                         : _selectedTab == 0
-                            ? _buildCalendarTab(cycles)
-                            : _buildHistoryTab(cycles),
+                        ? _buildCalendarTab(cycles)
+                        : _buildHistoryTab(cycles),
                   ),
                 ],
               );
@@ -131,9 +125,9 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   // ── Next Period Banner ─────────────────────────────────────────────────────
 
   Widget _buildNextPeriodBanner(DateTime nextPeriod) {
-    final daysUntil = nextPeriod.difference(
-      DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day),
-    ).inDays;
+    final daysUntil = nextPeriod
+        .difference(DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day))
+        .inDays;
     final isPast = daysUntil < 0;
     final isToday = daysUntil == 0;
     final isSoon = daysUntil > 0 && daysUntil <= 3;
@@ -141,10 +135,10 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     final Color bannerColor = isPast
         ? const Color(0xFFE8789A)
         : isToday
-            ? const Color(0xFFE8789A)
-            : isSoon
-                ? const Color(0xFF9B7EC8)
-                : const Color(0xFF9B7EC8);
+        ? const Color(0xFFE8789A)
+        : isSoon
+        ? const Color(0xFF9B7EC8)
+        : const Color(0xFF9B7EC8);
 
     String label;
     String sublabel;
@@ -167,10 +161,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 12.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            bannerColor.withValues(alpha: 0.13),
-            bannerColor.withValues(alpha: 0.06),
-          ],
+          colors: [bannerColor.withValues(alpha: 0.13), bannerColor.withValues(alpha: 0.06)],
           begin: Alignment.centerLeft,
           end: Alignment.centerRight,
         ),
@@ -253,11 +244,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 4.verticalSpace,
                 Row(
                   children: [
-                    Icon(
-                      Icons.favorite_rounded,
-                      size: 12.r,
-                      color: _kUserColor,
-                    ),
+                    Icon(Icons.favorite_rounded, size: 12.r, color: _kUserColor),
                     6.horizontalSpace,
                     Text(
                       'every cycle, understood',
@@ -336,9 +323,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         ),
         child: Row(
           children: [
-            Icon(icon,
-                size: 16.r,
-                color: active ? Colors.white : AppColors.softBrown),
+            Icon(icon, size: 16.r, color: active ? Colors.white : AppColors.softBrown),
             6.horizontalSpace,
             Text(
               label,
@@ -380,7 +365,6 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     );
   }
 
-
   Widget _buildPhaseCard(PeriodCycle recentCycle, int avgCycleLength) {
     final today = DateTime.now();
     // Only show current phase if the last cycle isn't extremely old (e.g. within 60 days)
@@ -388,7 +372,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     if (diff > 60) return const SizedBox();
 
     final phase = recentCycle.getCurrentPhase(today, avgCycleLength);
-    
+
     String title;
     String focus;
     String insight;
@@ -399,28 +383,32 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       case CyclePhase.menstrual:
         title = 'Menstrual Phase';
         focus = 'Focus on rest, hydration, and pain management (cramps).';
-        insight = 'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.';
+        insight =
+            'Did you know? Progesterone and estrogen are at their lowest right now, which is why your energy might dip.';
         icon = Icons.water_drop_rounded;
         color = _kUserColor;
         break;
       case CyclePhase.follicular:
         title = 'Follicular Phase';
         focus = 'Focus on rising energy, creativity, and new beginnings.';
-        insight = 'Did you know? You might feel extra energetic today due to rising estrogen levels.';
+        insight =
+            'Did you know? You might feel extra energetic today due to rising estrogen levels.';
         icon = Icons.spa_rounded;
         color = Colors.teal;
         break;
       case CyclePhase.ovulatory:
         title = 'Ovulatory Phase (Fertility Window)';
         focus = 'The "high energy" window. Highest chance of conception.';
-        insight = 'Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!';
+        insight =
+            'Did you know? Testosterone and estrogen peak now, often boosting confidence and mood!';
         icon = Icons.favorite_rounded;
         color = Colors.orangeAccent;
         break;
       case CyclePhase.luteal:
         title = 'Luteal Phase';
         focus = 'Focus on PMS tracking, skin changes (breakouts), and cravings.';
-        insight = 'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.';
+        insight =
+            'Did you know? Progesterone rises during this phase, which can naturally make you feel more introverted or relaxed.';
         icon = Icons.nightlight_round;
         color = _kCycleColor;
         break;
@@ -431,10 +419,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            color.withValues(alpha: 0.1),
-            color.withValues(alpha: 0.05),
-          ],
+          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -459,8 +444,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               children: [
                 Text(
                   'Current Phase',
-                  style: GoogleFonts.outfit(
-                      fontSize: 12.sp, color: AppColors.softBrown),
+                  style: GoogleFonts.outfit(fontSize: 12.sp, color: AppColors.softBrown),
                 ),
                 2.verticalSpace,
                 Text(
@@ -491,8 +475,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                   child: Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(Icons.lightbulb_outline_rounded,
-                          size: 16.r, color: color),
+                      Icon(Icons.lightbulb_outline_rounded, size: 16.r, color: color),
                       8.horizontalSpace,
                       Expanded(
                         child: Text(
@@ -522,8 +505,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       children: [
         IconButton(
           onPressed: () => _navigateMonth(-1),
-          icon: Icon(Icons.chevron_left_rounded,
-              color: AppColors.warmBrown, size: 28.r),
+          icon: Icon(Icons.chevron_left_rounded, color: AppColors.warmBrown, size: 28.r),
         ),
         Text(
           DateFormat('MMMM yyyy').format(_focusedMonth),
@@ -535,8 +517,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         ),
         IconButton(
           onPressed: () => _navigateMonth(1),
-          icon: Icon(Icons.chevron_right_rounded,
-              color: AppColors.warmBrown, size: 28.r),
+          icon: Icon(Icons.chevron_right_rounded, color: AppColors.warmBrown, size: 28.r),
         ),
       ],
     );
@@ -545,7 +526,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   bool _isFertileWindow(DateTime date, PeriodCycle? mostRecent, int avgCycleLength) {
     if (mostRecent == null) return false;
     final diff = date.difference(mostRecent.startDate).inDays;
-    
+
     // (-5 % 28) in Dart is 23, which correctly maps past dates.
     // However, if the date is way in the past (> 60 days), we skip it to save confusion.
     if (diff > -60) {
@@ -558,10 +539,8 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   }
 
   Widget _buildCalendarGrid(List<PeriodCycle> cycles, PeriodCycle? mostRecent, int avgCycleLength) {
-    final firstDay =
-        DateTime(_focusedMonth.year, _focusedMonth.month, 1);
-    final lastDay =
-        DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0);
+    final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
+    final lastDay = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0);
     final today = DateTime.now();
     final startOffset = firstDay.weekday - 1; // Mon=0 … Sun=6
     final totalCells = startOffset + lastDay.day;
@@ -572,8 +551,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       decoration: BoxDecoration(
         color: AppColors.ivoryCard,
         borderRadius: BorderRadius.circular(20.r),
-        border:
-            Border.all(color: _kCycleColor.withValues(alpha: 0.15)),
+        border: Border.all(color: _kCycleColor.withValues(alpha: 0.15)),
       ),
       padding: EdgeInsets.all(16.r),
       child: Column(
@@ -612,20 +590,14 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                     return SizedBox(width: 36.r, height: 36.r);
                   }
 
-                  final date = DateTime(
-                    _focusedMonth.year,
-                    _focusedMonth.month,
-                    dayNum,
-                  );
-                  final isToday = date.year == today.year &&
-                      date.month == today.month &&
-                      date.day == today.day;
+                  final date = DateTime(_focusedMonth.year, _focusedMonth.month, dayNum);
+                  final isToday =
+                      date.year == today.year && date.month == today.month && date.day == today.day;
 
                   Color? periodColor;
                   for (final c in cycles) {
                     if (c.isActiveOn(date)) {
-                      periodColor =
-                          c.ownerUid == _uid ? _kUserColor : _kPartnerColor;
+                      periodColor = c.ownerUid == _uid ? _kUserColor : _kPartnerColor;
                       break;
                     }
                   }
@@ -648,8 +620,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   }
 
   Widget _buildLegend(List<PeriodCycle> cycles) {
-    final hasPartnerData =
-        cycles.any((c) => c.ownerUid != _uid);
+    final hasPartnerData = cycles.any((c) => c.ownerUid != _uid);
     return Wrap(
       alignment: WrapAlignment.center,
       spacing: 16.w,
@@ -657,8 +628,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       children: [
         _legendDot(_kUserColor, 'Your period'),
         _legendDot(Colors.orangeAccent, 'Fertile Window'),
-        if (hasPartnerData)
-          _legendDot(_kPartnerColor, 'Partner\'s period'),
+        if (hasPartnerData) _legendDot(_kPartnerColor, 'Partner\'s period'),
       ],
     );
   }
@@ -675,8 +645,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         6.horizontalSpace,
         Text(
           label,
-          style: GoogleFonts.outfit(
-              fontSize: 12.sp, color: AppColors.softBrown),
+          style: GoogleFonts.outfit(fontSize: 12.sp, color: AppColors.softBrown),
         ),
       ],
     );
@@ -691,10 +660,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       padding: EdgeInsets.all(20.r),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            _kCycleColor.withValues(alpha: 0.1),
-            _kUserColor.withValues(alpha: 0.07),
-          ],
+          colors: [_kCycleColor.withValues(alpha: 0.1), _kUserColor.withValues(alpha: 0.07)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -717,8 +683,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
             children: [
               Text(
                 'Next Period',
-                style: GoogleFonts.outfit(
-                    fontSize: 12.sp, color: AppColors.softBrown),
+                style: GoogleFonts.outfit(fontSize: 12.sp, color: AppColors.softBrown),
               ),
               2.verticalSpace,
               Text(
@@ -749,9 +714,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   // ── History Tab ───────────────────────────────────────────────────────────
 
   Widget _buildHistoryTab(List<PeriodCycle> cycles) {
-    final mine = cycles
-        .where((c) => c.ownerUid == _uid)
-        .toList();
+    final mine = cycles.where((c) => c.ownerUid == _uid).toList();
 
     if (mine.isEmpty) return _buildEmptyState();
 
@@ -776,30 +739,25 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.ivoryCard,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20.r)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
           'Delete Cycle?',
-          style: GoogleFonts.outfit(
-              fontWeight: FontWeight.w700, color: AppColors.warmBrown),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.w700, color: AppColors.warmBrown),
         ),
         content: Text(
           'This cycle log will be deleted permanently.',
-          style:
-              GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 14.sp),
+          style: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 14.sp),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: Text('Cancel',
-                style: GoogleFonts.outfit(color: AppColors.softBrown)),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: AppColors.softBrown)),
           ),
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(true),
             child: Text(
               'Delete',
-              style: GoogleFonts.outfit(
-                  color: _kUserColor, fontWeight: FontWeight.w700),
+              style: GoogleFonts.outfit(color: _kUserColor, fontWeight: FontWeight.w700),
             ),
           ),
         ],
@@ -846,8 +804,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                 _openLogScreen();
               },
               child: Container(
-                padding:
-                    EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
+                padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 14.h),
                 decoration: BoxDecoration(
                   color: _kCycleColor,
                   borderRadius: BorderRadius.circular(50.r),
@@ -923,20 +880,14 @@ class _DayCell extends StatelessWidget {
           color: periodColor != null
               ? periodColor!.withValues(alpha: 0.85)
               : isFertileWindow
-                  ? Colors.orangeAccent.withValues(alpha: 0.15)
-                  : Colors.transparent,
+              ? Colors.orangeAccent.withValues(alpha: 0.15)
+              : Colors.transparent,
           shape: BoxShape.circle,
           border: isToday && periodColor == null
-              ? Border.all(
-                  color: _kCycleColor.withValues(alpha: 0.5),
-                  width: 1.5,
-                )
+              ? Border.all(color: _kCycleColor.withValues(alpha: 0.5), width: 1.5)
               : isFertileWindow && periodColor == null
-                  ? Border.all(
-                      color: Colors.orangeAccent.withValues(alpha: 0.3),
-                      width: 1,
-                    )
-                  : null,
+              ? Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3), width: 1)
+              : null,
         ),
         child: Center(
           child: Text(
@@ -947,10 +898,10 @@ class _DayCell extends StatelessWidget {
               color: periodColor != null
                   ? Colors.white
                   : isToday
-                      ? _kCycleColor
-                      : isFertileWindow
-                          ? Colors.orange.shade300
-                          : AppColors.warmBrown,
+                  ? _kCycleColor
+                  : isFertileWindow
+                  ? Colors.orange.shade300
+                  : AppColors.warmBrown,
             ),
           ),
         ),
@@ -966,27 +917,26 @@ class _CycleCard extends StatelessWidget {
   final VoidCallback onTap;
   final Future<bool?> Function() onDelete;
 
-  const _CycleCard({
-    super.key,
-    required this.cycle,
-    required this.onTap,
-    required this.onDelete,
-  });
+  const _CycleCard({required this.cycle, required this.onTap, required this.onDelete});
 
-  String _flowLabel(int l) =>
-      l == 1 ? 'Light' : l == 3 ? 'Heavy' : 'Medium';
+  String _flowLabel(int l) => l == 1
+      ? 'Light'
+      : l == 3
+      ? 'Heavy'
+      : 'Medium';
 
-  String _flowEmoji(int l) =>
-      l == 1 ? '💧' : l == 3 ? '💧💧💧' : '💧💧';
+  String _flowEmoji(int l) => l == 1
+      ? '💧'
+      : l == 3
+      ? '💧💧💧'
+      : '💧💧';
 
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('MMM d');
     final startStr = fmt.format(cycle.startDate);
-    final endStr =
-        cycle.endDate != null ? fmt.format(cycle.endDate!) : 'Ongoing';
-    final duration =
-        cycle.endDate != null ? '${cycle.durationDays}d' : '...';
+    final endStr = cycle.endDate != null ? fmt.format(cycle.endDate!) : 'Ongoing';
+    final duration = cycle.endDate != null ? '${cycle.durationDays}d' : '...';
 
     return Dismissible(
       key: Key(cycle.id ?? UniqueKey().toString()),
@@ -1003,8 +953,7 @@ class _CycleCard extends StatelessWidget {
           color: _kUserColor.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(20.r),
         ),
-        child: Icon(Icons.delete_outline_rounded,
-            color: _kUserColor, size: 24.r),
+        child: Icon(Icons.delete_outline_rounded, color: _kUserColor, size: 24.r),
       ),
       child: GestureDetector(
         onTap: () {
@@ -1017,8 +966,7 @@ class _CycleCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.ivoryCard,
             borderRadius: BorderRadius.circular(20.r),
-            border:
-                Border.all(color: _kUserColor.withValues(alpha: 0.2)),
+            border: Border.all(color: _kUserColor.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
                 color: _kUserColor.withValues(alpha: 0.06),
@@ -1035,8 +983,7 @@ class _CycleCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.calendar_today_rounded,
-                          size: 14.r, color: _kUserColor),
+                      Icon(Icons.calendar_today_rounded, size: 14.r, color: _kUserColor),
                       6.horizontalSpace,
                       Text(
                         '$startStr  →  $endStr',
@@ -1049,8 +996,7 @@ class _CycleCard extends StatelessWidget {
                     ],
                   ),
                   Container(
-                    padding: EdgeInsets.symmetric(
-                        horizontal: 8.w, vertical: 4.h),
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
                       color: _kUserColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(50.r),
@@ -1069,13 +1015,11 @@ class _CycleCard extends StatelessWidget {
               10.verticalSpace,
               Row(
                 children: [
-                  Text(_flowEmoji(cycle.flowLevel),
-                      style: const TextStyle(fontSize: 14)),
+                  Text(_flowEmoji(cycle.flowLevel), style: const TextStyle(fontSize: 14)),
                   6.horizontalSpace,
                   Text(
                     '${_flowLabel(cycle.flowLevel)} flow',
-                    style: GoogleFonts.outfit(
-                        fontSize: 13.sp, color: AppColors.softBrown),
+                    style: GoogleFonts.outfit(fontSize: 13.sp, color: AppColors.softBrown),
                   ),
                 ],
               ),
@@ -1088,16 +1032,14 @@ class _CycleCard extends StatelessWidget {
                       .take(4)
                       .map(
                         (s) => Container(
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 8.w, vertical: 3.h),
+                          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
                             color: _kCycleColor.withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(50.r),
                           ),
                           child: Text(
                             s.replaceAll('_', ' '),
-                            style: GoogleFonts.outfit(
-                                fontSize: 11.sp, color: _kCycleColor),
+                            style: GoogleFonts.outfit(fontSize: 11.sp, color: _kCycleColor),
                           ),
                         ),
                       )
