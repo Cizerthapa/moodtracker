@@ -198,7 +198,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         if (mounted) {
           if (result is Success) {
             Navigator.of(context).pop(); // Close dialog
-            Navigator.of(context).pop(); // Close detail screen
+            Navigator.of(context).pop(true); // Close detail screen and return true
           } else {
             Navigator.of(context).pop(); // Close dialog
             ScaffoldMessenger.of(context).showSnackBar(

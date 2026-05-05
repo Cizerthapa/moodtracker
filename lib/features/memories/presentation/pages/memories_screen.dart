@@ -255,15 +255,18 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                                     return _MemoryCard(
                                       data: data,
                                       index: index,
-                                      onTap: () {
+                                      onTap: () async {
                                         if (docs.isNotEmpty) {
-                                          context.pushNamed(
+                                          final result = await context.pushNamed(
                                             AppRoutes.memoryDetail,
                                             pathParameters: {
                                               'memoryId': docs[index].id ?? 'unknown',
                                             },
                                             extra: docs[index],
                                           );
+                                          if (result == true && mounted) {
+                                            _onRefresh();
+                                          }
                                         }
                                       },
                                     );
