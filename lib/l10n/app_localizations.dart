@@ -756,6 +756,12 @@ abstract class AppLocalizations {
   /// **'Fertile Window'**
   String get fertileWindow;
 
+  /// No description provided for @safeWindow.
+  ///
+  /// In en, this message translates to:
+  /// **'Safe for Intercourse'**
+  String get safeWindow;
+
   /// No description provided for @partnerPeriod.
   ///
   /// In en, this message translates to:

@@ -370,6 +370,9 @@ class AppLocalizationsJa extends AppLocalizations {
   String get fertileWindow => 'Fertile Window';
 
   @override
+  String get safeWindow => 'Safe for Intercourse';
+
+  @override
   String get partnerPeriod => 'Partner\'s period';
 
   @override

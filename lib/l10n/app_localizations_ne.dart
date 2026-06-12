@@ -378,6 +378,9 @@ class AppLocalizationsNe extends AppLocalizations {
   String get fertileWindow => 'प्रजनन विन्डो';
 
   @override
+  String get safeWindow => 'यौन सम्पर्कको लागि सुरक्षित';
+
+  @override
   String get partnerPeriod => 'साथीको महिनावारी';
 
   @override

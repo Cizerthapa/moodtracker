@@ -549,6 +549,19 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     return false;
   }
 
+  bool _isSafeWindow(DateTime date, PeriodCycle? mostRecent, int avgCycleLength) {
+    if (mostRecent == null) return false;
+    final diff = date.difference(mostRecent.startDate).inDays;
+
+    if (diff > -60) {
+      final dayOfCycle = (diff % avgCycleLength) + 1;
+      final ovulationWindowStart = avgCycleLength - 18;
+      final lutealPhaseStart = avgCycleLength - 13;
+      return dayOfCycle < ovulationWindowStart || dayOfCycle >= lutealPhaseStart;
+    }
+    return false;
+  }
+
   Widget _buildCalendarGrid(List<PeriodCycle> cycles, PeriodCycle? mostRecent, int avgCycleLength, DateTime? nextPeriod) {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
     final lastDay = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0);
@@ -655,12 +668,14 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                   }
 
                   final isFertile = _isFertileWindow(date, mostRecent, avgCycleLength);
+                  final isSafe = _isSafeWindow(date, mostRecent, avgCycleLength);
 
                   return _DayCell(
                     day: dayNum,
                     isToday: isToday,
                     periodColor: periodColor,
                     isFertileWindow: isFertile,
+                    isSafeWindow: isSafe,
                     isPredicted: isPredicted,
                     opacity: opacity,
                   );
@@ -684,6 +699,7 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
         _legendDot(AppColors.userColor, l10n.yourPeriod),
         _legendDot(AppColors.userColor.withValues(alpha: 0.4), l10n.nextPeriodLabel),
         _legendDot(Colors.orangeAccent, l10n.fertileWindow),
+        _legendDot(Colors.green.shade400, l10n.safeWindow),
         if (hasPartnerData) _legendDot(AppColors.partnerColor, l10n.partnerPeriod),
       ],
     );
@@ -921,6 +937,7 @@ class _DayCell extends StatelessWidget {
   final bool isToday;
   final Color? periodColor;
   final bool isFertileWindow;
+  final bool isSafeWindow;
   final bool isPredicted;
   final double opacity;
 
@@ -929,6 +946,7 @@ class _DayCell extends StatelessWidget {
     required this.isToday,
     this.periodColor,
     this.isFertileWindow = false,
+    this.isSafeWindow = false,
     this.isPredicted = false,
     this.opacity = 1.0,
   });
@@ -947,6 +965,8 @@ class _DayCell extends StatelessWidget {
                   : periodColor!.withValues(alpha: 0.85 * opacity))
               : isFertileWindow
               ? Colors.orangeAccent.withValues(alpha: 0.15)
+              : isSafeWindow
+              ? Colors.green.withValues(alpha: 0.1)
               : Colors.transparent,
           shape: BoxShape.circle,
           border: isToday && periodColor == null
@@ -955,6 +975,8 @@ class _DayCell extends StatelessWidget {
               ? Border.all(color: periodColor!.withValues(alpha: 0.4), width: 1, style: BorderStyle.solid)
               : isFertileWindow && periodColor == null
               ? Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3), width: 1)
+              : isSafeWindow && periodColor == null
+              ? Border.all(color: Colors.green.withValues(alpha: 0.3), width: 1)
               : null,
         ),
         child: Center(
@@ -969,6 +991,8 @@ class _DayCell extends StatelessWidget {
                   ? AppColors.cycleColor
                   : isFertileWindow
                   ? Colors.orange.shade300
+                  : isSafeWindow
+                  ? Colors.green.shade400
                   : AppColors.warmBrown,
             ),
           ),

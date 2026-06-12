@@ -1243,7 +1243,7 @@ class _JournalsTabState extends State<_JournalsTab> {
                                 Text(
                                   entry.encrypted
                                       ? '🔒 Encrypted entry'
-                                      : entry.text,
+                                      : entry.text ?? '',
                                   style: GoogleFonts.outfit(
                                     color: _textSecondary,
                                     fontSize: 11.sp,
