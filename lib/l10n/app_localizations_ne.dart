@@ -509,4 +509,54 @@ class AppLocalizationsNe extends AppLocalizations {
 
   @override
   String get logForPartner => 'साथीका लागि दर्ता गर्नुहोस्';
+
+  @override
+  String get editPartnerLink => 'साथीको लिङ्क सम्पादन गर्नुहोस्';
+
+  @override
+  String get linkPartner => 'साथीलाई जोड्नुहोस्';
+
+  @override
+  String get partnerEmailHint => 'साथीको इमेल';
+
+  @override
+  String get linkedSuccessfully => 'सफलतापूर्वक जोडियो!';
+
+  @override
+  String get link => 'जोड्नुहोस्';
+
+  @override
+  String get unlinkPartnerTitle => 'साथीलाई हटाउने?';
+
+  @override
+  String get unlinkPartnerDesc =>
+      'यसले तपाईं र तपाईंको साथी बीचको सम्बन्ध हटाउनेछ। तपाईंले एक अर्काको डाटा हेर्न सक्नुहुने छैन।';
+
+  @override
+  String get unlink => 'हटाउनुहोस्';
+
+  @override
+  String get unlinkedSuccessfully => 'सफलतापूर्वक हटाइयो';
+
+  @override
+  String get deleteAccountTitle => 'खाता मेटाउने?';
+
+  @override
+  String get deleteAccountDesc =>
+      'यो कार्य स्थायी हो र यसले तपाईंको सबै डाटा मेटाउनेछ। यदि तपाईं साथीसँग जोडिनुभएको छ भने, लिङ्क पनि हटाइनेछ।';
+
+  @override
+  String get dailyWaterGoal => 'दैनिक पानीको लक्ष्य';
+
+  @override
+  String get enterAmountInMl => 'मिलिलिटरमा मात्रा प्रविष्ट गर्नुहोस्';
+
+  @override
+  String get save => 'सुरक्षित गर्नुहोस्';
+
+  @override
+  String get partnerLinked => 'साथी जोडियो';
+
+  @override
+  String get linkAccountsViaEmail => 'इमेल मार्फत खाता जोड्नुहोस्';
 }

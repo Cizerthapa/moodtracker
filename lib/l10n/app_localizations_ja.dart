@@ -500,4 +500,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get logForPartner => 'パートナーのために記録';
+
+  @override
+  String get editPartnerLink => 'Edit Partner Link';
+
+  @override
+  String get linkPartner => 'Link Partner';
+
+  @override
+  String get partnerEmailHint => 'Partner\'s Email';
+
+  @override
+  String get linkedSuccessfully => 'Linked successfully!';
+
+  @override
+  String get link => 'Link';
+
+  @override
+  String get unlinkPartnerTitle => 'Unlink Partner?';
+
+  @override
+  String get unlinkPartnerDesc =>
+      'This will remove the connection between you and your partner. You will no longer be able to see each other\'s data.';
+
+  @override
+  String get unlink => 'Unlink';
+
+  @override
+  String get unlinkedSuccessfully => 'Unlinked successfully';
+
+  @override
+  String get deleteAccountTitle => 'Delete Account?';
+
+  @override
+  String get deleteAccountDesc =>
+      'This action is permanent and will delete all your data, including journal entries and memories. If you are linked with a partner, the link will also be removed.';
+
+  @override
+  String get dailyWaterGoal => 'Daily Water Goal';
+
+  @override
+  String get enterAmountInMl => 'Enter amount in ml';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get partnerLinked => 'Partner Linked';
+
+  @override
+  String get linkAccountsViaEmail => 'Link accounts via email';
 }

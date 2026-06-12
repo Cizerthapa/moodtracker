@@ -118,13 +118,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.ivoryCard,
         title: Text(
-          isLinked ? "Edit Partner Link" : "Link Partner",
+          isLinked
+              ? AppLocalizations.of(context)!.editPartnerLink
+              : AppLocalizations.of(context)!.linkPartner,
           style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: emailController,
           decoration: InputDecoration(
-            hintText: "Partner's Email",
+            hintText: AppLocalizations.of(context)!.partnerEmailHint,
             filled: true,
             fillColor: AppColors.cream,
             border: OutlineInputBorder(
@@ -136,7 +138,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -150,7 +152,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 if (!mounted) return;
                 String message;
                 if (result is Success<bool>) {
-                  message = "Linked successfully!";
+                  message = AppLocalizations.of(context)!.linkedSuccessfully;
                   _logger.log(
                     'partner_linked',
                     metadata: {'partnerEmail': email},
@@ -167,7 +169,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
-            child: const Text("Link", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.link, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -181,17 +183,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          "Unlink Partner?",
+          AppLocalizations.of(context)!.unlinkPartnerTitle,
           style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          "This will remove the connection between you and your partner. You will no longer be able to see each other's data.",
+          AppLocalizations.of(context)!.unlinkPartnerDesc,
           style: GoogleFonts.outfit(color: AppColors.softBrown),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -216,13 +218,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    result is Success ? "Unlinked successfully" : (result as Failure).message,
+                    result is Success ? AppLocalizations.of(context)!.unlinkedSuccessfully : (result as Failure).message,
                   ),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
-            child: const Text("Unlink", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.unlink, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -236,17 +238,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          "Delete Account?",
+          AppLocalizations.of(context)!.deleteAccountTitle,
           style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          "This action is permanent and will delete all your data, including journal entries and memories. If you are linked with a partner, the link will also be removed.",
+          AppLocalizations.of(context)!.deleteAccountDesc,
           style: GoogleFonts.outfit(color: AppColors.softBrown),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -264,7 +266,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: const Text("Delete", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -279,14 +281,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          "Daily Water Goal",
+          AppLocalizations.of(context)!.dailyWaterGoal,
           style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            hintText: "Enter amount in ml",
+            hintText: AppLocalizations.of(context)!.enterAmountInMl,
             filled: true,
             fillColor: AppColors.cream,
             border: OutlineInputBorder(
@@ -298,7 +300,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text("Cancel", style: TextStyle(color: AppColors.softBrown)),
+            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -308,7 +310,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
-            child: const Text("Save", style: TextStyle(color: Colors.white)),
+            child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(color: Colors.white)),
 
           ),
         ],
@@ -607,10 +609,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                   16.verticalSpace,
                   _buildSettingTile(
-                    title: _userProfile?.partnerUid != null ? 'Partner Linked' : 'Link Partner',
+                    title: _userProfile?.partnerUid != null 
+                        ? AppLocalizations.of(context)!.partnerLinked 
+                        : AppLocalizations.of(context)!.linkPartner,
                     subtitle: _userProfile?.partnerEmail != null
                         ? _userProfile!.partnerEmail!
-                        : 'Link accounts via email',
+                        : AppLocalizations.of(context)!.linkAccountsViaEmail,
                     icon: Icons.link_rounded,
                     trailing: _userProfile?.partnerUid != null
                         ? Row(

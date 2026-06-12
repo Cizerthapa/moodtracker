@@ -1013,6 +1013,102 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Log for Partner'**
   String get logForPartner;
+
+  /// No description provided for @editPartnerLink.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Partner Link'**
+  String get editPartnerLink;
+
+  /// No description provided for @linkPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Link Partner'**
+  String get linkPartner;
+
+  /// No description provided for @partnerEmailHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner\'s Email'**
+  String get partnerEmailHint;
+
+  /// No description provided for @linkedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Linked successfully!'**
+  String get linkedSuccessfully;
+
+  /// No description provided for @link.
+  ///
+  /// In en, this message translates to:
+  /// **'Link'**
+  String get link;
+
+  /// No description provided for @unlinkPartnerTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink Partner?'**
+  String get unlinkPartnerTitle;
+
+  /// No description provided for @unlinkPartnerDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This will remove the connection between you and your partner. You will no longer be able to see each other\'s data.'**
+  String get unlinkPartnerDesc;
+
+  /// No description provided for @unlink.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlink'**
+  String get unlink;
+
+  /// No description provided for @unlinkedSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlinked successfully'**
+  String get unlinkedSuccessfully;
+
+  /// No description provided for @deleteAccountTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account?'**
+  String get deleteAccountTitle;
+
+  /// No description provided for @deleteAccountDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'This action is permanent and will delete all your data, including journal entries and memories. If you are linked with a partner, the link will also be removed.'**
+  String get deleteAccountDesc;
+
+  /// No description provided for @dailyWaterGoal.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily Water Goal'**
+  String get dailyWaterGoal;
+
+  /// No description provided for @enterAmountInMl.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter amount in ml'**
+  String get enterAmountInMl;
+
+  /// No description provided for @save.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// No description provided for @partnerLinked.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner Linked'**
+  String get partnerLinked;
+
+  /// No description provided for @linkAccountsViaEmail.
+  ///
+  /// In en, this message translates to:
+  /// **'Link accounts via email'**
+  String get linkAccountsViaEmail;
 }
 
 class _AppLocalizationsDelegate
