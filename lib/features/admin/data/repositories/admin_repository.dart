@@ -322,6 +322,18 @@ class AdminRepository {
             }).toList());
   }
 
+  Future<Result<void>> deleteLog(String id) async {
+    log('Firestore [Admin]: Deleting log $id', name: 'Firebase');
+    try {
+      await _firestore.collection('admin_logs').doc(id).delete();
+      log('Firestore [Admin]: Log $id deleted', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error deleting log: $e', name: 'Firebase');
+      return Failure('Failed to delete log', error: e);
+    }
+  }
+
   Future<Result<void>> clearLogs() async {
     log('Firestore [Admin]: Clearing activity logs', name: 'Firebase');
     try {

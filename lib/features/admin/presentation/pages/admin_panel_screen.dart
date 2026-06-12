@@ -2045,6 +2045,7 @@ class _LogsTab extends StatelessWidget {
                         final color = _actionColor(action);
                         final icon = _actionIcon(action);
 
+                        final logId = log['id'] as String?;
                         return Container(
                           margin: EdgeInsets.only(bottom: 8.h),
                           padding: EdgeInsets.all(12.r),
@@ -2103,13 +2104,28 @@ class _LogsTab extends StatelessWidget {
                                 ),
                               ),
                               8.horizontalSpace,
-                              Text(
-                                _formatTimestamp(ts),
-                                style: GoogleFonts.jetBrainsMono(
-                                  color: _textSecondary,
-                                  fontSize: 9.sp,
-                                ),
-                                textAlign: TextAlign.right,
+                              Column(
+                                crossAxisAlignment: CrossAxisAlignment.end,
+                                children: [
+                                  Text(
+                                    _formatTimestamp(ts),
+                                    style: GoogleFonts.jetBrainsMono(
+                                      color: _textSecondary,
+                                      fontSize: 9.sp,
+                                    ),
+                                    textAlign: TextAlign.right,
+                                  ),
+                                  4.verticalSpace,
+                                  if (logId != null)
+                                    GestureDetector(
+                                      onTap: () => _confirmDeleteLog(context, logId),
+                                      child: Icon(
+                                        Icons.delete_outline_rounded,
+                                        color: _danger.withValues(alpha: 0.6),
+                                        size: 14.r,
+                                      ),
+                                    ),
+                                ],
                               ),
                             ],
                           ),
@@ -2120,6 +2136,41 @@ class _LogsTab extends StatelessWidget {
           ],
         );
       },
+    );
+  }
+
+  void _confirmDeleteLog(BuildContext context, String logId) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          'Delete Log Entry',
+          style: GoogleFonts.outfit(color: _textPrimary, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'Remove this log entry? This cannot be undone.',
+          style: GoogleFonts.outfit(color: _textSecondary, fontSize: 13.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: _textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await repo.deleteLog(logId);
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _danger,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Delete', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
     );
   }
 
