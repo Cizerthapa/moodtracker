@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
@@ -15,6 +18,7 @@ import 'package:moodtrack/features/notes/data/repositories/notes_repository.dart
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/services/storage_service.dart';
 import 'package:moodtrack/core/services/streak_service.dart';
+import 'package:moodtrack/core/services/note_image_service.dart';
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/widget/streak_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -71,6 +75,7 @@ class NotesScreen extends StatefulWidget {
 class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStateMixin {
   final NotesRepository _repository = sl<NotesRepository>();
   final StorageService _storageService = sl<StorageService>();
+  final NoteImageService _noteImageService = sl<NoteImageService>();
   final AppDatabase _db = sl<AppDatabase>();
   final StreakService _streakService = sl<StreakService>();
   String _searchQuery = "";
@@ -156,22 +161,62 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
         'initialTitle': existingNote?.title ?? '',
         'initialText': existingNote?.textContent ?? '',
         'initialEmoji': existingNote?.mood ?? '😐',
-        'initialImage': existingNote?.imageUrl,
+        // Pass back the encoded value (or plain URL for old notes) so the
+        // edit screen can show the existing image via network fallback.
+        'initialImage': existingNote?.imageUrl != null
+            ? NoteImageService.networkUrlOf(existingNote!.imageUrl)
+            : null,
         'onSave': (String title, String text, String emoji, dynamic image) async {
-          String? imageUrl = existingNote?.imageUrl;
+          final noteId =
+              existingNote?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+          String? imageUrl = existingNote?.imageUrl; // keep existing encoded value
+
           if (image != null && image is! String) {
-            final path = 'notes/${DateTime.now().millisecondsSinceEpoch}.jpg';
-            final uploadResult = await _storageService.uploadFile(file: image, path: path);
+            // ── New image picked ─────────────────────────────────────────
+            final file = image as File;
+            final uid = FirebaseAuth.instance.currentUser?.uid ?? 'unknown';
+
+            // 1. Generate readable filename and save to Download/moodtracker/
+            final fileName = await _noteImageService.generateFileName();
+            await _noteImageService.saveLocally(file, fileName);
+
+            // 2. Upload to Firebase Storage
+            final storagePath = 'notes/$uid/$fileName';
+            final uploadResult =
+                await _storageService.uploadFile(file: file, path: storagePath);
+
             if (uploadResult is Success<String>) {
-              imageUrl = uploadResult.data;
+              final networkUrl = uploadResult.data;
+              // Encode as "note1_1.jpg||https://..."
+              imageUrl = NoteImageService.encode(fileName, networkUrl);
+
+              // 3. Sync filename + URL to Firestore so reinstall can recover it
+              try {
+                await FirebaseFirestore.instance
+                    .collection('users')
+                    .doc(uid)
+                    .collection('notes')
+                    .doc(noteId)
+                    .set(
+                      {
+                        'noteId': noteId,
+                        'fileName': fileName,
+                        'imageUrl': networkUrl,
+                        'updatedAt': FieldValue.serverTimestamp(),
+                      },
+                      SetOptions(merge: true),
+                    );
+              } catch (_) {
+                // Firestore sync failure is non-fatal; local copy is already saved.
+              }
             } else if (mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text((uploadResult as Failure).message)));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text((uploadResult as Failure).message)),
+              );
               return;
             }
           }
-          final noteId = existingNote?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+
           await _saveNote(noteId, title, text, emoji, imageUrl);
         },
       },
@@ -546,35 +591,145 @@ class _NoteCard extends StatelessWidget {
                 // Note Image
                 if (note.imageUrl != null) ...[
                   16.verticalSpace,
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16.r),
-                    child: Image.network(
-                      note.imageUrl!,
-                      height: 180.h,
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                      loadingBuilder: (context, child, loadingProgress) {
-                        if (loadingProgress == null) return child;
-                        return ShimmerLoading(
-                          isLoading: true,
-                          child: ShimmerSkeleton(height: 180.h),
-                        );
-                      },
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        height: 150.h,
-                        width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.white24,
-                          borderRadius: BorderRadius.circular(16.r),
-                        ),
-                        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
-                      ),
-                    ),
-                  ),
+                  _NoteImage(encodedImageUrl: note.imageUrl!),
                 ],
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Note Image ──────────────────────────────────────────────────────────────
+// Shows the image from local cache (Downloads/moodtracker/) when available,
+// falling back to Firebase Storage download + cache on first view.
+
+class _NoteImage extends StatelessWidget {
+  final String encodedImageUrl;
+  const _NoteImage({required this.encodedImageUrl});
+
+  @override
+  Widget build(BuildContext context) {
+    final fileName = NoteImageService.fileNameOf(encodedImageUrl);
+    final networkUrl = NoteImageService.networkUrlOf(encodedImageUrl);
+
+    if (fileName == null || networkUrl == null) {
+      // Old-format plain URL — just show network image
+      return _networkImage(networkUrl ?? encodedImageUrl);
+    }
+
+    return FutureBuilder<File?>(
+      future: sl<NoteImageService>().getLocalFile(fileName),
+      builder: (ctx, snap) {
+        if (snap.connectionState == ConnectionState.waiting) {
+          return ShimmerLoading(isLoading: true, child: ShimmerSkeleton(height: 180.h));
+        }
+        if (snap.data != null) {
+          return _localImage(snap.data!);
+        }
+        // File not cached yet — download from Storage and show
+        return _DownloadAndShowImage(fileName: fileName, networkUrl: networkUrl);
+      },
+    );
+  }
+
+  Widget _localImage(File file) => ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Image.file(
+          file,
+          height: 180.h,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+      );
+
+  Widget _networkImage(String url) => ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Image.network(
+          url,
+          height: 180.h,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          loadingBuilder: (context, child, progress) {
+            if (progress == null) return child;
+            return ShimmerLoading(isLoading: true, child: ShimmerSkeleton(height: 180.h));
+          },
+          errorBuilder: (context, _, __) => _errorPlaceholder(),
+        ),
+      );
+
+  Widget _errorPlaceholder() => Container(
+        height: 150.h,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          color: Colors.white24,
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+      );
+}
+
+class _DownloadAndShowImage extends StatefulWidget {
+  final String fileName;
+  final String networkUrl;
+  const _DownloadAndShowImage({required this.fileName, required this.networkUrl});
+
+  @override
+  State<_DownloadAndShowImage> createState() => _DownloadAndShowImageState();
+}
+
+class _DownloadAndShowImageState extends State<_DownloadAndShowImage> {
+  File? _localFile;
+  bool _loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _download();
+  }
+
+  Future<void> _download() async {
+    final file = await sl<NoteImageService>().downloadAndCache(
+      widget.networkUrl,
+      widget.fileName,
+    );
+    if (mounted) setState(() { _localFile = file; _loading = false; });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_loading) {
+      return ShimmerLoading(isLoading: true, child: ShimmerSkeleton(height: 180.h));
+    }
+    if (_localFile != null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(16.r),
+        child: Image.file(
+          _localFile!,
+          height: 180.h,
+          width: double.infinity,
+          fit: BoxFit.cover,
+        ),
+      );
+    }
+    // Download failed — fallback to network stream
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(16.r),
+      child: Image.network(
+        widget.networkUrl,
+        height: 180.h,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, _, __) => Container(
+          height: 150.h,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white24,
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
         ),
       ),
     );

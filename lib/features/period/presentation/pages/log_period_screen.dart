@@ -7,6 +7,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/period/domain/model/period_cycle_model.dart';
 import 'package:moodtrack/l10n/app_localizations.dart';
+import 'package:moodtrack/core/di/service_locator.dart';
+import 'package:moodtrack/core/services/activity_log_service.dart';
 
 // Removed local color constants in favor of AppColors.cycleColor and AppColors.userColor
 
@@ -44,6 +46,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
   late List<String> _selectedSymptoms;
   final TextEditingController _notesCtrl = TextEditingController();
   bool _isSaving = false;
+  final ActivityLogService _logger = sl<ActivityLogService>();
 
   bool get _isEditing => widget.existingCycle != null;
 
@@ -105,6 +108,14 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
         ownerUid: uid,
       );
       await widget.onSave(cycle);
+      _logger.log(
+        _isEditing ? 'period_cycle_updated' : 'period_cycle_added',
+        metadata: {
+          'isPartner': widget.isPartnerCycle,
+          'flowLevel': _flowLevel,
+          'symptomsCount': _selectedSymptoms.length,
+        },
+      );
       if (mounted) Navigator.of(context).pop();
     } finally {
       if (mounted) setState(() => _isSaving = false);
@@ -118,14 +129,18 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            _buildHeader(),
+            _LogPeriodHeader(
+              isPartnerCycle: widget.isPartnerCycle,
+              isEditing: _isEditing,
+              onClose: () => Navigator.of(context).pop(),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 32.h),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _sectionLabel(AppLocalizations.of(context)!.dates),
+                    _SectionLabel(text: AppLocalizations.of(context)!.dates),
                     10.verticalSpace,
                     Row(
                       children: [
@@ -150,15 +165,15 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                       ],
                     ),
                     24.verticalSpace,
-                    _sectionLabel(AppLocalizations.of(context)!.flowLevel),
+                    _SectionLabel(text: AppLocalizations.of(context)!.flowLevel),
                     10.verticalSpace,
                     _buildFlowSelector(),
                     24.verticalSpace,
-                    _sectionLabel(AppLocalizations.of(context)!.symptoms),
+                    _SectionLabel(text: AppLocalizations.of(context)!.symptoms),
                     10.verticalSpace,
                     _buildSymptomChips(),
                     24.verticalSpace,
-                    _sectionLabel(AppLocalizations.of(context)!.notesOptional),
+                    _SectionLabel(text: AppLocalizations.of(context)!.notesOptional),
                     10.verticalSpace,
                     _buildNotesField(),
                     32.verticalSpace,
@@ -173,51 +188,6 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
     );
   }
 
-  Widget _buildHeader() {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () => Navigator.of(context).pop(),
-            child: Container(
-              padding: EdgeInsets.all(10.r),
-              decoration: BoxDecoration(
-                color: AppColors.ivoryCard,
-                shape: BoxShape.circle,
-                border: Border.all(color: AppColors.champagne),
-              ),
-              child: Icon(Icons.close_rounded, size: 20.r, color: AppColors.warmBrown),
-            ),
-          ),
-          16.horizontalSpace,
-          Text(
-            widget.isPartnerCycle && _isEditing
-                ? AppLocalizations.of(context)!.editPartnerCycle
-                : _isEditing
-                ? AppLocalizations.of(context)!.editCycle
-                : widget.isPartnerCycle
-                ? AppLocalizations.of(context)!.logForPartner
-                : AppLocalizations.of(context)!.logPeriod,
-            style: GoogleFonts.outfit(
-              fontSize: 22.sp,
-              fontWeight: FontWeight.w800,
-              color: AppColors.warmBrown,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionLabel(String text) => Text(
-    text,
-    style: GoogleFonts.outfit(
-      fontSize: 16.sp,
-      fontWeight: FontWeight.w700,
-      color: AppColors.warmBrown,
-    ),
-  );
 
   Widget _buildFlowSelector() {
     final l10n = AppLocalizations.of(context)!;
@@ -376,6 +346,80 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                   ),
                 ),
         ),
+      ),
+    );
+  }
+}
+
+// ─── Log Period Header ────────────────────────────────────────────────────────
+
+class _LogPeriodHeader extends StatelessWidget {
+  final bool isPartnerCycle;
+  final bool isEditing;
+  final VoidCallback onClose;
+
+  const _LogPeriodHeader({
+    required this.isPartnerCycle,
+    required this.isEditing,
+    required this.onClose,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final title = isPartnerCycle && isEditing
+        ? l10n.editPartnerCycle
+        : isEditing
+        ? l10n.editCycle
+        : isPartnerCycle
+        ? l10n.logForPartner
+        : l10n.logPeriod;
+
+    return Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
+      child: Row(
+        children: [
+          GestureDetector(
+            onTap: onClose,
+            child: Container(
+              padding: EdgeInsets.all(10.r),
+              decoration: BoxDecoration(
+                color: AppColors.ivoryCard,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.champagne),
+              ),
+              child: Icon(Icons.close_rounded, size: 20.r, color: AppColors.warmBrown),
+            ),
+          ),
+          16.horizontalSpace,
+          Text(
+            title,
+            style: GoogleFonts.outfit(
+              fontSize: 22.sp,
+              fontWeight: FontWeight.w800,
+              color: AppColors.warmBrown,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Section Label ────────────────────────────────────────────────────────────
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: GoogleFonts.outfit(
+        fontSize: 16.sp,
+        fontWeight: FontWeight.w700,
+        color: AppColors.warmBrown,
       ),
     );
   }

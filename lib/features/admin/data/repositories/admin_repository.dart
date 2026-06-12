@@ -306,6 +306,39 @@ class AdminRepository {
         .snapshots();
   }
 
+  // ── Activity Logs ────────────────────────────────────────────────────────
+
+  Stream<List<Map<String, dynamic>>> getLogsStream({int limit = 200}) {
+    log('Firestore [Admin]: Listening to activity logs', name: 'Firebase');
+    return _firestore
+        .collection('admin_logs')
+        .orderBy('timestamp', descending: true)
+        .limit(limit)
+        .snapshots()
+        .map((snap) => snap.docs.map((d) {
+              final data = d.data();
+              data['id'] = d.id;
+              return data;
+            }).toList());
+  }
+
+  Future<Result<void>> clearLogs() async {
+    log('Firestore [Admin]: Clearing activity logs', name: 'Firebase');
+    try {
+      final snap = await _firestore.collection('admin_logs').get();
+      final batch = _firestore.batch();
+      for (final doc in snap.docs) {
+        batch.delete(doc.reference);
+      }
+      await batch.commit();
+      log('Firestore [Admin]: Activity logs cleared', name: 'Firebase');
+      return const Success(null);
+    } catch (e) {
+      log('Firestore [Admin]: Error clearing logs: $e', name: 'Firebase');
+      return Failure('Failed to clear logs', error: e);
+    }
+  }
+
   // ── Stats ─────────────────────────────────────────────────────────────────
 
   Future<Result<Map<String, int>>> getStats() async {

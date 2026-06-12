@@ -7,6 +7,28 @@ import 'dart:developer' as dev;
 
 part 'local_database.g.dart';
 
+/// Drift is a powerful database library for Flutter that interacts with SQLite 
+/// (the database engine running locally on your device).
+///
+/// In your app, Drift is configured in this file. It is primarily used to provide 
+/// local storage and offline capabilities for the following three main features:
+///
+/// - Notes: It stores a local copy of your note entries (including the text, mood, image URL, and date).
+/// - Journals: It stores your journal entries (text, mood, date, and whether the entry is encrypted).
+/// - Memories: It stores your special memory logs (title, description, image URLs, and date).
+///
+/// Why is this important?
+/// Notice that every table has a pendingSync column (a boolean true/false value).
+///
+/// This means your app uses Drift to allow users to create Notes, Journals, and 
+/// Memories even if they don't have an internet connection. The app saves these 
+/// entries locally to the Drift database first (with pendingSync set to true). 
+/// Then, when the device reconnects to the internet, the app can safely read 
+/// these pending local entries and upload them to your Firebase database in the cloud!
+///
+/// This is what makes your app feel instantly responsive—because saving locally 
+/// via Drift happens instantly!
+
 // ── Tables ──────────────────────────────────────────────────────────────────
 
 class Notes extends Table {

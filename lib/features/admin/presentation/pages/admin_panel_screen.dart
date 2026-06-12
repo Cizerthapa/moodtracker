@@ -39,7 +39,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
   @override
   void initState() {
     super.initState();
-    _tabController = TabController(length: 5, vsync: this);
+    _tabController = TabController(length: 6, vsync: this);
     _loadStats();
   }
 
@@ -156,6 +156,10 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                 icon: Icon(Icons.system_update_rounded, size: 18),
                 text: 'Version',
               ),
+              Tab(
+                icon: Icon(Icons.receipt_long_rounded, size: 18),
+                text: 'Logs',
+              ),
             ],
           ),
         ),
@@ -173,6 +177,7 @@ class _AdminPanelScreenState extends State<AdminPanelScreen>
                   _JournalsTab(repo: _repo),
                   _BroadcastTab(repo: _repo),
                   _VersionTab(repo: _repo),
+                  _LogsTab(repo: _repo),
                 ],
               ),
             ),
@@ -1926,6 +1931,229 @@ class _VersionTabState extends State<_VersionTab> {
           borderRadius: BorderRadius.circular(12.r),
           borderSide: BorderSide(color: _accent),
         ),
+      ),
+    );
+  }
+}
+
+// ── LOGS TAB ─────────────────────────────────────────────────────────────────
+
+class _LogsTab extends StatelessWidget {
+  final AdminRepository repo;
+  const _LogsTab({required this.repo});
+
+  static const _card = Color(0xFF21262D);
+  static const _textPrimary = Color(0xFFE6EDF3);
+  static const _textSecondary = Color(0xFF8B949E);
+  static const _accent = Color(0xFF58A6FF);
+  static const _danger = Color(0xFFFF7B72);
+  static const _success = Color(0xFF3FB950);
+  static const _warn = Color(0xFFD29922);
+
+  Color _actionColor(String action) {
+    if (action.startsWith('period_')) return _accent;
+    if (action.startsWith('auth_')) return _success;
+    if (action.startsWith('delete_') || action.contains('deleted')) return _danger;
+    if (action.startsWith('journal_')) return _warn;
+    return _textSecondary;
+  }
+
+  IconData _actionIcon(String action) {
+    if (action.startsWith('period_')) return Icons.favorite_rounded;
+    if (action.startsWith('auth_')) return Icons.login_rounded;
+    if (action.startsWith('delete_') || action.contains('deleted')) return Icons.delete_rounded;
+    if (action.startsWith('journal_')) return Icons.menu_book_rounded;
+    return Icons.receipt_long_rounded;
+  }
+
+  String _formatTimestamp(dynamic ts) {
+    if (ts == null) return '—';
+    if (ts is Timestamp) {
+      final dt = ts.toDate().toLocal();
+      String pad(int n) => n.toString().padLeft(2, '0');
+      return '${dt.year}-${pad(dt.month)}-${pad(dt.day)}  ${pad(dt.hour)}:${pad(dt.minute)}:${pad(dt.second)}';
+    }
+    return ts.toString();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<List<Map<String, dynamic>>>(
+      stream: repo.getLogsStream(),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator(color: _accent));
+        }
+
+        final logs = snapshot.data ?? [];
+
+        return Column(
+          children: [
+            // ── Header bar ──────────────────────────────────────────
+            Container(
+              color: const Color(0xFF161B22),
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.h),
+              child: Row(
+                children: [
+                  Icon(Icons.receipt_long_rounded, color: _accent, size: 16.r),
+                  8.horizontalSpace,
+                  Text(
+                    '${logs.length} events',
+                    style: GoogleFonts.jetBrainsMono(
+                      color: _textSecondary,
+                      fontSize: 12.sp,
+                    ),
+                  ),
+                  const Spacer(),
+                  if (logs.isNotEmpty)
+                    TextButton.icon(
+                      onPressed: () => _confirmClear(context),
+                      icon: Icon(Icons.delete_sweep_rounded, size: 16.r, color: _danger),
+                      label: Text(
+                        'Clear',
+                        style: GoogleFonts.outfit(color: _danger, fontSize: 12.sp),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+            // ── Log list ─────────────────────────────────────────────
+            Expanded(
+              child: logs.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.receipt_long_rounded, color: _textSecondary, size: 40.r),
+                          12.verticalSpace,
+                          Text(
+                            'No activity logs yet.',
+                            style: GoogleFonts.outfit(color: _textSecondary, fontSize: 14.sp),
+                          ),
+                        ],
+                      ),
+                    )
+                  : ListView.builder(
+                      padding: EdgeInsets.all(12.r),
+                      itemCount: logs.length,
+                      itemBuilder: (context, index) {
+                        final log = logs[index];
+                        final action = (log['action'] as String?) ?? 'unknown';
+                        final userEmail = (log['userEmail'] as String?) ?? '—';
+                        final ts = log['timestamp'];
+                        final metadata = log['metadata'] as Map<String, dynamic>?;
+                        final color = _actionColor(action);
+                        final icon = _actionIcon(action);
+
+                        return Container(
+                          margin: EdgeInsets.only(bottom: 8.h),
+                          padding: EdgeInsets.all(12.r),
+                          decoration: BoxDecoration(
+                            color: _card,
+                            borderRadius: BorderRadius.circular(10.r),
+                            border: Border.all(color: color.withValues(alpha: 0.2)),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                padding: EdgeInsets.all(6.r),
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8.r),
+                                ),
+                                child: Icon(icon, color: color, size: 14.r),
+                              ),
+                              10.horizontalSpace,
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      action.replaceAll('_', ' '),
+                                      style: GoogleFonts.jetBrainsMono(
+                                        color: color,
+                                        fontSize: 12.sp,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                    2.verticalSpace,
+                                    Text(
+                                      userEmail,
+                                      style: GoogleFonts.outfit(
+                                        color: _textSecondary,
+                                        fontSize: 11.sp,
+                                      ),
+                                    ),
+                                    if (metadata != null && metadata.isNotEmpty) ...[
+                                      4.verticalSpace,
+                                      Text(
+                                        metadata.entries
+                                            .map((e) => '${e.key}: ${e.value}')
+                                            .join('  ·  '),
+                                        style: GoogleFonts.jetBrainsMono(
+                                          color: _textSecondary.withValues(alpha: 0.7),
+                                          fontSize: 10.sp,
+                                        ),
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ],
+                                ),
+                              ),
+                              8.horizontalSpace,
+                              Text(
+                                _formatTimestamp(ts),
+                                style: GoogleFonts.jetBrainsMono(
+                                  color: _textSecondary,
+                                  fontSize: 9.sp,
+                                ),
+                                textAlign: TextAlign.right,
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmClear(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: _card,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+        title: Text(
+          'Clear All Logs',
+          style: GoogleFonts.outfit(color: _textPrimary, fontWeight: FontWeight.w700),
+        ),
+        content: Text(
+          'This will permanently delete all activity logs. This cannot be undone.',
+          style: GoogleFonts.outfit(color: _textSecondary, fontSize: 13.sp),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: Text('Cancel', style: GoogleFonts.outfit(color: _textSecondary)),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await repo.clearLogs();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _danger,
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Clear', style: GoogleFonts.outfit(fontWeight: FontWeight.w700)),
+          ),
+        ],
       ),
     );
   }

@@ -20,6 +20,8 @@ import 'package:moodtrack/core/services/ui_state_manager.dart';
 import 'package:moodtrack/core/database/local_database.dart';
 import 'package:moodtrack/features/period/data/repositories/period_repository.dart';
 import 'package:moodtrack/core/services/streak_service.dart';
+import 'package:moodtrack/core/services/activity_log_service.dart';
+import 'package:moodtrack/core/services/note_image_service.dart';
 
 
 final sl = GetIt.instance;
@@ -40,6 +42,8 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => StorageService());
   sl.registerLazySingleton(() => UIStateManager());
   sl.registerLazySingleton(() => StreakService());
+  sl.registerLazySingleton(() => ActivityLogService());
+  sl.registerLazySingleton(() => NoteImageService());
 
   // ── Repositories ──────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => AuthRepository());

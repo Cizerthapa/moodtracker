@@ -56,7 +56,7 @@ class AddNoteScreen extends StatefulWidget {
   final String? initialImage;
 
   const AddNoteScreen({
-    super.key, 
+    super.key,
     required this.onSave,
     this.initialTitle,
     this.initialText,
@@ -99,10 +99,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 70,
-    );
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
     if (pickedFile != null) {
       HapticFeedback.lightImpact();
       setState(() {
@@ -115,16 +112,10 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
   void _insertText(String insertion) {
     final text = _contentController.text;
     final selection = _contentController.selection;
-    final newText = text.replaceRange(
-      selection.start,
-      selection.end,
-      insertion,
-    );
+    final newText = text.replaceRange(selection.start, selection.end, insertion);
     _contentController.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(
-        offset: selection.start + insertion.length,
-      ),
+      selection: TextSelection.collapsed(offset: selection.start + insertion.length),
     );
     _contentFocusNode.requestFocus();
     HapticFeedback.lightImpact();
@@ -163,10 +154,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                 child: SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppColors.roseDeep,
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: AppColors.roseDeep),
                 ),
               ),
             )
@@ -262,11 +250,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                 color: Colors.black54,
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(
-                                Icons.close_rounded,
-                                color: Colors.white,
-                                size: 16.r,
-                              ),
+                              child: Icon(Icons.close_rounded, color: Colors.white, size: 16.r),
                             ),
                           ),
                         ),
@@ -298,20 +282,14 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                                 color: Colors.black54,
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(
-                                Icons.close_rounded,
-                                color: Colors.white,
-                                size: 16.r,
-                              ),
+                              child: Icon(Icons.close_rounded, color: Colors.white, size: 16.r),
                             ),
                           ),
                         ),
                       ],
                     ),
 
-                  SizedBox(
-                    height: 100.h,
-                  ), // Extra space to scroll above keyboard
+                  SizedBox(height: 100.h), // Extra space to scroll above keyboard
                 ],
               ),
             ),
@@ -355,10 +333,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         },
                         child: Container(
                           margin: EdgeInsets.symmetric(horizontal: 6.w),
-                          padding: EdgeInsets.symmetric(
-                            horizontal: 12.w,
-                            vertical: 8.h,
-                          ),
+                          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
                           decoration: BoxDecoration(
                             color: isSelected
                                 ? mAccent.withValues(alpha: 0.12)
@@ -377,34 +352,22 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                     }).toList(),
                   ),
                 ),
-                Divider(
-                  height: 16.h,
-                  color: AppColors.champagne.withValues(alpha: 0.5),
-                ),
+                Divider(height: 16.h, color: AppColors.champagne.withValues(alpha: 0.5)),
                 Row(
                   children: [
                     // Bullet button
                     IconButton(
-                      icon: Icon(
-                        Icons.format_list_bulleted_rounded,
-                        color: AppColors.softBrown,
-                      ),
+                      icon: Icon(Icons.format_list_bulleted_rounded, color: AppColors.softBrown),
                       onPressed: () => _insertText('• '),
                     ),
                     // Checklist button
                     IconButton(
-                      icon: Icon(
-                        Icons.checklist_rounded,
-                        color: AppColors.softBrown,
-                      ),
+                      icon: Icon(Icons.checklist_rounded, color: AppColors.softBrown),
                       onPressed: () => _insertText('- [ ] '),
                     ),
                     // Image button
                     IconButton(
-                      icon: Icon(
-                        Icons.add_a_photo_rounded,
-                        color: AppColors.softBrown,
-                      ),
+                      icon: Icon(Icons.add_a_photo_rounded, color: AppColors.softBrown),
                       onPressed: _pickImage,
                     ),
                     const Spacer(),
@@ -416,10 +379,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                         color: accentColor,
                         shape: BoxShape.circle,
                         boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.3),
-                            blurRadius: 4,
-                          ),
+                          BoxShadow(color: accentColor.withValues(alpha: 0.3), blurRadius: 4),
                         ],
                       ),
                     ),
