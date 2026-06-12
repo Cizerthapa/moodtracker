@@ -76,7 +76,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     if (!mounted) return;
 
-    // 3. Check Biometric Requirement
+    // 3. Check if user is logged in before enforcing biometrics
+    final user = FirebaseAuth.instance.currentUser;
+    if (user == null) {
+      _navigateToHome(); // Navigate home handles login redirection
+      return;
+    }
+
+    // 4. Check Biometric Requirement
     final bioResult = await _repository.getBiometricEnabled();
     bool isEnabled = false;
     if (bioResult is Success<bool>) {

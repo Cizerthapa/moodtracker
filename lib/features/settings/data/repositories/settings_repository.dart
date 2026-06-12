@@ -1,11 +1,13 @@
 import 'dart:developer';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 import 'package:moodtrack/core/constants/app_constants.dart';
 import 'package:moodtrack/core/error/result.dart';
 
 class SettingsRepository {
-  SettingsRepository();
+  final FlutterSecureStorage _secureStorage;
+  SettingsRepository(this._secureStorage);
   Future<Result<bool>> getNotificationsEnabled() async {
     try {
       final prefs = await SharedPreferences.getInstance();
@@ -52,8 +54,23 @@ class SettingsRepository {
 
   Future<Result<bool>> getBiometricEnabled() async {
     try {
+      final secureVal = await _secureStorage.read(key: AppConstants.biometricPrefsKey);
+      if (secureVal != null) {
+        return Success(secureVal == 'true');
+      }
+
+      // Migration from SharedPreferences
       final prefs = await SharedPreferences.getInstance();
-      return Success(prefs.getBool(AppConstants.biometricPrefsKey) ?? false);
+      final prefsVal = prefs.getBool(AppConstants.biometricPrefsKey);
+      
+      if (prefsVal != null) {
+        // Migrate
+        await _secureStorage.write(key: AppConstants.biometricPrefsKey, value: prefsVal.toString());
+        await prefs.remove(AppConstants.biometricPrefsKey);
+        return Success(prefsVal);
+      }
+      
+      return const Success(false);
     } catch (e) {
       log('Preferences: Error getting biometric setting: $e', name: 'Preferences');
       return Failure('Failed to load biometric settings', error: e);
@@ -63,8 +80,7 @@ class SettingsRepository {
   Future<Result<void>> setBiometricEnabled(bool enabled) async {
     log('Preferences: Setting biometric enabled: $enabled', name: 'Preferences');
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(AppConstants.biometricPrefsKey, enabled);
+      await _secureStorage.write(key: AppConstants.biometricPrefsKey, value: enabled.toString());
       return const Success(null);
     } catch (e) {
       log('Preferences: Error setting biometric: $e', name: 'Preferences');

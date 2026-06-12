@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:moodtrack/features/auth/data/repositories/user_repository.dart';
 import 'package:moodtrack/features/auth/data/repositories/auth_repository.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
@@ -26,9 +27,10 @@ final sl = GetIt.instance;
 Future<void> initServiceLocator() async {
   // ── Database ──────────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => AppDatabase());
-  // ── Firebase ──────────────────────────────────────────────────────────────
+  // ── Firebase & Storage ──────────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => FirebaseFirestore.instance);
   sl.registerLazySingleton(() => FirebaseAuth.instance);
+  sl.registerLazySingleton(() => const FlutterSecureStorage());
 
   // ── Services ──────────────────────────────────────────────────────────────
   sl.registerLazySingleton(() => EncryptionService());
@@ -43,7 +45,7 @@ Future<void> initServiceLocator() async {
   sl.registerLazySingleton(() => AuthRepository());
   sl.registerLazySingleton(() => UserRepository());
   sl.registerLazySingleton(() => MemoriesRepository());
-  sl.registerLazySingleton(() => SettingsRepository());
+  sl.registerLazySingleton(() => SettingsRepository(sl()));
   sl.registerLazySingleton(() => WaterRepository());
   sl.registerLazySingleton(() => NotesRepository());
   sl.registerLazySingleton(() => JournalRepository());
