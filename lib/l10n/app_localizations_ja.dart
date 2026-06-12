@@ -451,4 +451,54 @@ class AppLocalizationsJa extends AppLocalizations {
 
   @override
   String get saveCycle => 'Save Cycle';
+
+  @override
+  String get yourCycles => '自分のサイクル';
+
+  @override
+  String get partnerCycles => 'パートナーのサイクル';
+
+  @override
+  String get editPartnerCycle => 'パートナーのサイクルを編集';
+
+  @override
+  String get noPartnerCycles => 'パートナーのサイクルはまだ記録されていません';
+
+  @override
+  String get partnerBadge => 'パートナー';
+
+  @override
+  String get howItWorksTitle => '使い方';
+
+  @override
+  String get colorsLegendTitle => '色の説明';
+
+  @override
+  String get yourPeriodDesc => '生理が続いている日（自分で記録）。';
+
+  @override
+  String get partnerPeriodDesc => 'パートナーの生理が続いている日。';
+
+  @override
+  String get predictedPeriodDesc => 'サイクル履歴に基づく次の生理予測。';
+
+  @override
+  String get fertileWindowDesc => '妊娠しやすい時期 — サイクルの約8〜19日目。';
+
+  @override
+  String get safeWindowDesc => '妊娠しにくい時期 — 8日目より前か19日目より後。';
+
+  @override
+  String get predictionsExplained =>
+      '予測は直近3サイクルの平均から計算されます。記録が増えるほど精度が上がります。';
+
+  @override
+  String get phasesExplained =>
+      '現在のフェーズ（月経期 → 卵胞期 → 排卵期 → 黄体期）はサイクル内の位置に基づいて毎日更新されます。';
+
+  @override
+  String get gotIt => 'わかった';
+
+  @override
+  String get logForPartner => 'パートナーのために記録';
 }

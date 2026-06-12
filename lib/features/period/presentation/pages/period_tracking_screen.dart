@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -15,8 +17,6 @@ import 'package:moodtrack/core/di/service_locator.dart';
 
 import 'package:moodtrack/features/period/presentation/pages/log_period_screen.dart';
 
-// Removed local color constants in favor of AppColors.cycleColor, AppColors.userColor, and AppColors.partnerColor
-
 class PeriodTrackingScreen extends StatefulWidget {
   const PeriodTrackingScreen({super.key});
 
@@ -30,24 +30,53 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   DateTime _focusedMonth = DateTime(DateTime.now().year, DateTime.now().month);
   int _selectedTab = 0; // 0 = Calendar, 1 = History
 
+  String? _partnerUid;
+  StreamSubscription<String?>? _partnerUidSub;
+
+  @override
+  void initState() {
+    super.initState();
+    _partnerUidSub = _repo.getPartnerUidStream().listen((uid) {
+      if (mounted) setState(() => _partnerUid = uid);
+    });
+  }
+
+  @override
+  void dispose() {
+    _partnerUidSub?.cancel();
+    super.dispose();
+  }
+
   void _navigateMonth(int delta) {
     setState(() {
       _focusedMonth = DateTime(_focusedMonth.year, _focusedMonth.month + delta);
     });
   }
 
-  void _openLogScreen({PeriodCycle? cycle}) {
+  void _openLogScreen({PeriodCycle? cycle, bool isPartner = false}) {
+    final resolvedIsPartner = isPartner || (cycle != null && cycle.ownerUid != _uid);
     Navigator.push(
       context,
       MaterialPageRoute(
         fullscreenDialog: true,
         builder: (_) => LogPeriodScreen(
           existingCycle: cycle,
+          isPartnerCycle: resolvedIsPartner,
           onSave: (c) async {
-            if (cycle != null) {
-              await _repo.updateCycle(c);
+            if (resolvedIsPartner) {
+              final targetUid = cycle?.ownerUid ?? _partnerUid;
+              if (targetUid == null) return;
+              if (cycle != null) {
+                await _repo.updatePartnerCycle(targetUid, c);
+              } else {
+                await _repo.addPartnerCycle(targetUid, c);
+              }
             } else {
-              await _repo.addCycle(c);
+              if (cycle != null) {
+                await _repo.updateCycle(c);
+              } else {
+                await _repo.addCycle(c);
+              }
             }
           },
         ),
@@ -93,19 +122,28 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     return count > 0 ? (totalDays / count).round() : 5;
   }
 
-  /// Returns the predicted next start date based on the user's own cycle history.
   DateTime? _predictNext(List<PeriodCycle> cycles) {
     final mostRecent = _getMostRecentCycle(cycles);
     if (mostRecent == null) return null;
-
     final avgCycle = _getAverageCycleLength(cycles);
     return mostRecent.startDate.add(Duration(days: avgCycle));
+  }
+
+  void _showInfoSheet() {
+    HapticFeedback.lightImpact();
+    final l10n = AppLocalizations.of(context)!;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (_) => _InfoBottomSheet(l10n: l10n),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Consumer<ThemeManager>(
-      builder: (_, __, ___) => Scaffold(
+      builder: (ctx, tm, child) => Scaffold(
         backgroundColor: AppColors.cream,
         body: SafeArea(
           child: StreamBuilder<List<PeriodCycle>>(
@@ -145,12 +183,8 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     final isToday = daysUntil == 0;
     final isSoon = daysUntil > 0 && daysUntil <= 3;
 
-    final Color bannerColor = isPast
+    final Color bannerColor = isPast || isToday
         ? AppColors.userColor
-        : isToday
-        ? AppColors.userColor
-        : isSoon
-        ? AppColors.cycleColor
         : AppColors.cycleColor;
 
     final l10n = AppLocalizations.of(context)!;
@@ -274,6 +308,22 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
               ],
             ),
           ),
+          // Info button
+          GestureDetector(
+            onTap: _showInfoSheet,
+            child: Container(
+              width: 40.r,
+              height: 40.r,
+              decoration: BoxDecoration(
+                color: AppColors.ivoryCard,
+                shape: BoxShape.circle,
+                border: Border.all(color: AppColors.champagne),
+              ),
+              child: Icon(Icons.help_outline_rounded, size: 20.r, color: AppColors.softBrown),
+            ),
+          ),
+          10.horizontalSpace,
+          // Add button
           GestureDetector(
             onTap: () {
               HapticFeedback.lightImpact();
@@ -381,7 +431,6 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
   Widget _buildPhaseCard(PeriodCycle recentCycle, int avgCycleLength) {
     final today = DateTime.now();
-    // Only show current phase if the last cycle isn't extremely old (e.g. within 60 days)
     final diff = today.difference(recentCycle.startDate).inDays;
     if (diff > 60) return const SizedBox();
 
@@ -537,9 +586,6 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   bool _isFertileWindow(DateTime date, PeriodCycle? mostRecent, int avgCycleLength) {
     if (mostRecent == null) return false;
     final diff = date.difference(mostRecent.startDate).inDays;
-
-    // (-5 % 28) in Dart is 23, which correctly maps past dates.
-    // However, if the date is way in the past (> 60 days), we skip it to save confusion.
     if (diff > -60) {
       final dayOfCycle = (diff % avgCycleLength) + 1;
       final ovulationWindowStart = avgCycleLength - 18;
@@ -552,7 +598,6 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   bool _isSafeWindow(DateTime date, PeriodCycle? mostRecent, int avgCycleLength) {
     if (mostRecent == null) return false;
     final diff = date.difference(mostRecent.startDate).inDays;
-
     if (diff > -60) {
       final dayOfCycle = (diff % avgCycleLength) + 1;
       final ovulationWindowStart = avgCycleLength - 18;
@@ -562,11 +607,16 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
     return false;
   }
 
-  Widget _buildCalendarGrid(List<PeriodCycle> cycles, PeriodCycle? mostRecent, int avgCycleLength, DateTime? nextPeriod) {
+  Widget _buildCalendarGrid(
+    List<PeriodCycle> cycles,
+    PeriodCycle? mostRecent,
+    int avgCycleLength,
+    DateTime? nextPeriod,
+  ) {
     final firstDay = DateTime(_focusedMonth.year, _focusedMonth.month, 1);
     final lastDay = DateTime(_focusedMonth.year, _focusedMonth.month + 1, 0);
     final today = DateTime.now();
-    final startOffset = firstDay.weekday - 1; // Mon=0 … Sun=6
+    final startOffset = firstDay.weekday - 1;
     final totalCells = startOffset + lastDay.day;
     final rows = (totalCells / 7).ceil();
     const weekDays = ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'];
@@ -646,7 +696,6 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
                       }
                     }
                   } else if (nextPeriod != null) {
-                    // Check for predicted period
                     final avgPeriod = _getAveragePeriodLength(cycles);
                     final nextEnd = nextPeriod.add(Duration(days: avgPeriod - 1));
                     final d = DateTime(date.year, date.month, date.day);
@@ -790,21 +839,149 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
 
   Widget _buildHistoryTab(List<PeriodCycle> cycles) {
     final mine = cycles.where((c) => c.ownerUid == _uid).toList();
+    final partnerCycles = cycles.where((c) => c.ownerUid != _uid).toList();
+    final hasPartner = _partnerUid != null || partnerCycles.isNotEmpty;
 
-    if (mine.isEmpty) return _buildEmptyState();
+    if (mine.isEmpty && !hasPartner) return _buildEmptyState();
 
-    return ListView.builder(
+    final l10n = AppLocalizations.of(context)!;
+
+    return ListView(
       padding: EdgeInsets.fromLTRB(20.w, 8.h, 20.w, 100.h),
       physics: const BouncingScrollPhysics(),
-      itemCount: mine.length,
-      itemBuilder: (context, i) {
-        final cycle = mine[i];
-        return _CycleCard(
-          cycle: cycle,
-          onTap: () => _openLogScreen(cycle: cycle),
-          onDelete: () => _confirmDelete(cycle),
-        );
-      },
+      children: [
+        // ── Your cycles section ──────────────────────────────────────────
+        _buildSectionHeader(
+          l10n.yourCycles,
+          Icons.person_rounded,
+          AppColors.userColor,
+        ),
+        8.verticalSpace,
+        if (mine.isEmpty)
+          _buildInlineSectionEmpty(l10n.noCyclesLogged, onAdd: () => _openLogScreen())
+        else
+          ...mine.map(
+            (c) => _CycleCard(
+              cycle: c,
+              isPartnerCard: false,
+              onTap: () => _openLogScreen(cycle: c),
+              onDelete: () => _confirmDelete(c),
+            ),
+          ),
+
+        // ── Partner cycles section ───────────────────────────────────────
+        if (hasPartner) ...[
+          20.verticalSpace,
+          _buildSectionHeader(
+            l10n.partnerCycles,
+            Icons.favorite_rounded,
+            AppColors.partnerColor,
+          ),
+          8.verticalSpace,
+          if (partnerCycles.isEmpty)
+            _buildInlineSectionEmpty(
+              l10n.noPartnerCycles,
+              onAdd: _partnerUid != null ? () => _openLogScreen(isPartner: true) : null,
+              addLabel: l10n.logForPartner,
+            )
+          else
+            ...partnerCycles.map(
+              (c) => _CycleCard(
+                cycle: c,
+                isPartnerCard: true,
+                onTap: () => _openLogScreen(cycle: c),
+                onDelete: () => _confirmDelete(c),
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  Widget _buildSectionHeader(String title, IconData icon, Color color) {
+    return Row(
+      children: [
+        Container(
+          padding: EdgeInsets.all(6.r),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(icon, size: 14.r, color: color),
+        ),
+        8.horizontalSpace,
+        Text(
+          title,
+          style: GoogleFonts.outfit(
+            fontSize: 15.sp,
+            fontWeight: FontWeight.w700,
+            color: AppColors.warmBrown,
+          ),
+        ),
+        12.horizontalSpace,
+        Expanded(
+          child: Container(
+            height: 1,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [color.withValues(alpha: 0.2), Colors.transparent],
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildInlineSectionEmpty(
+    String message, {
+    VoidCallback? onAdd,
+    String? addLabel,
+  }) {
+    return Container(
+      margin: EdgeInsets.only(bottom: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
+      decoration: BoxDecoration(
+        color: AppColors.ivoryCard,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: AppColors.champagne),
+      ),
+      child: Row(
+        children: [
+          Text(
+            message,
+            style: GoogleFonts.outfit(
+              fontSize: 13.sp,
+              color: AppColors.softBrown,
+              fontStyle: FontStyle.italic,
+            ),
+          ),
+          if (onAdd != null) ...[
+            const Spacer(),
+            GestureDetector(
+              onTap: () {
+                HapticFeedback.lightImpact();
+                onAdd();
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+                decoration: BoxDecoration(
+                  color: AppColors.cycleColor,
+                  borderRadius: BorderRadius.circular(50.r),
+                ),
+                child: Text(
+                  addLabel ?? '+ Add',
+                  style: GoogleFonts.outfit(
+                    fontSize: 12.sp,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ],
+      ),
     );
   }
 
@@ -840,7 +1017,11 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
       ),
     );
     if (confirmed == true && cycle.id != null) {
-      await _repo.deleteCycle(cycle.id!);
+      if (cycle.ownerUid != _uid) {
+        await _repo.deletePartnerCycle(cycle.ownerUid, cycle.id!);
+      } else {
+        await _repo.deleteCycle(cycle.id!);
+      }
     }
     return confirmed ?? false;
   }
@@ -930,6 +1111,260 @@ class _PeriodTrackingScreenState extends State<PeriodTrackingScreen> {
   }
 }
 
+// ─── Info Bottom Sheet ─────────────────────────────────────────────────────────
+
+class _InfoBottomSheet extends StatelessWidget {
+  final AppLocalizations l10n;
+  const _InfoBottomSheet({required this.l10n});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.cream,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28.r)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Handle
+          Container(
+            margin: EdgeInsets.only(top: 12.h, bottom: 4.h),
+            width: 36.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: AppColors.champagne,
+              borderRadius: BorderRadius.circular(2.r),
+            ),
+          ),
+          // Content
+          Flexible(
+            child: SingleChildScrollView(
+              padding: EdgeInsets.fromLTRB(24.w, 16.h, 24.w, 32.h),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.all(10.r),
+                        decoration: BoxDecoration(
+                          color: AppColors.cycleColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12.r),
+                        ),
+                        child: Icon(Icons.info_outline_rounded,
+                            color: AppColors.cycleColor, size: 20.r),
+                      ),
+                      12.horizontalSpace,
+                      Text(
+                        l10n.howItWorksTitle,
+                        style: GoogleFonts.outfit(
+                          fontSize: 20.sp,
+                          fontWeight: FontWeight.w800,
+                          color: AppColors.warmBrown,
+                        ),
+                      ),
+                    ],
+                  ),
+                  20.verticalSpace,
+
+                  // Colour guide section
+                  _infoSectionTitle(l10n.colorsLegendTitle),
+                  12.verticalSpace,
+                  _colorRow(AppColors.userColor, l10n.yourPeriod, l10n.yourPeriodDesc),
+                  10.verticalSpace,
+                  _colorRow(AppColors.partnerColor, l10n.partnerPeriod, l10n.partnerPeriodDesc),
+                  10.verticalSpace,
+                  _colorRow(AppColors.userColor.withValues(alpha: 0.35), l10n.nextPeriodLabel,
+                      l10n.predictedPeriodDesc),
+                  10.verticalSpace,
+                  _colorRow(Colors.orangeAccent, l10n.fertileWindow, l10n.fertileWindowDesc),
+                  10.verticalSpace,
+                  _colorRow(Colors.green.shade400, l10n.safeWindow, l10n.safeWindowDesc),
+                  20.verticalSpace,
+
+                  // Predictions section
+                  _infoSectionTitle('Predictions'),
+                  10.verticalSpace,
+                  _infoParagraph(Icons.auto_graph_rounded, AppColors.cycleColor,
+                      l10n.predictionsExplained),
+                  16.verticalSpace,
+
+                  // Phases section
+                  _infoSectionTitle('Cycle Phases'),
+                  10.verticalSpace,
+                  _infoParagraph(Icons.loop_rounded, Colors.teal, l10n.phasesExplained),
+                  10.verticalSpace,
+                  _phaseRow(Icons.water_drop_rounded, AppColors.userColor, 'Menstrual', 'Days 1–5'),
+                  6.verticalSpace,
+                  _phaseRow(Icons.spa_rounded, Colors.teal, 'Follicular', 'Days 6–10'),
+                  6.verticalSpace,
+                  _phaseRow(Icons.favorite_rounded, Colors.orangeAccent, 'Ovulatory', 'Days 11–16'),
+                  6.verticalSpace,
+                  _phaseRow(Icons.nightlight_round, AppColors.cycleColor, 'Luteal', 'Days 17–28'),
+                  28.verticalSpace,
+
+                  // Got it button
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      Navigator.of(context).pop();
+                    },
+                    child: Container(
+                      width: double.infinity,
+                      padding: EdgeInsets.symmetric(vertical: 14.h),
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.cycleColor, AppColors.userColor],
+                          begin: Alignment.centerLeft,
+                          end: Alignment.centerRight,
+                        ),
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Center(
+                        child: Text(
+                          l10n.gotIt,
+                          style: GoogleFonts.outfit(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15.sp,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _infoSectionTitle(String title) {
+    return Text(
+      title,
+      style: GoogleFonts.outfit(
+        fontSize: 13.sp,
+        fontWeight: FontWeight.w700,
+        color: AppColors.softBrown,
+        letterSpacing: 0.5,
+      ),
+    );
+  }
+
+  Widget _colorRow(Color color, String label, String description) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: EdgeInsets.only(top: 4.h),
+          child: Container(
+            width: 12.r,
+            height: 12.r,
+            decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+          ),
+        ),
+        10.horizontalSpace,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: GoogleFonts.outfit(
+                  fontSize: 13.sp,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.warmBrown,
+                ),
+              ),
+              Text(
+                description,
+                style: GoogleFonts.outfit(
+                  fontSize: 12.sp,
+                  color: AppColors.softBrown,
+                  height: 1.3,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _infoParagraph(IconData icon, Color color, String text) {
+    return Container(
+      padding: EdgeInsets.all(14.r),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.07),
+        borderRadius: BorderRadius.circular(14.r),
+        border: Border.all(color: color.withValues(alpha: 0.15)),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(icon, size: 16.r, color: color),
+          10.horizontalSpace,
+          Expanded(
+            child: Text(
+              text,
+              style: GoogleFonts.outfit(
+                fontSize: 12.sp,
+                color: AppColors.softBrown,
+                height: 1.4,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _phaseRow(IconData icon, Color color, String phase, String days) {
+    return Row(
+      children: [
+        Container(
+          width: 30.r,
+          height: 30.r,
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(8.r),
+          ),
+          child: Icon(icon, size: 14.r, color: color),
+        ),
+        10.horizontalSpace,
+        Text(
+          phase,
+          style: GoogleFonts.outfit(
+            fontSize: 13.sp,
+            fontWeight: FontWeight.w600,
+            color: AppColors.warmBrown,
+          ),
+        ),
+        const Spacer(),
+        Container(
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(50.r),
+          ),
+          child: Text(
+            days,
+            style: GoogleFonts.outfit(
+              fontSize: 11.sp,
+              color: color,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 // ─── Day Cell ─────────────────────────────────────────────────────────────────
 
 class _DayCell extends StatelessWidget {
@@ -972,7 +1407,11 @@ class _DayCell extends StatelessWidget {
           border: isToday && periodColor == null
               ? Border.all(color: AppColors.cycleColor.withValues(alpha: 0.5), width: 1.5)
               : isPredicted
-              ? Border.all(color: periodColor!.withValues(alpha: 0.4), width: 1, style: BorderStyle.solid)
+              ? Border.all(
+                  color: periodColor!.withValues(alpha: 0.4),
+                  width: 1,
+                  style: BorderStyle.solid,
+                )
               : isFertileWindow && periodColor == null
               ? Border.all(color: Colors.orangeAccent.withValues(alpha: 0.3), width: 1)
               : isSafeWindow && periodColor == null
@@ -1006,10 +1445,16 @@ class _DayCell extends StatelessWidget {
 
 class _CycleCard extends StatelessWidget {
   final PeriodCycle cycle;
+  final bool isPartnerCard;
   final VoidCallback onTap;
   final Future<bool?> Function() onDelete;
 
-  const _CycleCard({required this.cycle, required this.onTap, required this.onDelete});
+  const _CycleCard({
+    required this.cycle,
+    required this.isPartnerCard,
+    required this.onTap,
+    required this.onDelete,
+  });
 
   String _flowLabel(BuildContext context, int l) {
     final l10n = AppLocalizations.of(context)!;
@@ -1026,12 +1471,15 @@ class _CycleCard extends StatelessWidget {
       ? '💧💧💧'
       : '💧💧';
 
+  Color get _accentColor => isPartnerCard ? AppColors.partnerColor : AppColors.userColor;
+
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('MMM d');
     final startStr = fmt.format(cycle.startDate);
     final endStr = cycle.endDate != null ? fmt.format(cycle.endDate!) : 'Ongoing';
     final duration = cycle.endDate != null ? '${cycle.durationDays}d' : '...';
+    final l10n = AppLocalizations.of(context)!;
 
     return Dismissible(
       key: Key(cycle.id ?? UniqueKey().toString()),
@@ -1061,10 +1509,10 @@ class _CycleCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: AppColors.ivoryCard,
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: AppColors.userColor.withValues(alpha: 0.2)),
+            border: Border.all(color: _accentColor.withValues(alpha: 0.2)),
             boxShadow: [
               BoxShadow(
-                color: AppColors.userColor.withValues(alpha: 0.06),
+                color: _accentColor.withValues(alpha: 0.06),
                 blurRadius: 12.r,
                 offset: Offset(0, 3.h),
               ),
@@ -1074,37 +1522,53 @@ class _CycleCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(Icons.calendar_today_rounded, size: 14.r, color: AppColors.userColor),
-                      6.horizontalSpace,
-                      Text(
-                        '$startStr  →  $endStr',
+                  Icon(Icons.calendar_today_rounded, size: 14.r, color: _accentColor),
+                  6.horizontalSpace,
+                  Expanded(
+                    child: Text(
+                      '$startStr  →  $endStr',
+                      style: GoogleFonts.outfit(
+                        fontSize: 15.sp,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.warmBrown,
+                      ),
+                    ),
+                  ),
+                  if (isPartnerCard)
+                    Container(
+                      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
+                      decoration: BoxDecoration(
+                        color: _accentColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(50.r),
+                      ),
+                      child: Text(
+                        l10n.partnerBadge,
                         style: GoogleFonts.outfit(
-                          fontSize: 15.sp,
+                          fontSize: 10.sp,
+                          color: _accentColor,
                           fontWeight: FontWeight.w700,
-                          color: AppColors.warmBrown,
                         ),
                       ),
-                    ],
-                  ),
+                    ),
+                  if (isPartnerCard) 6.horizontalSpace,
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                     decoration: BoxDecoration(
-                      color: AppColors.userColor.withValues(alpha: 0.12),
+                      color: _accentColor.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(50.r),
                     ),
                     child: Text(
                       duration,
                       style: GoogleFonts.outfit(
                         fontSize: 11.sp,
-                        color: AppColors.userColor,
+                        color: _accentColor,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
+                  10.horizontalSpace,
+                  Icon(Icons.edit_rounded, size: 14.r, color: AppColors.softBrown.withValues(alpha: 0.5)),
                 ],
               ),
               10.verticalSpace,
@@ -1129,12 +1593,15 @@ class _CycleCard extends StatelessWidget {
                         (s) => Container(
                           padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 3.h),
                           decoration: BoxDecoration(
-                            color: AppColors.cycleColor.withValues(alpha: 0.1),
+                            color: _accentColor.withValues(alpha: 0.08),
                             borderRadius: BorderRadius.circular(50.r),
                           ),
                           child: Text(
                             s.replaceAll('_', ' '),
-                            style: GoogleFonts.outfit(fontSize: 11.sp, color: AppColors.cycleColor),
+                            style: GoogleFonts.outfit(
+                              fontSize: 11.sp,
+                              color: _accentColor,
+                            ),
                           ),
                         ),
                       )

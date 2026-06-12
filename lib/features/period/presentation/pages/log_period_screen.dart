@@ -24,8 +24,14 @@ const List<Map<String, String>> _kSymptoms = [
 class LogPeriodScreen extends StatefulWidget {
   final PeriodCycle? existingCycle;
   final Future<void> Function(PeriodCycle cycle) onSave;
+  final bool isPartnerCycle;
 
-  const LogPeriodScreen({super.key, this.existingCycle, required this.onSave});
+  const LogPeriodScreen({
+    super.key,
+    this.existingCycle,
+    required this.onSave,
+    this.isPartnerCycle = false,
+  });
 
   @override
   State<LogPeriodScreen> createState() => _LogPeriodScreenState();
@@ -186,8 +192,12 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
           ),
           16.horizontalSpace,
           Text(
-            _isEditing
+            widget.isPartnerCycle && _isEditing
+                ? AppLocalizations.of(context)!.editPartnerCycle
+                : _isEditing
                 ? AppLocalizations.of(context)!.editCycle
+                : widget.isPartnerCycle
+                ? AppLocalizations.of(context)!.logForPartner
                 : AppLocalizations.of(context)!.logPeriod,
             style: GoogleFonts.outfit(
               fontSize: 22.sp,

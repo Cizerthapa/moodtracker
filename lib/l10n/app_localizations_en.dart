@@ -459,4 +459,54 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get saveCycle => 'Save Cycle';
+
+  @override
+  String get yourCycles => 'Your Cycles';
+
+  @override
+  String get partnerCycles => "Partner's Cycles";
+
+  @override
+  String get editPartnerCycle => "Edit Partner's Cycle";
+
+  @override
+  String get noPartnerCycles => 'No partner cycles logged yet';
+
+  @override
+  String get partnerBadge => 'Partner';
+
+  @override
+  String get howItWorksTitle => 'How It Works';
+
+  @override
+  String get colorsLegendTitle => 'Colour Guide';
+
+  @override
+  String get yourPeriodDesc => 'Days your period is active — logged by you.';
+
+  @override
+  String get partnerPeriodDesc => "Days your partner's period is active — logged by them.";
+
+  @override
+  String get predictedPeriodDesc => 'Predicted next period based on your cycle history.';
+
+  @override
+  String get fertileWindowDesc => 'Higher fertility — roughly days 8–19 of your cycle.';
+
+  @override
+  String get safeWindowDesc => 'Lower fertility — before day 8 or after day 19.';
+
+  @override
+  String get predictionsExplained =>
+      'Predictions are calculated from the average of your last 3 cycle lengths. The more you log, the more accurate they become.';
+
+  @override
+  String get phasesExplained =>
+      'Your current phase (Menstrual → Follicular → Ovulatory → Luteal) updates each day based on where you are in your cycle.';
+
+  @override
+  String get gotIt => 'Got it';
+
+  @override
+  String get logForPartner => 'Log for Partner';
 }

@@ -94,4 +94,31 @@ class PeriodRepository {
     await _periodsCollection.doc(id).delete();
     log('Firestore: Cycle deleted successfully', name: 'Firebase');
   }
+
+  // ── Partner editing ───────────────────────────────────────────────────────
+
+  Stream<String?> getPartnerUidStream() =>
+      sl<UserRepository>().getUserProfileStream().map((p) => p?.partnerUid);
+
+  CollectionReference _partnerPeriodsCollection(String partnerUid) =>
+      _firestore.collection('users').doc(partnerUid).collection(AppConstants.periodsCollection);
+
+  Future<void> addPartnerCycle(String partnerUid, PeriodCycle cycle) async {
+    log('Firestore: Adding cycle for partner $partnerUid', name: 'Firebase');
+    await _partnerPeriodsCollection(partnerUid).add(cycle.toFirestore());
+    log('Firestore: Partner cycle added successfully', name: 'Firebase');
+  }
+
+  Future<void> updatePartnerCycle(String partnerUid, PeriodCycle cycle) async {
+    if (cycle.id == null) return;
+    log('Firestore: Updating partner cycle ${cycle.id} for $partnerUid', name: 'Firebase');
+    await _partnerPeriodsCollection(partnerUid).doc(cycle.id).update(cycle.toFirestore());
+    log('Firestore: Partner cycle updated successfully', name: 'Firebase');
+  }
+
+  Future<void> deletePartnerCycle(String partnerUid, String id) async {
+    log('Firestore: Deleting partner cycle $id for $partnerUid', name: 'Firebase');
+    await _partnerPeriodsCollection(partnerUid).doc(id).delete();
+    log('Firestore: Partner cycle deleted successfully', name: 'Firebase');
+  }
 }

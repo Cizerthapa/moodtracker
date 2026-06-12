@@ -917,6 +917,23 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save Cycle'**
   String get saveCycle;
+
+  String get yourCycles;
+  String get partnerCycles;
+  String get editPartnerCycle;
+  String get noPartnerCycles;
+  String get partnerBadge;
+  String get howItWorksTitle;
+  String get colorsLegendTitle;
+  String get yourPeriodDesc;
+  String get partnerPeriodDesc;
+  String get predictedPeriodDesc;
+  String get fertileWindowDesc;
+  String get safeWindowDesc;
+  String get predictionsExplained;
+  String get phasesExplained;
+  String get gotIt;
+  String get logForPartner;
 }
 
 class _AppLocalizationsDelegate

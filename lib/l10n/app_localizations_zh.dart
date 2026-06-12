@@ -451,4 +451,54 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get saveCycle => 'Save Cycle';
+
+  @override
+  String get yourCycles => '我的周期';
+
+  @override
+  String get partnerCycles => '伴侣的周期';
+
+  @override
+  String get editPartnerCycle => '编辑伴侣的周期';
+
+  @override
+  String get noPartnerCycles => '伴侣尚未记录任何周期';
+
+  @override
+  String get partnerBadge => '伴侣';
+
+  @override
+  String get howItWorksTitle => '使用说明';
+
+  @override
+  String get colorsLegendTitle => '颜色说明';
+
+  @override
+  String get yourPeriodDesc => '您的月经活跃天数。';
+
+  @override
+  String get partnerPeriodDesc => '伴侣的月经活跃天数。';
+
+  @override
+  String get predictedPeriodDesc => '根据您的周期历史预测的下次月经。';
+
+  @override
+  String get fertileWindowDesc => '高生育率 — 大约在周期的第8–19天。';
+
+  @override
+  String get safeWindowDesc => '低生育率 — 第8天之前或第19天之后。';
+
+  @override
+  String get predictionsExplained =>
+      '预测根据您最近3个周期的平均值计算。记录越多，预测越准确。';
+
+  @override
+  String get phasesExplained =>
+      '您当前的阶段（月经期 → 卵泡期 → 排卵期 → 黄体期）每天根据您在周期中的位置更新。';
+
+  @override
+  String get gotIt => '明白了';
+
+  @override
+  String get logForPartner => '为伴侣记录';
 }
