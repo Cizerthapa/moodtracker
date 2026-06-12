@@ -918,21 +918,100 @@ abstract class AppLocalizations {
   /// **'Save Cycle'**
   String get saveCycle;
 
+  /// No description provided for @yourCycles.
+  ///
+  /// In en, this message translates to:
+  /// **'Your Cycles'**
   String get yourCycles;
+
+  /// No description provided for @partnerCycles.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner\'s Cycles'**
   String get partnerCycles;
+
+  /// No description provided for @editPartnerCycle.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Partner\'s Cycle'**
   String get editPartnerCycle;
+
+  /// No description provided for @noPartnerCycles.
+  ///
+  /// In en, this message translates to:
+  /// **'No partner cycles logged yet'**
   String get noPartnerCycles;
+
+  /// No description provided for @partnerBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner'**
   String get partnerBadge;
+
+  /// No description provided for @howItWorksTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How It Works'**
   String get howItWorksTitle;
+
+  /// No description provided for @colorsLegendTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Colors Legend'**
   String get colorsLegendTitle;
+
+  /// No description provided for @yourPeriodDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Your active period days.'**
   String get yourPeriodDesc;
+
+  /// No description provided for @partnerPeriodDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Partner\'s active period days.'**
   String get partnerPeriodDesc;
+
+  /// No description provided for @predictedPeriodDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Predicted next period based on your cycle history.'**
   String get predictedPeriodDesc;
+
+  /// No description provided for @fertileWindowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'High fertility — roughly days 8–19 of your cycle.'**
   String get fertileWindowDesc;
+
+  /// No description provided for @safeWindowDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Low fertility — before day 8 or after day 19.'**
   String get safeWindowDesc;
+
+  /// No description provided for @predictionsExplained.
+  ///
+  /// In en, this message translates to:
+  /// **'Predictions are calculated from the average of your last 3 cycles. The more you log, the more accurate they become.'**
   String get predictionsExplained;
+
+  /// No description provided for @phasesExplained.
+  ///
+  /// In en, this message translates to:
+  /// **'Your current phase (Menstrual → Follicular → Ovulatory → Luteal) updates each day based on where you are in your cycle.'**
   String get phasesExplained;
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
   String get gotIt;
+
+  /// No description provided for @logForPartner.
+  ///
+  /// In en, this message translates to:
+  /// **'Log for Partner'**
   String get logForPartner;
 }
 

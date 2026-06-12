@@ -78,5 +78,21 @@
   "periodicMessage3": "あなたが特別だというちょっとしたリマインダー。",
   "periodicMessage4": "今日の気分はどうですか？良いことを願っています！",
   "periodicMessage5": "水を飲みましょう！🥤",
-  "periodicMessage6": "深呼吸して。😌"
+  "periodicMessage6": "深呼吸して。😌",
+  "yourCycles": "あなたの周期",
+  "partnerCycles": "パートナーの周期",
+  "editPartnerCycle": "パートナーの周期を編集",
+  "noPartnerCycles": "パートナーの周期はまだ記録されていません",
+  "partnerBadge": "パートナー",
+  "howItWorksTitle": "使い方",
+  "colorsLegendTitle": "色の説明",
+  "yourPeriodDesc": "あなたの生理活動日数。",
+  "partnerPeriodDesc": "パートナーの生理活動日数。",
+  "predictedPeriodDesc": "周期履歴に基づいて予測された次の生理。",
+  "fertileWindowDesc": "高い妊孕性 — 周期の約8〜19日目。",
+  "safeWindowDesc": "低い妊孕性 — 8日目以前または19日目以降。",
+  "predictionsExplained": "予測は過去3周期の平均から計算されます。記録が増えるほど、精度が高まります。",
+  "phasesExplained": "現在のフェーズ（月経期 → 卵胞期 → 排卵期 → 黄体期）は、周期の位置に基づいて毎日更新されます。",
+  "gotIt": "わかった",
+  "logForPartner": "パートナーのために記録"
 }

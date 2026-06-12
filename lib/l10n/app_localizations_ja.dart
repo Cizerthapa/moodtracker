@@ -453,16 +453,16 @@ class AppLocalizationsJa extends AppLocalizations {
   String get saveCycle => 'Save Cycle';
 
   @override
-  String get yourCycles => '自分のサイクル';
+  String get yourCycles => 'あなたの周期';
 
   @override
-  String get partnerCycles => 'パートナーのサイクル';
+  String get partnerCycles => 'パートナーの周期';
 
   @override
-  String get editPartnerCycle => 'パートナーのサイクルを編集';
+  String get editPartnerCycle => 'パートナーの周期を編集';
 
   @override
-  String get noPartnerCycles => 'パートナーのサイクルはまだ記録されていません';
+  String get noPartnerCycles => 'パートナーの周期はまだ記録されていません';
 
   @override
   String get partnerBadge => 'パートナー';
@@ -474,27 +474,26 @@ class AppLocalizationsJa extends AppLocalizations {
   String get colorsLegendTitle => '色の説明';
 
   @override
-  String get yourPeriodDesc => '生理が続いている日（自分で記録）。';
+  String get yourPeriodDesc => 'あなたの生理活動日数。';
 
   @override
-  String get partnerPeriodDesc => 'パートナーの生理が続いている日。';
+  String get partnerPeriodDesc => 'パートナーの生理活動日数。';
 
   @override
-  String get predictedPeriodDesc => 'サイクル履歴に基づく次の生理予測。';
+  String get predictedPeriodDesc => '周期履歴に基づいて予測された次の生理。';
 
   @override
-  String get fertileWindowDesc => '妊娠しやすい時期 — サイクルの約8〜19日目。';
+  String get fertileWindowDesc => '高い妊孕性 — 周期の約8〜19日目。';
 
   @override
-  String get safeWindowDesc => '妊娠しにくい時期 — 8日目より前か19日目より後。';
+  String get safeWindowDesc => '低い妊孕性 — 8日目以前または19日目以降。';
 
   @override
-  String get predictionsExplained =>
-      '予測は直近3サイクルの平均から計算されます。記録が増えるほど精度が上がります。';
+  String get predictionsExplained => '予測は過去3周期の平均から計算されます。記録が増えるほど、精度が高まります。';
 
   @override
   String get phasesExplained =>
-      '現在のフェーズ（月経期 → 卵胞期 → 排卵期 → 黄体期）はサイクル内の位置に基づいて毎日更新されます。';
+      '現在のフェーズ（月経期 → 卵胞期 → 排卵期 → 黄体期）は、周期の位置に基づいて毎日更新されます。';
 
   @override
   String get gotIt => 'わかった';

@@ -489,12 +489,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get safeWindowDesc => '低生育率 — 第8天之前或第19天之后。';
 
   @override
-  String get predictionsExplained =>
-      '预测根据您最近3个周期的平均值计算。记录越多，预测越准确。';
+  String get predictionsExplained => '预测根据您最近3个周期的平均值计算。记录越多，预测越准确。';
 
   @override
-  String get phasesExplained =>
-      '您当前的阶段（月经期 → 卵泡期 → 排卵期 → 黄体期）每天根据您在周期中的位置更新。';
+  String get phasesExplained => '您当前的阶段（月经期 → 卵泡期 → 排卵期 → 黄体期）每天根据您在周期中的位置更新。';
 
   @override
   String get gotIt => '明白了';

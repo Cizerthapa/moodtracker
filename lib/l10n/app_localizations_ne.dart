@@ -460,52 +460,53 @@ class AppLocalizationsNe extends AppLocalizations {
   String get saveCycle => 'चक्र सुरक्षित गर्नुहोस्';
 
   @override
-  String get yourCycles => 'तपाईंका चक्रहरू';
+  String get yourCycles => 'तपाईंको चक्र';
 
   @override
-  String get partnerCycles => 'साथीका चक्रहरू';
+  String get partnerCycles => 'साथीको चक्र';
 
   @override
   String get editPartnerCycle => 'साथीको चक्र सम्पादन गर्नुहोस्';
 
   @override
-  String get noPartnerCycles => 'अहिलेसम्म साथीको कुनै चक्र लग गरिएको छैन';
+  String get noPartnerCycles => 'साथीले अझै कुनै चक्र दर्ता गरेका छैनन्';
 
   @override
   String get partnerBadge => 'साथी';
 
   @override
-  String get howItWorksTitle => 'कसरी काम गर्छ';
+  String get howItWorksTitle => 'यसरी काम गर्छ';
 
   @override
-  String get colorsLegendTitle => 'रंग मार्गदर्शन';
+  String get colorsLegendTitle => 'रंगहरूको विवरण';
 
   @override
-  String get yourPeriodDesc => 'तपाईंको महिनावारी सक्रिय रहेका दिनहरू।';
+  String get yourPeriodDesc => 'तपाईंको सक्रिय महिनावारी दिनहरू।';
 
   @override
-  String get partnerPeriodDesc => 'तपाईंको साथीको महिनावारी सक्रिय रहेका दिनहरू।';
+  String get partnerPeriodDesc => 'साथीको सक्रिय महिनावारी दिनहरू।';
 
   @override
-  String get predictedPeriodDesc => 'तपाईंको चक्र इतिहासमा आधारित अनुमानित अर्को महिनावारी।';
+  String get predictedPeriodDesc =>
+      'तपाईंको चक्र इतिहासमा आधारित अनुमानित अर्को महिनावारी।';
 
   @override
-  String get fertileWindowDesc => 'उच्च प्रजनन क्षमता — चक्रका लगभग ८–१९ दिन।';
+  String get fertileWindowDesc => 'उच्च प्रजनन क्षमता — लगभग चक्रको ८–१९ दिन।';
 
   @override
   String get safeWindowDesc => 'कम प्रजनन क्षमता — ८ दिन अघि वा १९ दिन पछि।';
 
   @override
   String get predictionsExplained =>
-      'अनुमान तपाईंका पछिल्ला ३ चक्रको औसतबाट गणना गरिन्छ। जति बढी लग गर्नुहुन्छ, उति सटीक हुन्छ।';
+      'अनुमान तपाईंको पछिल्लो ३ चक्रको औसतबाट गणना गरिन्छ। जति बढी दर्ता गर्नुहुन्छ, त्यति नै सटीक हुन्छ।';
 
   @override
   String get phasesExplained =>
-      'तपाईंको हालको चरण (रजस्वला → फोलिकुलर → ओभुलेटरी → ल्युटियल) तपाईंको चक्रमा हुनुभएको स्थानका आधारमा प्रतिदिन अद्यावधिक हुन्छ।';
+      'तपाईंको वर्तमान चरण (महिनावारी → फोलिकुलर → ओभुलेटरी → लुटियल) चक्रको स्थानमा आधारित प्रत्येक दिन अपडेट हुन्छ।';
 
   @override
   String get gotIt => 'बुझें';
 
   @override
-  String get logForPartner => 'साथीको लागि लग गर्नुहोस्';
+  String get logForPartner => 'साथीका लागि दर्ता गर्नुहोस्';
 }

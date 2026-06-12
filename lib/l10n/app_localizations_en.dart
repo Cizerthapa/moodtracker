@@ -464,10 +464,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get yourCycles => 'Your Cycles';
 
   @override
-  String get partnerCycles => "Partner's Cycles";
+  String get partnerCycles => 'Partner\'s Cycles';
 
   @override
-  String get editPartnerCycle => "Edit Partner's Cycle";
+  String get editPartnerCycle => 'Edit Partner\'s Cycle';
 
   @override
   String get noPartnerCycles => 'No partner cycles logged yet';
@@ -479,26 +479,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get howItWorksTitle => 'How It Works';
 
   @override
-  String get colorsLegendTitle => 'Colour Guide';
+  String get colorsLegendTitle => 'Colors Legend';
 
   @override
-  String get yourPeriodDesc => 'Days your period is active — logged by you.';
+  String get yourPeriodDesc => 'Your active period days.';
 
   @override
-  String get partnerPeriodDesc => "Days your partner's period is active — logged by them.";
+  String get partnerPeriodDesc => 'Partner\'s active period days.';
 
   @override
-  String get predictedPeriodDesc => 'Predicted next period based on your cycle history.';
+  String get predictedPeriodDesc =>
+      'Predicted next period based on your cycle history.';
 
   @override
-  String get fertileWindowDesc => 'Higher fertility — roughly days 8–19 of your cycle.';
+  String get fertileWindowDesc =>
+      'High fertility — roughly days 8–19 of your cycle.';
 
   @override
-  String get safeWindowDesc => 'Lower fertility — before day 8 or after day 19.';
+  String get safeWindowDesc => 'Low fertility — before day 8 or after day 19.';
 
   @override
   String get predictionsExplained =>
-      'Predictions are calculated from the average of your last 3 cycle lengths. The more you log, the more accurate they become.';
+      'Predictions are calculated from the average of your last 3 cycles. The more you log, the more accurate they become.';
 
   @override
   String get phasesExplained =>

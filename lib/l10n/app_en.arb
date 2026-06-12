@@ -157,5 +157,21 @@
   "notesOptional": "Notes (optional)",
   "notesHint": "Any notes about this cycle...",
   "updateCycle": "Update Cycle",
-  "saveCycle": "Save Cycle"
+  "saveCycle": "Save Cycle",
+  "yourCycles": "Your Cycles",
+  "partnerCycles": "Partner's Cycles",
+  "editPartnerCycle": "Edit Partner's Cycle",
+  "noPartnerCycles": "No partner cycles logged yet",
+  "partnerBadge": "Partner",
+  "howItWorksTitle": "How It Works",
+  "colorsLegendTitle": "Colors Legend",
+  "yourPeriodDesc": "Your active period days.",
+  "partnerPeriodDesc": "Partner's active period days.",
+  "predictedPeriodDesc": "Predicted next period based on your cycle history.",
+  "fertileWindowDesc": "High fertility — roughly days 8–19 of your cycle.",
+  "safeWindowDesc": "Low fertility — before day 8 or after day 19.",
+  "predictionsExplained": "Predictions are calculated from the average of your last 3 cycles. The more you log, the more accurate they become.",
+  "phasesExplained": "Your current phase (Menstrual → Follicular → Ovulatory → Luteal) updates each day based on where you are in your cycle.",
+  "gotIt": "Got it",
+  "logForPartner": "Log for Partner"
 }

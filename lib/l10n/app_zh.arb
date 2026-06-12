@@ -78,5 +78,21 @@
   "periodicMessage3": "一个小提醒：你是特别的。",
   "periodicMessage4": "你今天的心情好吗？希望棒极了！",
   "periodicMessage5": "喝点水吧！🥤",
-  "periodicMessage6": "深呼吸。😌"
+  "periodicMessage6": "深呼吸。😌",
+  "yourCycles": "我的周期",
+  "partnerCycles": "伴侣的周期",
+  "editPartnerCycle": "编辑伴侣的周期",
+  "noPartnerCycles": "伴侣尚未记录任何周期",
+  "partnerBadge": "伴侣",
+  "howItWorksTitle": "使用说明",
+  "colorsLegendTitle": "颜色说明",
+  "yourPeriodDesc": "您的月经活跃天数。",
+  "partnerPeriodDesc": "伴侣的月经活跃天数。",
+  "predictedPeriodDesc": "根据您的周期历史预测的下次月经。",
+  "fertileWindowDesc": "高生育率 — 大约在周期的第8–19天。",
+  "safeWindowDesc": "低生育率 — 第8天之前或第19天之后。",
+  "predictionsExplained": "预测根据您最近3个周期的平均值计算。记录越多，预测越准确。",
+  "phasesExplained": "您当前的阶段（月经期 → 卵泡期 → 排卵期 → 黄体期）每天根据您在周期中的位置更新。",
+  "gotIt": "明白了",
+  "logForPartner": "为伴侣记录"
 }
