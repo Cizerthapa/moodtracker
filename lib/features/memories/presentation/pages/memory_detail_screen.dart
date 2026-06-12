@@ -9,9 +9,9 @@ import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
 import 'package:moodtrack/features/memories/data/repositories/memories_repository.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 class MemoryDetailScreen extends StatefulWidget {
   final MemoryModel memory;
@@ -21,8 +21,7 @@ class MemoryDetailScreen extends StatefulWidget {
   State<MemoryDetailScreen> createState() => _MemoryDetailScreenState();
 }
 
-class _MemoryDetailScreenState extends State<MemoryDetailScreen>
-    with TickerProviderStateMixin {
+class _MemoryDetailScreenState extends State<MemoryDetailScreen> with TickerProviderStateMixin {
   late TextEditingController _titleController;
   late TextEditingController _descController;
   late TextEditingController _herFavController;
@@ -51,14 +50,13 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     )..repeat(reverse: true);
-    _heartAnim = Tween<double>(begin: 1.0, end: 1.22).animate(
-      CurvedAnimation(parent: _heartController, curve: Curves.easeInOut),
-    );
+    _heartAnim = Tween<double>(
+      begin: 1.0,
+      end: 1.22,
+    ).animate(CurvedAnimation(parent: _heartController, curve: Curves.easeInOut));
 
-    _fadeController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 600),
-    )..forward();
+    _fadeController = AnimationController(vsync: this, duration: const Duration(milliseconds: 600))
+      ..forward();
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _loadLocalImages();
   }
@@ -115,10 +113,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
     final picked = await picker.pickMultiImage(imageQuality: 70);
     if (picked.isNotEmpty) {
       int availableSlots = 25 - _additionalImages.length;
-      final toAdd = picked
-          .take(availableSlots)
-          .map((x) => File(x.path))
-          .toList();
+      final toAdd = picked.take(availableSlots).map((x) => File(x.path)).toList();
       setState(() {
         _additionalImages.addAll(toAdd);
       });
@@ -126,9 +121,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                'Only $availableSlots more images could be added, max 25 reached.',
-              ),
+              content: Text('Only $availableSlots more images could be added, max 25 reached.'),
             ),
           );
         }
@@ -159,12 +152,8 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
       final updatedMemory = _memory.copyWith(
         title: _titleController.text.trim(),
         description: _descController.text.trim(),
-        herFavStory: _herFavController.text.trim().isEmpty
-            ? null
-            : _herFavController.text.trim(),
-        hisFavStory: _hisFavController.text.trim().isEmpty
-            ? null
-            : _hisFavController.text.trim(),
+        herFavStory: _herFavController.text.trim().isEmpty ? null : _herFavController.text.trim(),
+        hisFavStory: _hisFavController.text.trim().isEmpty ? null : _hisFavController.text.trim(),
         imageCount: count,
       );
 
@@ -201,9 +190,9 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
             Navigator.of(context).pop(true); // Close detail screen and return true
           } else {
             Navigator.of(context).pop(); // Close dialog
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text((result as Failure).message)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text((result as Failure).message)));
           }
         }
       }
@@ -271,9 +260,7 @@ class _MemoryDetailScreenState extends State<MemoryDetailScreen>
                   padding: EdgeInsets.only(right: 8.w),
                   child: _GlassButton(
                     icon: _isEditing ? Icons.check_rounded : Icons.edit_rounded,
-                    onTap: () => _isEditing
-                        ? _updateMemory()
-                        : setState(() => _isEditing = true),
+                    onTap: () => _isEditing ? _updateMemory() : setState(() => _isEditing = true),
                   ),
                 ),
                 Padding(
@@ -357,9 +344,7 @@ class _HeroSection extends StatelessWidget {
             options: MapOptions(
               initialCenter: location,
               initialZoom: 15.0,
-              interactionOptions: const InteractionOptions(
-                flags: InteractiveFlag.none,
-              ),
+              interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
             ),
             children: [
               TileLayer(
@@ -379,9 +364,7 @@ class _HeroSection extends StatelessWidget {
                         isUnique ? Icons.star_rounded : Icons.favorite_rounded,
                         color: AppColors.roseDeep,
                         size: 42.sp,
-                        shadows: [
-                          Shadow(color: Colors.white, blurRadius: 16.r),
-                        ],
+                        shadows: [Shadow(color: Colors.white, blurRadius: 16.r)],
                       ),
                     ),
                   ),
@@ -446,11 +429,7 @@ class _HeroSection extends StatelessWidget {
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
                 stops: const [0.0, 0.5, 1.0],
-                colors: [
-                  Colors.black.withValues(alpha: 0.15),
-                  Colors.transparent,
-                  AppColors.cream,
-                ],
+                colors: [Colors.black.withValues(alpha: 0.15), Colors.transparent, AppColors.cream],
               ),
             ),
           ),
@@ -461,11 +440,7 @@ class _HeroSection extends StatelessWidget {
           Positioned(
             bottom: 70.h,
             right: 20.w,
-            child: _MapPip(
-              location: location,
-              heartAnim: heartAnim,
-              isUnique: isUnique,
-            ),
+            child: _MapPip(location: location, heartAnim: heartAnim, isUnique: isUnique),
           ),
       ],
     );
@@ -480,16 +455,8 @@ class _MemoryImage extends StatelessWidget {
   Widget build(BuildContext context) {
     final isNetwork = url.startsWith('http');
     return isNetwork
-        ? Image.network(
-            url,
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => _ImageFallback(),
-          )
-        : Image.file(
-            File(url),
-            fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => _ImageFallback(),
-          );
+        ? Image.network(url, fit: BoxFit.cover, errorBuilder: (_, _, _) => _ImageFallback())
+        : Image.file(File(url), fit: BoxFit.cover, errorBuilder: (_, _, _) => _ImageFallback());
   }
 }
 
@@ -499,11 +466,7 @@ class _ImageFallback extends StatelessWidget {
     return Container(
       color: AppColors.champagne,
       child: Center(
-        child: Icon(
-          Icons.broken_image_outlined,
-          color: AppColors.softBrown,
-          size: 48.sp,
-        ),
+        child: Icon(Icons.broken_image_outlined, color: AppColors.softBrown, size: 48.sp),
       ),
     );
   }
@@ -514,11 +477,7 @@ class _MapPip extends StatelessWidget {
   final Animation<double> heartAnim;
   final bool isUnique;
 
-  const _MapPip({
-    required this.location,
-    required this.heartAnim,
-    required this.isUnique,
-  });
+  const _MapPip({required this.location, required this.heartAnim, required this.isUnique});
 
   @override
   Widget build(BuildContext context) {
@@ -533,9 +492,7 @@ class _MapPip extends StatelessWidget {
               options: MapOptions(
                 initialCenter: location,
                 initialZoom: 14.0,
-                interactionOptions: const InteractionOptions(
-                  flags: InteractiveFlag.none,
-                ),
+                interactionOptions: const InteractionOptions(flags: InteractiveFlag.none),
               ),
               children: [
                 TileLayer(
@@ -552,14 +509,10 @@ class _MapPip extends StatelessWidget {
                       child: ScaleTransition(
                         scale: heartAnim,
                         child: Icon(
-                          isUnique
-                              ? Icons.star_rounded
-                              : Icons.favorite_rounded,
+                          isUnique ? Icons.star_rounded : Icons.favorite_rounded,
                           color: AppColors.roseDeep,
                           size: 20.sp,
-                          shadows: [
-                            Shadow(color: Colors.white, blurRadius: 8.r),
-                          ],
+                          shadows: [Shadow(color: Colors.white, blurRadius: 8.r)],
                         ),
                       ),
                     ),
@@ -572,10 +525,7 @@ class _MapPip extends StatelessWidget {
               child: DecoratedBox(
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(16.r),
-                  border: Border.all(
-                    color: Colors.white.withValues(alpha: 0.6),
-                    width: 1.5,
-                  ),
+                  border: Border.all(color: Colors.white.withValues(alpha: 0.6), width: 1.5),
                 ),
               ),
             ),
@@ -646,11 +596,7 @@ class _ViewPanel extends StatelessWidget {
           // ── Date pill ────────────────────────────────────────────────
           Row(
             children: [
-              Icon(
-                Icons.schedule_rounded,
-                size: 13.sp,
-                color: AppColors.roseDust,
-              ),
+              Icon(Icons.schedule_rounded, size: 13.sp, color: AppColors.roseDust),
               6.horizontalSpace,
               Text(
                 formatDate(memory.memoryDate ?? memory.timestamp),
@@ -716,11 +662,7 @@ class _ViewPanel extends StatelessWidget {
                         fit: BoxFit.cover,
                       ),
                       boxShadow: [
-                        BoxShadow(
-                          color: Colors.black12,
-                          blurRadius: 8.r,
-                          offset: Offset(0, 4.h),
-                        ),
+                        BoxShadow(color: Colors.black12, blurRadius: 8.r, offset: Offset(0, 4.h)),
                       ],
                     ),
                   );
@@ -787,23 +729,11 @@ class _EditPanel extends StatelessWidget {
             fontWeight: FontWeight.w600,
           ),
           16.verticalSpace,
-          _StyledField(
-            controller: descController,
-            label: 'Short Note / Description',
-            maxLines: 4,
-          ),
+          _StyledField(controller: descController, label: 'Short Note / Description', maxLines: 4),
           16.verticalSpace,
-          _StyledField(
-            controller: herFavController,
-            label: 'Her Favorite Story',
-            maxLines: 3,
-          ),
+          _StyledField(controller: herFavController, label: 'Her Favorite Story', maxLines: 3),
           16.verticalSpace,
-          _StyledField(
-            controller: hisFavController,
-            label: 'His Favorite Story',
-            maxLines: 3,
-          ),
+          _StyledField(controller: hisFavController, label: 'His Favorite Story', maxLines: 3),
           24.verticalSpace,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -818,17 +748,10 @@ class _EditPanel extends StatelessWidget {
               ),
               TextButton.icon(
                 onPressed: onPickImages,
-                icon: Icon(
-                  Icons.add_a_photo_rounded,
-                  size: 16.sp,
-                  color: AppColors.roseDeep,
-                ),
+                icon: Icon(Icons.add_a_photo_rounded, size: 16.sp, color: AppColors.roseDeep),
                 label: Text(
                   'Add Photos',
-                  style: GoogleFonts.outfit(
-                    color: AppColors.roseDeep,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold),
                 ),
               ),
             ],
@@ -864,9 +787,7 @@ class _EditPanel extends StatelessWidget {
                             decoration: BoxDecoration(
                               color: Colors.white,
                               shape: BoxShape.circle,
-                              boxShadow: [
-                                BoxShadow(color: Colors.black26, blurRadius: 4),
-                              ],
+                              boxShadow: [BoxShadow(color: Colors.black26, blurRadius: 4)],
                             ),
                             child: Icon(
                               Icons.close_rounded,
@@ -891,16 +812,11 @@ class _EditPanel extends StatelessWidget {
                     foregroundColor: AppColors.softBrown,
                     side: BorderSide(color: AppColors.champagne, width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 15.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   ),
                   child: Text(
                     'Cancel',
-                    style: GoogleFonts.outfit(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.w500,
-                    ),
+                    style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
@@ -914,17 +830,12 @@ class _EditPanel extends StatelessWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: EdgeInsets.symmetric(vertical: 15.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   ),
                   icon: Icon(Icons.check_rounded, size: 18.sp),
                   label: Text(
                     'Save Changes',
-                    style: GoogleFonts.outfit(
-                      fontSize: 15.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: GoogleFonts.outfit(fontSize: 15.sp, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
@@ -945,16 +856,10 @@ class _UniqueBadge extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [
-            AppColors.roseDeep.withValues(alpha: 0.15),
-            AppColors.champagne,
-          ],
+          colors: [AppColors.roseDeep.withValues(alpha: 0.15), AppColors.champagne],
         ),
         borderRadius: BorderRadius.circular(50.r),
-        border: Border.all(
-          color: AppColors.roseDust.withValues(alpha: 0.4),
-          width: 1,
-        ),
+        border: Border.all(color: AppColors.roseDust.withValues(alpha: 0.4), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1155,10 +1060,7 @@ class _LoveNoteCard extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.ivoryCard,
-            AppColors.champagne.withValues(alpha: 0.5),
-          ],
+          colors: [AppColors.ivoryCard, AppColors.champagne.withValues(alpha: 0.5)],
         ),
         borderRadius: BorderRadius.circular(28.r),
         border: Border.all(color: AppColors.champagne),
@@ -1181,11 +1083,7 @@ class _LoveNoteCard extends StatelessWidget {
                 color: AppColors.roseDust.withValues(alpha: 0.5),
               ),
               6.horizontalSpace,
-              Icon(
-                Icons.favorite_rounded,
-                size: 16.sp,
-                color: AppColors.roseDust,
-              ),
+              Icon(Icons.favorite_rounded, size: 16.sp, color: AppColors.roseDust),
               6.horizontalSpace,
               Icon(
                 Icons.favorite_rounded,
@@ -1196,7 +1094,7 @@ class _LoveNoteCard extends StatelessWidget {
           ),
           14.verticalSpace,
           Text(
-            AppLocalizations.of(context)!.loveNoteText,
+            context.l10n.loveNoteText,
             textAlign: TextAlign.center,
             style: GoogleFonts.cormorantGaramond(
               fontStyle: FontStyle.italic,
@@ -1273,10 +1171,7 @@ class _StyledField extends StatelessWidget {
       cursorColor: AppColors.roseDeep,
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: GoogleFonts.outfit(
-          color: AppColors.softBrown,
-          fontSize: 13.sp,
-        ),
+        labelStyle: GoogleFonts.outfit(color: AppColors.softBrown, fontSize: 13.sp),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(14.r),
           borderSide: BorderSide(color: AppColors.champagne, width: 1.5),
@@ -1322,11 +1217,7 @@ class _DeleteSheet extends StatelessWidget {
               color: AppColors.roseDeep.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              Icons.delete_outline_rounded,
-              color: AppColors.roseDeep,
-              size: 26.sp,
-            ),
+            child: Icon(Icons.delete_outline_rounded, color: AppColors.roseDeep, size: 26.sp),
           ),
           18.verticalSpace,
           Text(
@@ -1341,11 +1232,7 @@ class _DeleteSheet extends StatelessWidget {
           Text(
             'This memory will be gone forever.\nAre you sure?',
             textAlign: TextAlign.center,
-            style: GoogleFonts.outfit(
-              fontSize: 14.sp,
-              color: AppColors.softBrown,
-              height: 1.5,
-            ),
+            style: GoogleFonts.outfit(fontSize: 14.sp, color: AppColors.softBrown, height: 1.5),
           ),
           28.verticalSpace,
           Row(
@@ -1357,16 +1244,11 @@ class _DeleteSheet extends StatelessWidget {
                     foregroundColor: AppColors.softBrown,
                     side: BorderSide(color: AppColors.champagne, width: 1.5),
                     padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   ),
                   child: Text(
                     'Keep It',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: GoogleFonts.outfit(fontSize: 14.sp, fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
@@ -1379,16 +1261,11 @@ class _DeleteSheet extends StatelessWidget {
                     foregroundColor: Colors.white,
                     elevation: 0,
                     padding: EdgeInsets.symmetric(vertical: 14.h),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14.r),
-                    ),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14.r)),
                   ),
                   child: Text(
                     'Let Go',
-                    style: GoogleFonts.outfit(
-                      fontSize: 14.sp,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: GoogleFonts.outfit(fontSize: 14.sp, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),

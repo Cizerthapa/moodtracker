@@ -15,6 +15,7 @@ import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:moodtrack/features/journal/data/repositories/journal_repository.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/error/result.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 // Mood metadata matching the original NotesScreen style
 List<Map<String, dynamic>> _getJournalMoods(AppLocalizations l10n) => [
@@ -122,7 +123,7 @@ class _JournalScreenState extends State<JournalScreen> with SingleTickerProvider
         'onSave': (String? title, String text, String emoji) async {
           await _addJournal(title, text, emoji);
         },
-        'moods': _getJournalMoods(AppLocalizations.of(context)!),
+        'moods': _getJournalMoods(context.l10n),
         'isEditing': false,
       },
     );
@@ -141,7 +142,7 @@ class _JournalScreenState extends State<JournalScreen> with SingleTickerProvider
             encrypt: isEncrypted,
           );
         },
-        'moods': _getJournalMoods(AppLocalizations.of(context)!),
+        'moods': _getJournalMoods(context.l10n),
         'initialTitle': title,
         'initialText': text,
         'initialMood': emoji,
@@ -170,7 +171,7 @@ class _JournalScreenState extends State<JournalScreen> with SingleTickerProvider
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            AppLocalizations.of(context)!.journalHeader,
+                            context.l10n.journalHeader,
                             style: GoogleFonts.outfit(
                               fontSize: 34.sp,
                               fontWeight: FontWeight.w800,
@@ -189,7 +190,7 @@ class _JournalScreenState extends State<JournalScreen> with SingleTickerProvider
                               ),
                               6.horizontalSpace,
                               Text(
-                                AppLocalizations.of(context)!.journalSubHeader,
+                                context.l10n.journalSubHeader,
                                 style: GoogleFonts.outfit(
                                   fontStyle: FontStyle.italic,
                                   fontSize: 13.sp,
@@ -362,7 +363,6 @@ class _JournalScreenState extends State<JournalScreen> with SingleTickerProvider
       padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
       itemCount: docs.length,
       itemBuilder: (context, index) {
-        final l10n = AppLocalizations.of(context)!;
         final doc = docs[index];
         final decryptedText = _repository.decryptIfNeeded({
           'text': doc.text,
@@ -373,7 +373,7 @@ class _JournalScreenState extends State<JournalScreen> with SingleTickerProvider
           'encrypted': doc.encrypted,
         }, isTitle: true);
         final emoji = doc.mood.isEmpty ? '😐' : doc.mood;
-        final meta = _moodMeta(emoji, l10n);
+        final meta = _moodMeta(emoji, AppLocalizations.of(context)!);
         final ts = doc.timestamp;
         final date = ts ?? DateTime.now();
         final formattedDate = DateFormat('MMM d · h:mm a').format(date);
@@ -767,7 +767,7 @@ class _JournalEmptyState extends StatelessWidget {
             Text('📖', style: TextStyle(fontSize: 48.sp)),
             18.verticalSpace,
             Text(
-              AppLocalizations.of(context)!.journalEmptyTitle,
+              context.l10n.journalEmptyTitle,
               style: GoogleFonts.outfit(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.bold,
@@ -776,7 +776,7 @@ class _JournalEmptyState extends StatelessWidget {
             ),
             10.verticalSpace,
             Text(
-              AppLocalizations.of(context)!.journalEmptySubtitle,
+              context.l10n.journalEmptySubtitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
@@ -802,7 +802,7 @@ class _JournalEmptyState extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  AppLocalizations.of(context)!.writeANoteButton,
+                  context.l10n.writeANoteButton,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

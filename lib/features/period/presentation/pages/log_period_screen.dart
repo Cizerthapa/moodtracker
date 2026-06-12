@@ -6,9 +6,9 @@ import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/features/period/domain/model/period_cycle_model.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:moodtrack/core/di/service_locator.dart';
 import 'package:moodtrack/core/services/activity_log_service.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 // Removed local color constants in favor of AppColors.cycleColor and AppColors.userColor
 
@@ -140,13 +140,13 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _SectionLabel(text: AppLocalizations.of(context)!.dates),
+                    _SectionLabel(text: context.l10n.dates),
                     10.verticalSpace,
                     Row(
                       children: [
                         Expanded(
                           child: _DateTile(
-                            label: AppLocalizations.of(context)!.start,
+                            label: context.l10n.start,
                             date: _startDate,
                             onTap: () => _pickDate(isStart: true),
                           ),
@@ -154,7 +154,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                         12.horizontalSpace,
                         Expanded(
                           child: _DateTile(
-                            label: AppLocalizations.of(context)!.endOptional,
+                            label: context.l10n.endOptional,
                             date: _endDate,
                             onTap: () => _pickDate(isStart: false),
                             onClear: _endDate != null
@@ -165,15 +165,15 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                       ],
                     ),
                     24.verticalSpace,
-                    _SectionLabel(text: AppLocalizations.of(context)!.flowLevel),
+                    _SectionLabel(text: context.l10n.flowLevel),
                     10.verticalSpace,
                     _buildFlowSelector(),
                     24.verticalSpace,
-                    _SectionLabel(text: AppLocalizations.of(context)!.symptoms),
+                    _SectionLabel(text: context.l10n.symptoms),
                     10.verticalSpace,
                     _buildSymptomChips(),
                     24.verticalSpace,
-                    _SectionLabel(text: AppLocalizations.of(context)!.notesOptional),
+                    _SectionLabel(text: context.l10n.notesOptional),
                     10.verticalSpace,
                     _buildNotesField(),
                     32.verticalSpace,
@@ -188,10 +188,12 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
     );
   }
 
-
   Widget _buildFlowSelector() {
-    final l10n = AppLocalizations.of(context)!;
-    final labels = {1: l10n.lightFlow, 2: l10n.mediumFlow, 3: l10n.heavyFlow};
+    final labels = {
+      1: context.l10n.lightFlow,
+      2: context.l10n.mediumFlow,
+      3: context.l10n.heavyFlow,
+    };
     const emojis = {1: '💧', 2: '💧💧', 3: '💧💧💧'};
 
     return Row(
@@ -295,7 +297,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
         maxLines: 4,
         style: GoogleFonts.outfit(fontSize: 14.sp, color: AppColors.warmBrown),
         decoration: InputDecoration(
-          hintText: AppLocalizations.of(context)!.notesHint,
+          hintText: context.l10n.notesHint,
           hintStyle: GoogleFonts.outfit(
             color: AppColors.softBrown.withValues(alpha: 0.6),
             fontSize: 14.sp,
@@ -336,9 +338,7 @@ class _LogPeriodScreenState extends State<LogPeriodScreen> {
                   child: const CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                 )
               : Text(
-                  _isEditing
-                      ? AppLocalizations.of(context)!.updateCycle
-                      : AppLocalizations.of(context)!.saveCycle,
+                  _isEditing ? context.l10n.updateCycle : context.l10n.saveCycle,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
@@ -366,14 +366,13 @@ class _LogPeriodHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     final title = isPartnerCycle && isEditing
-        ? l10n.editPartnerCycle
+        ? context.l10n.editPartnerCycle
         : isEditing
-        ? l10n.editCycle
+        ? context.l10n.editCycle
         : isPartnerCycle
-        ? l10n.logForPartner
-        : l10n.logPeriod;
+        ? context.l10n.logForPartner
+        : context.l10n.logPeriod;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
@@ -468,9 +467,7 @@ class _DateTile extends StatelessWidget {
             ),
             4.verticalSpace,
             Text(
-              hasDate
-                  ? DateFormat('MMM d, yyyy').format(date!)
-                  : AppLocalizations.of(context)!.tapToSet,
+              hasDate ? DateFormat('MMM d, yyyy').format(date!) : context.l10n.tapToSet,
               style: GoogleFonts.outfit(
                 fontSize: 14.sp,
                 fontWeight: hasDate ? FontWeight.w700 : FontWeight.w400,

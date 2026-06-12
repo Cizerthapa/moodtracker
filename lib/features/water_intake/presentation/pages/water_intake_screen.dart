@@ -15,6 +15,7 @@ import 'package:moodtrack/core/error/result.dart';
 
 import 'package:moodtrack/core/widgets/shimmer_loading.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 enum DrinkType {
   water,
@@ -353,7 +354,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
-                          AppLocalizations.of(context)!.waterIntakeHeader,
+                          context.l10n.waterIntakeHeader,
                           style: GoogleFonts.outfit(
                             fontSize: 34.sp,
                             fontWeight: FontWeight.w800,
@@ -538,7 +539,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    AppLocalizations.of(context)!.today,
+                    context.l10n.today,
                     style: GoogleFonts.outfit(
                       fontStyle: FontStyle.italic,
                       color: AppColors.softBrown,
@@ -571,7 +572,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
           Align(
             alignment: Alignment.centerLeft,
             child: Text(
-              AppLocalizations.of(context)!.selectBeverage,
+              context.l10n.selectBeverage,
               style: GoogleFonts.outfit(
                 fontSize: 20.sp,
                 fontWeight: FontWeight.w700,
@@ -684,7 +685,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
             Icon(Icons.history_rounded, size: 48.r, color: AppColors.champagne),
             16.verticalSpace,
             Text(
-              AppLocalizations.of(context)!.noHistory,
+              context.l10n.noHistory,
               style: GoogleFonts.outfit(
                 color: AppColors.softBrown,
                 fontStyle: FontStyle.italic,
@@ -855,7 +856,7 @@ class _WaterIntakeScreenState extends State<WaterIntakeScreen>
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            AppLocalizations.of(context)!.last7Days,
+            context.l10n.last7Days,
             style: GoogleFonts.outfit(
               fontSize: 20.sp,
               fontWeight: FontWeight.w700,

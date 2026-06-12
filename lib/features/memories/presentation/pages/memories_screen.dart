@@ -4,7 +4,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/features/memories/domain/model/memories_model.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
@@ -16,6 +15,7 @@ import 'package:moodtrack/core/di/service_locator.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 class MemoriesScreen extends StatefulWidget {
   const MemoriesScreen({super.key});
@@ -24,8 +24,7 @@ class MemoriesScreen extends StatefulWidget {
   State<MemoriesScreen> createState() => _MemoriesScreenState();
 }
 
-class _MemoriesScreenState extends State<MemoriesScreen>
-    with SingleTickerProviderStateMixin {
+class _MemoriesScreenState extends State<MemoriesScreen> with SingleTickerProviderStateMixin {
   final MemoriesRepository _repository = sl<MemoriesRepository>();
   bool _isLoading = true;
   List<MemoryModel> _memories = [];
@@ -39,9 +38,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
     super.initState();
     _fadeController = AnimationController(
       vsync: this,
-      duration: const Duration(
-        milliseconds: AppConstants.fadeTransitionDurationMs,
-      ),
+      duration: const Duration(milliseconds: AppConstants.fadeTransitionDurationMs),
     );
     _fadeAnim = CurvedAnimation(parent: _fadeController, curve: Curves.easeOut);
     _searchController = TextEditingController();
@@ -148,17 +145,10 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                 child: TextField(
                   controller: _searchController,
                   onChanged: (val) => setState(() => _searchQuery = val),
-                  style: GoogleFonts.outfit(
-                    fontSize: 14.sp,
-                    color: AppColors.warmBrown,
-                  ),
+                  style: GoogleFonts.outfit(fontSize: 14.sp, color: AppColors.warmBrown),
                   decoration: InputDecoration(
                     hintText: "Search memories...",
-                    prefixIcon: Icon(
-                      Icons.search_rounded,
-                      color: AppColors.roseDust,
-                      size: 20.r,
-                    ),
+                    prefixIcon: Icon(Icons.search_rounded, color: AppColors.roseDust, size: 20.r),
                     suffixIcon: _searchQuery.isNotEmpty
                         ? IconButton(
                             icon: Icon(Icons.clear_rounded, size: 18.r),
@@ -195,12 +185,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                           builder: (context, snapshot) {
                             if (!snapshot.hasData && _memories.isEmpty) {
                               return ListView.builder(
-                                padding: const EdgeInsets.fromLTRB(
-                                  20,
-                                  4,
-                                  20,
-                                  100,
-                                ),
+                                padding: const EdgeInsets.fromLTRB(20, 4, 20, 100),
                                 itemCount: 5,
                                 itemBuilder: (context, index) => Padding(
                                   padding: EdgeInsets.only(bottom: 12.h),
@@ -215,20 +200,14 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                               );
                             }
 
-                            final docs = snapshot.hasData
-                                ? snapshot.data!
-                                : <MemoryModel>[];
-                            var listToDisplay = docs.isNotEmpty
-                                ? docs
-                                : _memories;
+                            final docs = snapshot.hasData ? snapshot.data! : <MemoryModel>[];
+                            var listToDisplay = docs.isNotEmpty ? docs : _memories;
 
                             if (_searchQuery.isNotEmpty) {
                               listToDisplay = listToDisplay.where((m) {
                                 final title = m.title.toLowerCase();
                                 final desc = m.description.toLowerCase();
-                                return title.contains(
-                                      _searchQuery.toLowerCase(),
-                                    ) ||
+                                return title.contains(_searchQuery.toLowerCase()) ||
                                     desc.contains(_searchQuery.toLowerCase());
                               }).toList();
                             }
@@ -243,12 +222,7 @@ class _MemoriesScreenState extends State<MemoriesScreen>
                               backgroundColor: Colors.white,
                               child: RepaintBoundary(
                                 child: ListView.builder(
-                                  padding: EdgeInsets.fromLTRB(
-                                    20.w,
-                                    4.h,
-                                    20.w,
-                                    100.h,
-                                  ),
+                                  padding: EdgeInsets.fromLTRB(20.w, 4.h, 20.w, 100.h),
                                   itemCount: listToDisplay.length,
                                   itemBuilder: (context, index) {
                                     final data = listToDisplay[index];
@@ -293,83 +267,72 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-          padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 8.h),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      padding: EdgeInsets.fromLTRB(28.w, 24.h, 24.w, 8.h),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.end,
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  context.l10n.ourStoryHeader,
+                  style: GoogleFonts.outfit(
+                    fontSize: 34.sp,
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.warmBrown,
+                    height: 1.1,
+                    letterSpacing: -0.8,
+                  ),
+                ),
+                6.verticalSpace,
+                Row(
                   children: [
+                    Icon(Icons.favorite_rounded, size: 12.r, color: AppColors.roseDust),
+                    6.horizontalSpace,
                     Text(
-                      AppLocalizations.of(context)!.ourStoryHeader,
+                      context.l10n.ourStorySlogan,
                       style: GoogleFonts.outfit(
-                        fontSize: 34.sp,
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.warmBrown,
-                        height: 1.1,
-                        letterSpacing: -0.8,
+                        fontStyle: FontStyle.italic,
+                        fontSize: 13.sp,
+                        color: AppColors.softBrown,
+                        fontWeight: FontWeight.w300,
                       ),
-                    ),
-                    6.verticalSpace,
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.favorite_rounded,
-                          size: 12.r,
-                          color: AppColors.roseDust,
-                        ),
-                        6.horizontalSpace,
-                        Text(
-                          AppLocalizations.of(context)!.ourStorySlogan,
-                          style: GoogleFonts.outfit(
-                            fontStyle: FontStyle.italic,
-                            fontSize: 13.sp,
-                            color: AppColors.softBrown,
-                            fontWeight: FontWeight.w300,
-                          ),
-                        ),
-                      ],
                     ),
                   ],
                 ),
-              ),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.lightImpact();
-                  onAdd();
-                },
-                child: Container(
-                  width: 48.r,
-                  height: 48.r,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [AppColors.roseDeep, AppColors.roseDust],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.roseDeep.withValues(alpha: 0.35),
-                        blurRadius: 16.r,
-                        offset: Offset(0, 6.h),
-                      ),
-                    ],
-                  ),
-                  child: Icon(
-                    Icons.add_rounded,
-                    color: Colors.white,
-                    size: 24.r,
-                  ),
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
-        )
-        .animate()
-        .fadeIn(duration: 500.ms)
-        .slideY(begin: -0.15, end: 0, duration: 500.ms);
+          GestureDetector(
+            onTap: () {
+              HapticFeedback.lightImpact();
+              onAdd();
+            },
+            child: Container(
+              width: 48.r,
+              height: 48.r,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [AppColors.roseDeep, AppColors.roseDust],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.roseDeep.withValues(alpha: 0.35),
+                    blurRadius: 16.r,
+                    offset: Offset(0, 6.h),
+                  ),
+                ],
+              ),
+              child: Icon(Icons.add_rounded, color: Colors.white, size: 24.r),
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.15, end: 0, duration: 500.ms);
   }
 }
 
@@ -382,12 +345,7 @@ class _HeartDivider extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 28.w, vertical: 12.h),
       child: Row(
         children: [
-          Expanded(
-            child: Divider(
-              color: AppColors.roseDust.withValues(alpha: 0.4),
-              thickness: 1,
-            ),
-          ),
+          Expanded(child: Divider(color: AppColors.roseDust.withValues(alpha: 0.4), thickness: 1)),
           Padding(
             padding: EdgeInsets.symmetric(horizontal: 8.w),
             child: Icon(
@@ -396,12 +354,7 @@ class _HeartDivider extends StatelessWidget {
               color: AppColors.roseDust.withValues(alpha: 0.7),
             ),
           ),
-          Expanded(
-            child: Divider(
-              color: AppColors.roseDust.withValues(alpha: 0.4),
-              thickness: 1,
-            ),
-          ),
+          Expanded(child: Divider(color: AppColors.roseDust.withValues(alpha: 0.4), thickness: 1)),
         ],
       ),
     );
@@ -415,18 +368,13 @@ class _MemoryCard extends StatefulWidget {
   final int index;
   final VoidCallback onTap;
 
-  const _MemoryCard({
-    required this.data,
-    required this.index,
-    required this.onTap,
-  });
+  const _MemoryCard({required this.data, required this.index, required this.onTap});
 
   @override
   State<_MemoryCard> createState() => _MemoryCardState();
 }
 
-class _MemoryCardState extends State<_MemoryCard>
-    with SingleTickerProviderStateMixin {
+class _MemoryCardState extends State<_MemoryCard> with SingleTickerProviderStateMixin {
   late AnimationController _pressController;
   late Animation<double> _scaleAnim;
 
@@ -470,19 +418,14 @@ class _MemoryCardState extends State<_MemoryCard>
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: isUnique
-                      ? [
-                          const Color(0xFFFFF0EC),
-                          AppColors.roseDeep.withValues(alpha: 0.04),
-                        ]
+                      ? [const Color(0xFFFFF0EC), AppColors.roseDeep.withValues(alpha: 0.04)]
                       : [AppColors.ivoryCard, AppColors.ivoryCard],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(20.r),
                 border: Border.all(
-                  color: isUnique
-                      ? AppColors.roseDeep.withValues(alpha: 0.3)
-                      : AppColors.champagne,
+                  color: isUnique ? AppColors.roseDeep.withValues(alpha: 0.3) : AppColors.champagne,
                   width: isUnique ? 1.5 : 1,
                 ),
                 boxShadow: [
@@ -510,10 +453,7 @@ class _MemoryCardState extends State<_MemoryCard>
                                   AppColors.roseDeep.withValues(alpha: 0.15),
                                   AppColors.roseDeep.withValues(alpha: 0.06),
                                 ]
-                              : [
-                                  AppColors.champagne,
-                                  AppColors.champagne.withValues(alpha: 0.6),
-                                ],
+                              : [AppColors.champagne, AppColors.champagne.withValues(alpha: 0.6)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -521,9 +461,7 @@ class _MemoryCardState extends State<_MemoryCard>
                       ),
                       child: Icon(
                         isUnique ? Icons.star_rounded : Icons.favorite_rounded,
-                        color: isUnique
-                            ? AppColors.roseDeep
-                            : AppColors.roseDust,
+                        color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
                         size: 18.r,
                       ),
                     ),
@@ -539,9 +477,7 @@ class _MemoryCardState extends State<_MemoryCard>
                             style: GoogleFonts.outfit(
                               fontStyle: FontStyle.italic,
                               fontSize: 11.sp,
-                              color: isUnique
-                                  ? AppColors.roseDeep
-                                  : AppColors.softBrown,
+                              color: isUnique ? AppColors.roseDeep : AppColors.softBrown,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -562,16 +498,14 @@ class _MemoryCardState extends State<_MemoryCard>
                     Container(
                       padding: EdgeInsets.all(6.r),
                       decoration: BoxDecoration(
-                        color:
-                            (isUnique ? AppColors.roseDeep : AppColors.roseDust)
-                                .withValues(alpha: 0.08),
+                        color: (isUnique ? AppColors.roseDeep : AppColors.roseDust).withValues(
+                          alpha: 0.08,
+                        ),
                         borderRadius: BorderRadius.circular(10.r),
                       ),
                       child: Icon(
                         Icons.arrow_forward_rounded,
-                        color: isUnique
-                            ? AppColors.roseDeep
-                            : AppColors.roseDust,
+                        color: isUnique ? AppColors.roseDeep : AppColors.roseDust,
                         size: 16.r,
                       ),
                     ),
@@ -617,7 +551,7 @@ class _EmptyState extends StatelessWidget {
             ),
             18.verticalSpace,
             Text(
-              AppLocalizations.of(context)!.noMemories,
+              context.l10n.noMemories,
               style: GoogleFonts.outfit(
                 fontSize: 22.sp,
                 fontWeight: FontWeight.w700,
@@ -626,7 +560,7 @@ class _EmptyState extends StatelessWidget {
             ),
             10.verticalSpace,
             Text(
-              AppLocalizations.of(context)!.noMemoriesSubtitle,
+              context.l10n.noMemoriesSubtitle,
               textAlign: TextAlign.center,
               style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
@@ -660,7 +594,7 @@ class _EmptyState extends StatelessWidget {
                   ],
                 ),
                 child: Text(
-                  AppLocalizations.of(context)!.addMemory,
+                  context.l10n.addMemory,
                   style: GoogleFonts.outfit(
                     color: Colors.white,
                     fontWeight: FontWeight.w600,

@@ -5,7 +5,6 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 import 'package:moodtrack/core/navigation/app_routes.dart';
@@ -24,6 +23,7 @@ import 'package:moodtrack/widget/streak_card.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:moodtrack/core/error/result.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 // Mood metadata: emoji, label, card tint, accent color
 final _moods = [
@@ -167,8 +167,7 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
             ? NoteImageService.networkUrlOf(existingNote!.imageUrl)
             : null,
         'onSave': (String title, String text, String emoji, dynamic image) async {
-          final noteId =
-              existingNote?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
+          final noteId = existingNote?.id ?? DateTime.now().millisecondsSinceEpoch.toString();
           String? imageUrl = existingNote?.imageUrl; // keep existing encoded value
 
           if (image != null && image is! String) {
@@ -182,8 +181,7 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
 
             // 2. Upload to Firebase Storage
             final storagePath = 'notes/$uid/$fileName';
-            final uploadResult =
-                await _storageService.uploadFile(file: file, path: storagePath);
+            final uploadResult = await _storageService.uploadFile(file: file, path: storagePath);
 
             if (uploadResult is Success<String>) {
               final networkUrl = uploadResult.data;
@@ -197,22 +195,19 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
                     .doc(uid)
                     .collection('notes')
                     .doc(noteId)
-                    .set(
-                      {
-                        'noteId': noteId,
-                        'fileName': fileName,
-                        'imageUrl': networkUrl,
-                        'updatedAt': FieldValue.serverTimestamp(),
-                      },
-                      SetOptions(merge: true),
-                    );
+                    .set({
+                      'noteId': noteId,
+                      'fileName': fileName,
+                      'imageUrl': networkUrl,
+                      'updatedAt': FieldValue.serverTimestamp(),
+                    }, SetOptions(merge: true));
               } catch (_) {
                 // Firestore sync failure is non-fatal; local copy is already saved.
               }
             } else if (mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text((uploadResult as Failure).message)),
-              );
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text((uploadResult as Failure).message)));
               return;
             }
           }
@@ -306,7 +301,7 @@ class _NotesScreenState extends State<NotesScreen> with SingleTickerProviderStat
                   controller: _searchController,
                   onChanged: (val) => setState(() => _searchQuery = val),
                   decoration: InputDecoration(
-                    hintText: AppLocalizations.of(context)!.searchJournalHint,
+                    hintText: context.l10n.searchJournalHint,
                     hintStyle: TextStyle(
                       fontStyle: FontStyle.italic,
                       color: AppColors.softBrown.withValues(alpha: 0.5),
@@ -636,39 +631,31 @@ class _NoteImage extends StatelessWidget {
   }
 
   Widget _localImage(File file) => ClipRRect(
-        borderRadius: BorderRadius.circular(16.r),
-        child: Image.file(
-          file,
-          height: 180.h,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
-      );
+    borderRadius: BorderRadius.circular(16.r),
+    child: Image.file(file, height: 180.h, width: double.infinity, fit: BoxFit.cover),
+  );
 
   Widget _networkImage(String url) => ClipRRect(
-        borderRadius: BorderRadius.circular(16.r),
-        child: Image.network(
-          url,
-          height: 180.h,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          loadingBuilder: (context, child, progress) {
-            if (progress == null) return child;
-            return ShimmerLoading(isLoading: true, child: ShimmerSkeleton(height: 180.h));
-          },
-          errorBuilder: (context, _, __) => _errorPlaceholder(),
-        ),
-      );
+    borderRadius: BorderRadius.circular(16.r),
+    child: Image.network(
+      url,
+      height: 180.h,
+      width: double.infinity,
+      fit: BoxFit.cover,
+      loadingBuilder: (context, child, progress) {
+        if (progress == null) return child;
+        return ShimmerLoading(isLoading: true, child: ShimmerSkeleton(height: 180.h));
+      },
+      errorBuilder: (context, _, __) => _errorPlaceholder(),
+    ),
+  );
 
   Widget _errorPlaceholder() => Container(
-        height: 150.h,
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Colors.white24,
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
-      );
+    height: 150.h,
+    width: double.infinity,
+    decoration: BoxDecoration(color: Colors.white24, borderRadius: BorderRadius.circular(16.r)),
+    child: const Icon(Icons.broken_image_outlined, color: Colors.grey),
+  );
 }
 
 class _DownloadAndShowImage extends StatefulWidget {
@@ -691,11 +678,12 @@ class _DownloadAndShowImageState extends State<_DownloadAndShowImage> {
   }
 
   Future<void> _download() async {
-    final file = await sl<NoteImageService>().downloadAndCache(
-      widget.networkUrl,
-      widget.fileName,
-    );
-    if (mounted) setState(() { _localFile = file; _loading = false; });
+    final file = await sl<NoteImageService>().downloadAndCache(widget.networkUrl, widget.fileName);
+    if (mounted)
+      setState(() {
+        _localFile = file;
+        _loading = false;
+      });
   }
 
   @override
@@ -706,12 +694,7 @@ class _DownloadAndShowImageState extends State<_DownloadAndShowImage> {
     if (_localFile != null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(16.r),
-        child: Image.file(
-          _localFile!,
-          height: 180.h,
-          width: double.infinity,
-          fit: BoxFit.cover,
-        ),
+        child: Image.file(_localFile!, height: 180.h, width: double.infinity, fit: BoxFit.cover),
       );
     }
     // Download failed — fallback to network stream

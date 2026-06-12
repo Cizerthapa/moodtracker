@@ -3,10 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'dart:io';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_strings.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 // Mood metadata: emoji, label, card tint, accent color (matching NotesScreen)
 final _moods = [
@@ -213,7 +213,7 @@ class _AddNoteScreenState extends State<AddNoteScreen> {
                       height: 1.6,
                     ),
                     decoration: InputDecoration(
-                      hintText: AppLocalizations.of(context)!.startWritingHint,
+                      hintText: context.l10n.startWritingHint,
                       hintStyle: GoogleFonts.outfit(
                         color: AppColors.softBrown.withValues(alpha: 0.35),
                         fontStyle: FontStyle.italic,

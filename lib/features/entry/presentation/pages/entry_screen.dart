@@ -4,20 +4,18 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:go_router/go_router.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
 import 'package:moodtrack/core/theme/theme_manager.dart';
 import 'package:moodtrack/features/audio/presentation/ambient_sound_widget.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 class EntryScreen extends StatelessWidget {
   const EntryScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-
     return Consumer<ThemeManager>(
       builder: (context, themeManager, _) => Scaffold(
         backgroundColor: AppColors.cream,
@@ -29,73 +27,61 @@ class EntryScreen extends StatelessWidget {
               children: [
                 // ── Header ──────────────────────────────────────────────
                 Row(
-                      crossAxisAlignment: CrossAxisAlignment.end,
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text.rich(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text.rich(
+                            TextSpan(
+                              children: [
                                 TextSpan(
-                                  children: [
-                                    TextSpan(
-                                      text: l10n.welcomeBack,
-                                      style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.w400,
-                                        fontSize: 24.sp,
-                                        color: AppColors.warmBrown,
-                                      ),
-                                    ),
-                                    TextSpan(
-                                      text: ' ${l10n.userName}',
-                                      style: GoogleFonts.outfit(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 24.sp,
-                                        color: AppColors.roseDeep,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        GestureDetector(
-                          onTap: () {
-                            HapticFeedback.lightImpact();
-                            context.pushNamed(AppRoutes.settings);
-                          },
-                          child: Container(
-                            padding: EdgeInsets.all(12.r),
-                            decoration: BoxDecoration(
-                              color: AppColors.ivoryCard,
-                              shape: BoxShape.circle,
-                              border: Border.all(
-                                color: AppColors.champagne,
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: AppColors.warmBrown.withValues(
-                                    alpha: 0.06,
+                                  text: context.l10n.welcomeBack,
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.w400,
+                                    fontSize: 24.sp,
+                                    color: AppColors.warmBrown,
                                   ),
-                                  blurRadius: 12.r,
-                                  offset: Offset(0, 4.h),
+                                ),
+                                TextSpan(
+                                  text: ' ${context.l10n.userName}',
+                                  style: GoogleFonts.outfit(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 24.sp,
+                                    color: AppColors.roseDeep,
+                                  ),
                                 ),
                               ],
                             ),
-                            child: Icon(
-                              Icons.settings_rounded,
-                              color: AppColors.warmBrown,
-                              size: 24.r,
-                            ),
                           ),
+                        ],
+                      ),
+                    ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        context.pushNamed(AppRoutes.settings);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.all(12.r),
+                        decoration: BoxDecoration(
+                          color: AppColors.ivoryCard,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: AppColors.champagne, width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.warmBrown.withValues(alpha: 0.06),
+                              blurRadius: 12.r,
+                              offset: Offset(0, 4.h),
+                            ),
+                          ],
                         ),
-                      ],
-                    )
-                    .animate()
-                    .fadeIn(duration: 600.ms)
-                    .slideY(begin: -0.2, end: 0, duration: 600.ms),
+                        child: Icon(Icons.settings_rounded, color: AppColors.warmBrown, size: 24.r),
+                      ),
+                    ),
+                  ],
+                ).animate().fadeIn(duration: 600.ms).slideY(begin: -0.2, end: 0, duration: 600.ms),
 
                 48.verticalSpace,
 
@@ -106,8 +92,8 @@ class EntryScreen extends StatelessWidget {
                     children: [
                       _buildFeatureCard(
                         context,
-                        title: l10n.ourStoryTitle,
-                        subtitle: l10n.ourStorySubtitle,
+                        title: context.l10n.ourStoryTitle,
+                        subtitle: context.l10n.ourStorySubtitle,
                         icon: Icons.auto_awesome_rounded,
                         color: AppColors.roseDust,
                         routeName: AppRoutes.memories,
@@ -116,8 +102,8 @@ class EntryScreen extends StatelessWidget {
                       20.verticalSpace,
                       _buildFeatureCard(
                         context,
-                        title: l10n.hydrationTitle,
-                        subtitle: l10n.hydrationSubtitle,
+                        title: context.l10n.hydrationTitle,
+                        subtitle: context.l10n.hydrationSubtitle,
                         icon: Icons.water_drop_rounded,
                         color: const Color(0xFF6DAA7A),
                         routeName: AppRoutes.water,
@@ -126,8 +112,8 @@ class EntryScreen extends StatelessWidget {
                       20.verticalSpace,
                       _buildFeatureCard(
                         context,
-                        title: l10n.journalTitle,
-                        subtitle: l10n.journalSubtitle,
+                        title: context.l10n.journalTitle,
+                        subtitle: context.l10n.journalSubtitle,
                         icon: Icons.auto_awesome_rounded,
                         color: const Color(0xFFD4A832),
                         routeName: AppRoutes.journal,
@@ -190,10 +176,7 @@ class EntryScreen extends StatelessWidget {
                   offset: Offset(0, 2.h),
                 ),
               ],
-              border: Border.all(
-                color: color.withValues(alpha: 0.12),
-                width: 1,
-              ),
+              border: Border.all(color: color.withValues(alpha: 0.12), width: 1),
             ),
             padding: EdgeInsets.all(24.r),
             child: Row(
@@ -203,10 +186,7 @@ class EntryScreen extends StatelessWidget {
                   padding: EdgeInsets.all(16.r),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
-                      colors: [
-                        color.withValues(alpha: 0.15),
-                        color.withValues(alpha: 0.06),
-                      ],
+                      colors: [color.withValues(alpha: 0.15), color.withValues(alpha: 0.06)],
                       begin: Alignment.topLeft,
                       end: Alignment.bottomRight,
                     ),

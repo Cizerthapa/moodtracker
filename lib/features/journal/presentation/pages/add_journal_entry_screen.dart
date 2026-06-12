@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:intl/intl.dart';
-import '../../../../l10n/app_localizations.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Design tokens — pixel-perfect match to the HTML preview
@@ -110,10 +110,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
     _emojiPopAnim = TweenSequence<double>([
       TweenSequenceItem(tween: Tween(begin: 1.0, end: 1.35), weight: 35),
       TweenSequenceItem(
-        tween: Tween(
-          begin: 1.35,
-          end: 1.0,
-        ).chain(CurveTween(curve: Curves.elasticOut)),
+        tween: Tween(begin: 1.35, end: 1.0).chain(CurveTween(curve: Curves.elasticOut)),
         weight: 65,
       ),
     ]).animate(_emojiPopController);
@@ -123,10 +120,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
       vsync: this,
       duration: const Duration(milliseconds: 350),
     );
-    _insightAnim = CurvedAnimation(
-      parent: _insightController,
-      curve: Curves.easeOut,
-    );
+    _insightAnim = CurvedAnimation(parent: _insightController, curve: Curves.easeOut);
 
     if (widget.moods.isNotEmpty) {
       final initialMood = widget.initialMood ?? widget.moods.first['emoji'] as String;
@@ -147,10 +141,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
       _insightController.value = 1.0;
     }
 
-    _bgColorAnim = ColorTween(
-      begin: _tintColor,
-      end: _tintColor,
-    ).animate(_bgAnimController);
+    _bgColorAnim = ColorTween(begin: _tintColor, end: _tintColor).animate(_bgAnimController);
 
     _textController.addListener(_onTextChanged);
   }
@@ -172,9 +163,10 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
     final newTint = meta['tint'] as Color;
     final newAccent = meta['accent'] as Color;
 
-    _bgColorAnim = ColorTween(begin: _prevTintColor, end: newTint).animate(
-      CurvedAnimation(parent: _bgAnimController, curve: Curves.easeInOut),
-    );
+    _bgColorAnim = ColorTween(
+      begin: _prevTintColor,
+      end: newTint,
+    ).animate(CurvedAnimation(parent: _bgAnimController, curve: Curves.easeInOut));
     _bgAnimController.forward(from: 0);
     _prevTintColor = newTint;
     _emojiPopController.forward(from: 0);
@@ -193,9 +185,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
     }
     setState(() => _isSaving = true);
     await widget.onSave(
-      _titleController.text.trim().isEmpty
-          ? null
-          : _titleController.text.trim(),
+      _titleController.text.trim().isEmpty ? null : _titleController.text.trim(),
       _textController.text.trim(),
       _selectedEmoji!,
     );
@@ -205,21 +195,15 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
   void _insertText(String insertion) {
     final text = _textController.text;
     final selection = _textController.selection;
-    
+
     // Fallback if no selection
     final start = selection.isValid ? selection.start : text.length;
     final end = selection.isValid ? selection.end : text.length;
 
-    final newText = text.replaceRange(
-      start,
-      end,
-      insertion,
-    );
+    final newText = text.replaceRange(start, end, insertion);
     _textController.value = TextEditingValue(
       text: newText,
-      selection: TextSelection.collapsed(
-        offset: start + insertion.length,
-      ),
+      selection: TextSelection.collapsed(offset: start + insertion.length),
     );
     _focusNode.requestFocus();
   }
@@ -243,8 +227,6 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
     final dateStr = DateFormat('EEEE, MMMM d').format(now);
     final timeStr = DateFormat('h:mm a').format(now);
     final hasText = _textController.text.trim().isNotEmpty;
-    final l10n = AppLocalizations.of(context)!;
-
     return AnimatedBuilder(
       animation: Listenable.merge([_bgColorAnim, _emojiPopAnim]),
       builder: (context, _) {
@@ -388,7 +370,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                               children: [
                                 Expanded(
                                   child: Text(
-                                    l10n.howAreYouFeeling,
+                                    context.l10n.howAreYouFeeling,
                                     style: GoogleFonts.dmSerifDisplay(
                                       fontSize: 24.sp,
                                       color: const Color(0xFF2C1F0E),
@@ -453,15 +435,9 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                               children: [
                                 _DivBar(width: 28.w, color: _accentColor),
                                 5.horizontalSpace,
-                                _DivBar(
-                                  width: 10.w,
-                                  color: _accentColor.withValues(alpha: 0.4),
-                                ),
+                                _DivBar(width: 10.w, color: _accentColor.withValues(alpha: 0.4)),
                                 5.horizontalSpace,
-                                _DivBar(
-                                  width: 5.w,
-                                  color: _accentColor.withValues(alpha: 0.2),
-                                ),
+                                _DivBar(width: 5.w, color: _accentColor.withValues(alpha: 0.2)),
                               ],
                             ),
                           ),
@@ -479,9 +455,7 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                 color: Colors.white.withValues(alpha: 0.88),
                                 borderRadius: BorderRadius.circular(24.r),
                                 border: Border.all(
-                                  color: _accentColor.withValues(
-                                    alpha: hasText ? 0.30 : 0.15,
-                                  ),
+                                  color: _accentColor.withValues(alpha: hasText ? 0.30 : 0.15),
                                   width: hasText ? 1.2 : 1.0,
                                 ),
                                 boxShadow: [
@@ -595,7 +569,10 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
-                                      Text('✦', style: TextStyle(fontSize: 12.sp, color: _accentColor)),
+                                      Text(
+                                        '✦',
+                                        style: TextStyle(fontSize: 12.sp, color: _accentColor),
+                                      ),
                                       8.horizontalSpace,
                                       Expanded(
                                         child: Text(
@@ -623,7 +600,9 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                             decoration: BoxDecoration(
                               color: Colors.white.withValues(alpha: 0.95),
                               borderRadius: BorderRadius.circular(24.r),
-                              border: Border.all(color: const Color(0xFFE8D9C0).withValues(alpha: 0.55)),
+                              border: Border.all(
+                                color: const Color(0xFFE8D9C0).withValues(alpha: 0.55),
+                              ),
                               boxShadow: [
                                 BoxShadow(
                                   color: Colors.black.withValues(alpha: 0.05),
@@ -641,7 +620,10 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                     AnimatedSwitcher(
                                       duration: const Duration(milliseconds: 220),
                                       transitionBuilder: (child, anim) => SlideTransition(
-                                        position: Tween<Offset>(begin: const Offset(0, 0.5), end: Offset.zero).animate(anim),
+                                        position: Tween<Offset>(
+                                          begin: const Offset(0, 0.5),
+                                          end: Offset.zero,
+                                        ).animate(anim),
                                         child: FadeTransition(opacity: anim, child: child),
                                       ),
                                       child: Text(
@@ -658,7 +640,10 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                     2.verticalSpace,
                                     Text(
                                       'words written',
-                                      style: GoogleFonts.dmSans(fontSize: 10.sp, color: const Color(0xFFB89870)),
+                                      style: GoogleFonts.dmSans(
+                                        fontSize: 10.sp,
+                                        color: const Color(0xFFB89870),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -669,7 +654,10 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                     height: 46.r,
                                     child: Padding(
                                       padding: EdgeInsets.all(12.r),
-                                      child: CircularProgressIndicator(strokeWidth: 2.5, color: _accentColor),
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: _accentColor,
+                                      ),
                                     ),
                                   )
                                 else
@@ -684,7 +672,10 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                       ),
                                       decoration: BoxDecoration(
                                         gradient: LinearGradient(
-                                          colors: [_accentColor, _accentColor.withValues(alpha: 0.78)],
+                                          colors: [
+                                            _accentColor,
+                                            _accentColor.withValues(alpha: 0.78),
+                                          ],
                                           begin: Alignment.topLeft,
                                           end: Alignment.bottomRight,
                                         ),
@@ -700,7 +691,11 @@ class _AddJournalEntryScreenState extends State<AddJournalEntryScreen>
                                       child: Row(
                                         mainAxisSize: MainAxisSize.min,
                                         children: [
-                                          Icon(Icons.auto_awesome_rounded, color: Colors.white, size: 15.sp),
+                                          Icon(
+                                            Icons.auto_awesome_rounded,
+                                            color: Colors.white,
+                                            size: 15.sp,
+                                          ),
                                           8.horizontalSpace,
                                           Text(
                                             widget.isEditing ? 'Update Entry' : 'Save Entry',
@@ -810,11 +805,11 @@ class _DivBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => AnimatedContainer(
-        duration: const Duration(milliseconds: 400),
-        width: width,
-        height: 2.5.h,
-        decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
-      );
+    duration: const Duration(milliseconds: 400),
+    width: width,
+    height: 2.5.h,
+    decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(2)),
+  );
 }
 
 class _FormatButton extends StatelessWidget {
@@ -822,11 +817,7 @@ class _FormatButton extends StatelessWidget {
   final VoidCallback onTap;
   final Color color;
 
-  const _FormatButton({
-    required this.icon,
-    required this.onTap,
-    required this.color,
-  });
+  const _FormatButton({required this.icon, required this.onTap, required this.color});
 
   @override
   Widget build(BuildContext context) {

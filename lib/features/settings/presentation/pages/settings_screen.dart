@@ -5,7 +5,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:moodtrack/l10n/app_localizations.dart';
 import 'package:provider/provider.dart';
 import 'package:moodtrack/core/navigation/app_routes.dart';
 import 'package:moodtrack/core/theme/app_colors.dart';
@@ -26,6 +25,7 @@ import 'package:moodtrack/core/services/activity_log_service.dart';
 import 'package:moodtrack/core/services/ui_state_manager.dart';
 import 'package:moodtrack/features/water_intake/data/repositories/water_repository.dart';
 import 'package:moodtrack/core/constants/app_constants.dart';
+import 'package:moodtrack/core/utils/l10n_extension.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -95,7 +95,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.notificationsOn)));
+        ).showSnackBar(SnackBar(content: Text(context.l10n.notificationsOn)));
       }
     } else {
       await _notificationService.cancelAll();
@@ -103,7 +103,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(
           context,
-        ).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.notificationsOff)));
+        ).showSnackBar(SnackBar(content: Text(context.l10n.notificationsOff)));
       }
     }
   }
@@ -118,15 +118,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
       builder: (dialogContext) => AlertDialog(
         backgroundColor: AppColors.ivoryCard,
         title: Text(
-          isLinked
-              ? AppLocalizations.of(context)!.editPartnerLink
-              : AppLocalizations.of(context)!.linkPartner,
+          isLinked ? context.l10n.editPartnerLink : context.l10n.linkPartner,
           style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: emailController,
           decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.partnerEmailHint,
+            hintText: context.l10n.partnerEmailHint,
             filled: true,
             fillColor: AppColors.cream,
             border: OutlineInputBorder(
@@ -138,25 +136,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
+            child: Text(context.l10n.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
               final email = emailController.text.trim();
               if (email.isNotEmpty) {
                 final result = await sl<UserRepository>().linkPartnerByEmail(email);
-                
+
                 if (!dialogContext.mounted) return;
                 Navigator.pop(dialogContext);
 
                 if (!mounted) return;
                 String message;
                 if (result is Success<bool>) {
-                  message = AppLocalizations.of(context)!.linkedSuccessfully;
-                  _logger.log(
-                    'partner_linked',
-                    metadata: {'partnerEmail': email},
-                  );
+                  message = context.l10n.linkedSuccessfully;
+                  _logger.log('partner_linked', metadata: {'partnerEmail': email});
                 } else {
                   final error = (result as Failure).message;
                   message = error;
@@ -169,7 +164,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
-            child: Text(AppLocalizations.of(context)!.link, style: const TextStyle(color: Colors.white)),
+            child: Text(context.l10n.link, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -183,22 +178,22 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          AppLocalizations.of(context)!.unlinkPartnerTitle,
+          context.l10n.unlinkPartnerTitle,
           style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          AppLocalizations.of(context)!.unlinkPartnerDesc,
+          context.l10n.unlinkPartnerDesc,
           style: GoogleFonts.outfit(color: AppColors.softBrown),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
+            child: Text(context.l10n.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
               final result = await sl<UserRepository>().unlinkPartner();
-              
+
               if (!dialogContext.mounted) return;
               Navigator.pop(dialogContext);
 
@@ -218,13 +213,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    result is Success ? AppLocalizations.of(context)!.unlinkedSuccessfully : (result as Failure).message,
+                    result is Success
+                        ? context.l10n.unlinkedSuccessfully
+                        : (result as Failure).message,
                   ),
                 ),
               );
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
-            child: Text(AppLocalizations.of(context)!.unlink, style: const TextStyle(color: Colors.white)),
+            child: Text(context.l10n.unlink, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -238,23 +235,23 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          AppLocalizations.of(context)!.deleteAccountTitle,
+          context.l10n.deleteAccountTitle,
           style: GoogleFonts.outfit(color: AppColors.roseDeep, fontWeight: FontWeight.bold),
         ),
         content: Text(
-          AppLocalizations.of(context)!.deleteAccountDesc,
+          context.l10n.deleteAccountDesc,
           style: GoogleFonts.outfit(color: AppColors.softBrown),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
+            child: Text(context.l10n.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
               final result = await sl<UserRepository>().deleteAccount();
               if (!mounted) return;
-              
+
               if (result is Success) {
                 context.go('/login');
               } else {
@@ -266,7 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               }
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.redAccent),
-            child: Text(AppLocalizations.of(context)!.delete, style: const TextStyle(color: Colors.white)),
+            child: Text(context.l10n.delete, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -281,14 +278,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
         backgroundColor: AppColors.ivoryCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
         title: Text(
-          AppLocalizations.of(context)!.dailyWaterGoal,
+          context.l10n.dailyWaterGoal,
           style: GoogleFonts.outfit(color: AppColors.warmBrown, fontWeight: FontWeight.bold),
         ),
         content: TextField(
           controller: controller,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            hintText: AppLocalizations.of(context)!.enterAmountInMl,
+            hintText: context.l10n.enterAmountInMl,
             filled: true,
             fillColor: AppColors.cream,
             border: OutlineInputBorder(
@@ -300,7 +297,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(dialogContext),
-            child: Text(AppLocalizations.of(context)!.cancel, style: TextStyle(color: AppColors.softBrown)),
+            child: Text(context.l10n.cancel, style: TextStyle(color: AppColors.softBrown)),
           ),
           ElevatedButton(
             onPressed: () async {
@@ -310,8 +307,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.roseDeep),
-            child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(color: Colors.white)),
-
+            child: Text(context.l10n.save, style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -358,7 +354,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   20.horizontalSpace,
                   Text(
-                    AppLocalizations.of(context)!.settingsTitle,
+                    context.l10n.settingsTitle,
                     style: GoogleFonts.outfit(
                       fontSize: 34.sp,
                       fontWeight: FontWeight.w800,
@@ -432,8 +428,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                   16.verticalSpace,
                   _buildSettingTile(
-                    title: AppLocalizations.of(context)!.enableNotifications,
-                    subtitle: AppLocalizations.of(context)!.notificationsSubtitle,
+                    title: context.l10n.enableNotifications,
+                    subtitle: context.l10n.notificationsSubtitle,
                     icon: Icons.notifications_rounded,
                     trailing: Switch.adaptive(
                       value: _notificationsEnabled,
@@ -444,8 +440,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                   14.verticalSpace,
                   _buildSettingTile(
-                    title: AppLocalizations.of(context)!.testNotification,
-                    subtitle: AppLocalizations.of(context)!.testNotificationSubtitle,
+                    title: context.l10n.testNotification,
+                    subtitle: context.l10n.testNotificationSubtitle,
                     icon: Icons.notifications_active_rounded,
                     trailing: Icon(
                       Icons.chevron_right_rounded,
@@ -455,8 +451,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onTap: () async {
                       HapticFeedback.lightImpact();
                       await _notificationService.showInstantNotification(
-                        AppLocalizations.of(context)!.testNotificationTitle,
-                        AppLocalizations.of(context)!.testNotificationBody,
+                        context.l10n.testNotificationTitle,
+                        context.l10n.testNotificationBody,
                       );
                     },
                     index: 1,
@@ -609,12 +605,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                   16.verticalSpace,
                   _buildSettingTile(
-                    title: _userProfile?.partnerUid != null 
-                        ? AppLocalizations.of(context)!.partnerLinked 
-                        : AppLocalizations.of(context)!.linkPartner,
+                    title: _userProfile?.partnerUid != null
+                        ? context.l10n.partnerLinked
+                        : context.l10n.linkPartner,
                     subtitle: _userProfile?.partnerEmail != null
                         ? _userProfile!.partnerEmail!
-                        : AppLocalizations.of(context)!.linkAccountsViaEmail,
+                        : context.l10n.linkAccountsViaEmail,
                     icon: Icons.link_rounded,
                     trailing: _userProfile?.partnerUid != null
                         ? Row(
@@ -979,7 +975,7 @@ class _AdminFooterState extends State<_AdminFooter> with SingleTickerProviderSta
               },
             ),
             Text(
-              AppLocalizations.of(context)!.madeWithLoveBy,
+              context.l10n.madeWithLoveBy,
               style: GoogleFonts.outfit(
                 fontStyle: FontStyle.italic,
                 color: AppColors.softBrown.withValues(alpha: 0.5),
@@ -989,7 +985,7 @@ class _AdminFooterState extends State<_AdminFooter> with SingleTickerProviderSta
             ),
             4.verticalSpace,
             Text(
-              AppLocalizations.of(context)!.authorName,
+              context.l10n.authorName,
               style: GoogleFonts.outfit(
                 fontWeight: FontWeight.w700,
                 color: AppColors.warmBrown,
